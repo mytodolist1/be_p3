@@ -24,7 +24,7 @@ func TestValidateToken(t *testing.T) {
 	publicKey := "72654165d09b9f0a8b4f0c5815775ed5fc933069ce2e006b4e62a65bea6f06e3"
 	payload, _err := watoken.Decode(publicKey, tokenstring)
 	if _err != nil {
-		fmt.Println("expire token", _err)
+		fmt.Println("expired token", _err)
 	} else {
 		fmt.Println("ID: ", payload.Id)
 		fmt.Println("Di mulai: ", payload.Nbf)
@@ -34,7 +34,7 @@ func TestValidateToken(t *testing.T) {
 
 }
 
-// hash pass
+// hash password
 func TestGenerateHashPassword(t *testing.T) {
 	password := "secret"
 	hash, _ := HashPassword(password) // ignore error for the sake of simplicity
