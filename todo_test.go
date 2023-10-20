@@ -10,7 +10,6 @@ import (
 )
 
 // paseto
-
 func TestGeneratePrivateKeyPaseto(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
 	fmt.Println("Private Key: ", privateKey)
@@ -83,31 +82,3 @@ func TestInsertUser(t *testing.T) {
 	nama := InsertUser(mconn, "user", userdata)
 	fmt.Println(nama)
 }
-
-// login
-// func TestLoginUser(t *testing.T) {
-// 	username := "user"
-// 	password := "user"
-
-// 	authenticated, err := LoginUser(MongoConn, "user", username, password)
-// 	if err != nil {
-// 		t.Errorf("Error authenticating user: %v", err)
-// 	}
-
-// 	if authenticated {
-// 		fmt.Println("User authenticated successfully")
-// 	} else {
-// 		t.Errorf("User authentication failed")
-// 	}
-// }
-
-// func TestInsertUser(t *testing.T) {
-// 	username := "user"
-// 	password := "user"
-
-// 	insertedID, err := InsertUser(MongoConn, "user", username, password)
-// 	if err != nil {
-// 		t.Errorf("Error inserting data: %v", err)
-// 	}
-// 	fmt.Printf("Data berhasil disimpan dengan id %s", insertedID.Hex())
-// }
