@@ -2,6 +2,8 @@ package bep3
 
 import (
 	"fmt"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/aiteung/atdb"
@@ -81,4 +83,17 @@ func TestInsertUser(t *testing.T) {
 
 	nama := InsertUser(mconn, "user", userdata)
 	fmt.Println(nama)
+}
+
+func TestGCFPostHandler(t *testing.T) {
+
+	// Membuat body request sebagai string
+	requestBody := `{"username": "budiman", "password": "secret"}`
+
+	// Membuat objek http.Request
+	r := httptest.NewRequest("POST", "https://contoh.com/path", strings.NewReader(requestBody))
+	r.Header.Set("Content-Type", "application/json")
+
+	resp := GCFPostHandler("PASETOPRIVATEKEY", "MONGOSTRING", "mytodolist", "user", r)
+	fmt.Println(resp)
 }
