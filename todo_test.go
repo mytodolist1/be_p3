@@ -11,7 +11,17 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// paseto
+func TestGeneratePasswordHash(t *testing.T) {
+	password := "secret"
+	hash, _ := HashPassword(password) // ignore error for the sake of simplicity
+
+	fmt.Println("Password:", password)
+	fmt.Println("Hash:    ", hash)
+
+	match := CheckPasswordHash(password, hash)
+	fmt.Println("Match:   ", match)
+}
+
 func TestGeneratePrivateKeyPaseto(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
 	fmt.Println("Private Key: ", privateKey)
@@ -32,25 +42,13 @@ func TestValidateToken(t *testing.T) {
 		fmt.Println("Di buat: ", payload.Iat)
 		fmt.Println("Expired: ", payload.Exp)
 	}
-
-}
-
-// hash password
-func TestGenerateHashPassword(t *testing.T) {
-	password := "secret"
-	hash, _ := HashPassword(password) // ignore error for the sake of simplicity
-
-	fmt.Println("Password:", password)
-	fmt.Println("Hash:    ", hash)
-
-	match := CheckHashPassword(password, hash)
-	fmt.Println("Match:   ", match)
 }
 
 func TestHashFunction(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "mytodolist")
+
 	var userdata User
-	userdata.Username = "budi"
+	userdata.Username = "budiman"
 	userdata.Password = "secret"
 
 	filter := bson.M{"username": userdata.Username}
@@ -58,22 +56,20 @@ func TestHashFunction(t *testing.T) {
 	fmt.Println("Mongo User Result: ", res)
 	hash, _ := HashPassword(userdata.Password)
 	fmt.Println("Hash Password : ", hash)
-	match := CheckHashPassword(userdata.Password, res.Password)
+	match := CheckPasswordHash(userdata.Password, res.Password)
 	fmt.Println("Match:   ", match)
-
 }
 
 func TestIsPasswordValid(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "mytodolist")
 	var userdata User
-	userdata.Username = "budi"
+	userdata.Username = "budiman"
 	userdata.Password = "secret"
 
 	anu := IsPasswordValid(mconn, "user", userdata)
 	fmt.Println(anu)
 }
 
-// user
 func TestInsertUser(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "mytodolist")
 	var userdata User
@@ -88,12 +84,12 @@ func TestInsertUser(t *testing.T) {
 func TestGCFPostHandler(t *testing.T) {
 
 	// Membuat body request sebagai string
-	requestBody := `{"username": "budiman", "password": "secret"}`
+	requestBody := `{"username": "dani", "password": "secret"}`
 
 	// Membuat objek http.Request
 	r := httptest.NewRequest("POST", "https://contoh.com/path", strings.NewReader(requestBody))
 	r.Header.Set("Content-Type", "application/json")
 
-	resp := GCFPostHandler("PASETOPRIVATEKEY", "MONGOSTRING", "mytodolist", "user", r)
+	resp := GCFPostHandler("PASETOPRIVATEKEY", "MONGOSTRING", "trensentimen", "user", r)
 	fmt.Println(resp)
 }
