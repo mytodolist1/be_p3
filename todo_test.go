@@ -21,8 +21,8 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 }
 
 func TestValidateToken(t *testing.T) {
-	tokenstring := "v4.public.eyJleHAiOiIyMDIzLTEwLTE5VDE0OjE0OjQ0KzA3OjAwIiwiaWF0IjoiMjAyMy0xMC0xOVQxMjoxNDo0NCswNzowMCIsImlkIjoibXl0b2RvbGlzdCIsIm5iZiI6IjIwMjMtMTAtMTlUMTI6MTQ6NDQrMDc6MDAifUpIr_FRgF_teFsWe1zvDUP5jgjYfR_MLph9CwuElISzwjr0LI546Sw5v7FV7_8eAtSNw5hiypWkU6woUlth3gs" // Gantilah dengan token PASETO yang sesuai
-	publicKey := "72654165d09b9f0a8b4f0c5815775ed5fc933069ce2e006b4e62a65bea6f06e3"
+	tokenstring := "v4.public.eyJleHAiOiIyMDIzLTEwLTIyVDE1OjA4OjQwKzA3OjAwIiwiaWF0IjoiMjAyMy0xMC0yMlQxMzowODo0MCswNzowMCIsImlkIjoibXl0b2RvbGlzdCIsIm5iZiI6IjIwMjMtMTAtMjJUMTM6MDg6NDArMDc6MDAifbrXpe86NxnAX1ULNBeivaM53Mgrc1waKX2XGm1bt3JHiksBy7hK6d4TijzPNQcWuhLzeyNl7EwumfmIS7bj5gU" // Gantilah dengan token PASETO yang sesuai
+	publicKey := "915ae398cfbc8902f33077c449bdbd5c9f475667fe79c2356e9e800798bb9839"
 	payload, _err := watoken.Decode(publicKey, tokenstring)
 	if _err != nil {
 		fmt.Println("expired token", _err)
