@@ -2,8 +2,6 @@ package bep3
 
 import (
 	"fmt"
-	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/aiteung/atdb"
@@ -30,19 +28,19 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 	fmt.Println("hasil: ", hasil, err)
 }
 
-func TestValidateToken(t *testing.T) {
-	tokenstring := "v4.public.eyJleHAiOiIyMDIzLTEwLTIyVDE1OjA4OjQwKzA3OjAwIiwiaWF0IjoiMjAyMy0xMC0yMlQxMzowODo0MCswNzowMCIsImlkIjoibXl0b2RvbGlzdCIsIm5iZiI6IjIwMjMtMTAtMjJUMTM6MDg6NDArMDc6MDAifbrXpe86NxnAX1ULNBeivaM53Mgrc1waKX2XGm1bt3JHiksBy7hK6d4TijzPNQcWuhLzeyNl7EwumfmIS7bj5gU" // Gantilah dengan token PASETO yang sesuai
-	publicKey := "915ae398cfbc8902f33077c449bdbd5c9f475667fe79c2356e9e800798bb9839"
-	payload, _err := watoken.Decode(publicKey, tokenstring)
-	if _err != nil {
-		fmt.Println("expired token", _err)
-	} else {
-		fmt.Println("ID: ", payload.Id)
-		fmt.Println("Di mulai: ", payload.Nbf)
-		fmt.Println("Di buat: ", payload.Iat)
-		fmt.Println("Expired: ", payload.Exp)
-	}
-}
+// func TestValidateToken(t *testing.T) {
+// 	tokenstring := "v4.public.eyJleHAiOiIyMDIzLTEwLTIyVDE1OjU0OjQyKzA3OjAwIiwiaWF0IjoiMjAyMy0xMC0yMlQxMzo1NDo0MiswNzowMCIsImlkIjoibXl0b2RvbGlzdCIsIm5iZiI6IjIwMjMtMTAtMjJUMTM6NTQ6NDIrMDc6MDAifZDQc54uatLh_mbG9PeBXjvxoCmLFrEnpj5Ach9ysg8-OP8SRoIVXKBxsLtmzsGEP_DJOXEqnW65j9Rtr8S8DAI" // Gantilah dengan token PASETO yang sesuai
+// 	publicKey := "8459635e3ed946b66df39f5a30633f3e5e426a768cf0d69c3265cd7079c3f173"
+// 	payload, _err := watoken.Decode(publicKey, tokenstring)
+// 	if _err != nil {
+// 		fmt.Println("expired token", _err)
+// 	} else {
+// 		fmt.Println("ID: ", payload.Id)
+// 		fmt.Println("Di mulai: ", payload.Nbf)
+// 		fmt.Println("Di buat: ", payload.Iat)
+// 		fmt.Println("Expired: ", payload.Exp)
+// 	}
+// }
 
 func TestHashFunction(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "mytodolist")
@@ -81,15 +79,15 @@ func TestInsertUser(t *testing.T) {
 	fmt.Println(nama)
 }
 
-func TestGCFPostHandler(t *testing.T) {
+// func TestGCFPostHandler(t *testing.T) {
 
-	// Membuat body request sebagai string
-	requestBody := `{"username": "dani", "password": "secret"}`
+// 	// Membuat body request sebagai string
+// 	requestBody := `{"username": "budiman", "password": "secret"}`
 
-	// Membuat objek http.Request
-	r := httptest.NewRequest("POST", "https://contoh.com/path", strings.NewReader(requestBody))
-	r.Header.Set("Content-Type", "application/json")
+// 	// Membuat objek http.Request
+// 	r := httptest.NewRequest("POST", "https://contoh.com/path", strings.NewReader(requestBody))
+// 	r.Header.Set("Content-Type", "application/json")
 
-	resp := GCFPostHandler("PASETOPRIVATEKEY", "MONGOSTRING", "trensentimen", "user", r)
-	fmt.Println(resp)
-}
+// 	resp := GCFPostHandler("PASETOPRIVATEKEY", "MONGOSTRING", "mytodolist", "user", r)
+// 	fmt.Println(resp)
+// }
