@@ -28,20 +28,6 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 	fmt.Println("hasil: ", hasil, err)
 }
 
-// func TestValidateToken(t *testing.T) {
-// 	tokenstring := "v4.public.eyJleHAiOiIyMDIzLTEwLTIyVDE1OjU0OjQyKzA3OjAwIiwiaWF0IjoiMjAyMy0xMC0yMlQxMzo1NDo0MiswNzowMCIsImlkIjoibXl0b2RvbGlzdCIsIm5iZiI6IjIwMjMtMTAtMjJUMTM6NTQ6NDIrMDc6MDAifZDQc54uatLh_mbG9PeBXjvxoCmLFrEnpj5Ach9ysg8-OP8SRoIVXKBxsLtmzsGEP_DJOXEqnW65j9Rtr8S8DAI" // Gantilah dengan token PASETO yang sesuai
-// 	publicKey := "8459635e3ed946b66df39f5a30633f3e5e426a768cf0d69c3265cd7079c3f173"
-// 	payload, _err := watoken.Decode(publicKey, tokenstring)
-// 	if _err != nil {
-// 		fmt.Println("expired token", _err)
-// 	} else {
-// 		fmt.Println("ID: ", payload.Id)
-// 		fmt.Println("Di mulai: ", payload.Nbf)
-// 		fmt.Println("Di buat: ", payload.Iat)
-// 		fmt.Println("Expired: ", payload.Exp)
-// 	}
-// }
-
 func TestHashFunction(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "mytodolist")
 
@@ -78,16 +64,3 @@ func TestInsertUser(t *testing.T) {
 	nama := InsertUser(mconn, "user", userdata)
 	fmt.Println(nama)
 }
-
-// func TestGCFPostHandler(t *testing.T) {
-
-// 	// Membuat body request sebagai string
-// 	requestBody := `{"username": "budiman", "password": "secret"}`
-
-// 	// Membuat objek http.Request
-// 	r := httptest.NewRequest("POST", "https://contoh.com/path", strings.NewReader(requestBody))
-// 	r.Header.Set("Content-Type", "application/json")
-
-// 	resp := GCFPostHandler("PASETOPRIVATEKEY", "MONGOSTRING", "mytodolist", "user", r)
-// 	fmt.Println(resp)
-// }
