@@ -22,12 +22,19 @@ func TestInsertUser(t *testing.T) {
 	fmt.Println(nama)
 }
 
-func TestGetAllUser(t *testing.T) {
+func TestGetAllUserFromUsername(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "mytodolist")
 	anu := modul.GetUserFromUsername(mconn, "user", "budiman")
 	fmt.Println(anu)
 }
 
+func TestGetAllUser(t *testing.T) {
+	mconn := SetConnection("MONGOSTRING", "mytodolist")
+	anu := modul.GetAllUser(mconn, "user")
+	fmt.Println(anu)
+}
+
+// todo
 func TestInsertTodo(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "mytodolist")
 	var tododata model.Todo

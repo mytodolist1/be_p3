@@ -94,6 +94,20 @@ func GetUserFromUsername(db *mongo.Database, col string, username string) (user 
 	return user
 }
 
+func GetAllUser(db *mongo.Database, col string) (userlist []model.User) {
+	cols := db.Collection(col)
+	filter := bson.M{}
+	cursor, err := cols.Find(context.TODO(), filter)
+	if err != nil {
+		fmt.Println("Error GetAllDocs in colection", col, ":", err)
+	}
+	err = cursor.All(context.TODO(), &userlist)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return userlist
+}
+
 // todo
 func InsertTodo(db *mongo.Database, col string, todo model.Todo) (insertedID primitive.ObjectID, err error) {
 	insertedID, err = InsertOneDoc(db, col, todo)

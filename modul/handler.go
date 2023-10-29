@@ -8,9 +8,13 @@ import (
 	"github.com/whatsauth/watoken"
 
 	model "github.com/mytodolist1/be_p3/model"
-
-
 )
+
+func GCFHandler(MONGOCONNSTRINGENV, dbname, collectionname string) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	data := GetAllUser(mconn, collectionname)
+	return GCFReturnStruct(data)
+}
 
 func GCFPostHandler(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
