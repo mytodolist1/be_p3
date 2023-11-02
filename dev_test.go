@@ -9,9 +9,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+var mconn = SetConnection("MONGOSTRING", "mytodolist")
+
 // validasi
 func TestRegister(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "mytodolist")
 	var userdata model.User
 	userdata.Email = "tejoko@gmail.com"
 	userdata.Username = "tejoko"
@@ -27,7 +28,6 @@ func TestRegister(t *testing.T) {
 }
 
 func TestLogIn(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "mytodolist")
 	var userdata model.User
 	userdata.Username = "tejoko"
 	userdata.Password = "secret"
@@ -42,7 +42,7 @@ func TestLogIn(t *testing.T) {
 
 // user
 // func TestInsertUser(t *testing.T) {
-// 	mconn := SetConnection("MONGOSTRING", "mytodolist")
+//
 // 	var userdata User
 // 	userdata.Email = "budiman@gmail.com"
 // 	userdata.Username = "budiman"
@@ -53,21 +53,29 @@ func TestLogIn(t *testing.T) {
 // 	fmt.Println(nama)
 // }
 
-func TestGetAllUserFromUsername(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "mytodolist")
-	anu, _ := modul.GetUserFromUsername(mconn, "user", "budiman")
+func testGetUserFromID(t *testing.T) {
+	id, _ := primitive.ObjectIDFromHex("653e03317043a1bb65ef2588")
+	anu, _ := modul.GetUserFromID(mconn, "user", id)
+	fmt.Println(anu)
+}
+
+func TestGetUserFromUsername(t *testing.T) {
+	anu, _ := modul.GetUserFromUsername(mconn, "user", "tejo")
+	fmt.Println(anu)
+}
+
+func TestGetUserFromEmail(t *testing.T) {
+	anu, _ := modul.GetUserFromEmail(mconn, "user", "tejo@gmail.com")
 	fmt.Println(anu)
 }
 
 func TestGetAllUser(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "mytodolist")
 	anu := modul.GetAllUser(mconn, "user")
 	fmt.Println(anu)
 }
 
 // todo
 func TestInsertTodo(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "mytodolist")
 	var tododata model.Todo
 	tododata.Title = "Perjalanan"
 	tododata.Description = "pergi ke bali"
@@ -81,7 +89,6 @@ func TestInsertTodo(t *testing.T) {
 }
 
 func TestGetTodoFromID(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "mytodolist")
 	id, _ := primitive.ObjectIDFromHex("653e02ab28597c2c37171d44")
 	anu := modul.GetTodoFromID(mconn, "todo", id)
 	fmt.Println(anu)
