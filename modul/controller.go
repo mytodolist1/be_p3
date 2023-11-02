@@ -52,33 +52,26 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 	if userdata.Username == "" || userdata.Password == "" || userdata.Email == "" {
 		return fmt.Errorf("Data tidak lengkap")
 	}
-
 	if err := checkmail.ValidateFormat(userdata.Email); err != nil {
 		return fmt.Errorf("Email tidak valid")
 	}
-
 	userExists, _ := GetUserFromEmail(db, col, userdata.Email)
 	if userExists.Email != "" {
 		return fmt.Errorf("Email sudah terdaftar")
 	}
-
 	userExists, _ = GetUserFromUsername(db, col, userdata.Username)
 	if userExists.Username != "" {
 		return fmt.Errorf("Username sudah terdaftar")
 	}
-
 	if len(userdata.Password) < 6 {
 		return fmt.Errorf("Password minimal 6 karakter")
 	}
-
 	if strings.Contains(userdata.Password, " ") {
 		return fmt.Errorf("Password tidak boleh mengandung spasi")
 	}
-
 	if strings.Contains(userdata.Username, " ") {
 		return fmt.Errorf("Username tidak boleh mengandung spasi")
 	}
-
 	hash, _ := HashPassword(userdata.Password)
 	user := bson.M{
 		"_id":      primitive.NewObjectID(),
@@ -87,12 +80,10 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 		"password": hash,
 		"role":     "user",
 	}
-
 	_, err := InsertOneDoc(db, col, user)
 	if err != nil {
 		return fmt.Errorf("SignUp: %v", err)
 	}
-
 	return nil
 }
 
@@ -101,18 +92,15 @@ func LogIn(db *mongo.Database, col string, userdata model.User) (user model.User
 		err = fmt.Errorf("Data tidak lengkap")
 		return user, false, err
 	}
-
 	userExists, _ := GetUserFromUsername(db, col, userdata.Username)
 	if userExists.Username == "" {
 		err = fmt.Errorf("Username tidak ditemukan")
 		return user, false, err
 	}
-
 	if !CheckPasswordHash(userdata.Password, userExists.Password) {
 		err = fmt.Errorf("Password salah")
 		return user, false, err
 	}
-
 	return userExists, true, nil
 }
 
