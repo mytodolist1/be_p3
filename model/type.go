@@ -7,7 +7,7 @@ type User struct {
 	Email    string             `bson:"email,omitempty" json:"email,omitempty"`
 	Username string             `bson:"username,omitempty" json:"username,omitempty"`
 	Password string             `bson:"password,omitempty" json:"password,omitempty"`
-	Role     string `bson:"role,omitempty" json:"role,omitempty"`
+	Role     string             `bson:"role,omitempty" json:"role,omitempty"`
 }
 
 type Credential struct {
@@ -17,7 +17,7 @@ type Credential struct {
 }
 
 type Todo struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Title       string             `bson:"title,omitempty" json:"title,omitempty"`
 	Description string             `bson:"description,omitempty" json:"description,omitempty"`
 	IsDone      bool               `bson:"isdone,omitempty" json:"isdone,omitempty"`
