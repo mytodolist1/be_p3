@@ -183,7 +183,7 @@ func GetTodoList(db *mongo.Database, col string) (todolist model.TodoList) {
 	filter := bson.M{}
 	cursor, err := cols.Find(context.Background(), filter)
 	if err != nil {
-		fmt.Println("Error GetAllDocs in colection", col, ":", err)
+		fmt.Println("Error GetTodoList in colection", col, ":", err)
 	}
 	err = cursor.All(context.Background(), &todolist.Items)
 	if err != nil {
