@@ -9,22 +9,53 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// user
-func TestInsertUser(t *testing.T) {
+// validasi
+func TestRegister(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "mytodolist")
-	var userdata User
-	userdata.Email = "budiman@gmail.com"
-	userdata.Username = "budiman"
-	userdata.Role = "admin"
+	var userdata model.User
+	userdata.Email = "tejoko@gmail.com"
+	userdata.Username = "tejoko"
+	userdata.Role = "user"
 	userdata.Password = "secret"
 
-	nama := InsertUser(mconn, "user", userdata)
-	fmt.Println(nama)
+	err := modul.Register(mconn, "user", userdata)
+	if err != nil {
+		t.Errorf("Error registering user: %v", err)
+	} else {
+		fmt.Println("Register success")
+	}
 }
+
+func TestLogIn(t *testing.T) {
+	mconn := SetConnection("MONGOSTRING", "mytodolist")
+	var userdata model.User
+	userdata.Username = "tejoko"
+	userdata.Password = "secret"
+	user, status, err := modul.LogIn(mconn, "user", userdata)
+	fmt.Println("Status", status)
+	if err != nil {
+		t.Errorf("Error logging in user: %v", err)
+	} else {
+		fmt.Println("Login success", user)
+	}
+}
+
+// user
+// func TestInsertUser(t *testing.T) {
+// 	mconn := SetConnection("MONGOSTRING", "mytodolist")
+// 	var userdata User
+// 	userdata.Email = "budiman@gmail.com"
+// 	userdata.Username = "budiman"
+// 	userdata.Role = "admin"
+// 	userdata.Password = "secret"
+
+// 	nama := InsertUser(mconn, "user", userdata)
+// 	fmt.Println(nama)
+// }
 
 func TestGetAllUserFromUsername(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "mytodolist")
-	anu := modul.GetUserFromUsername(mconn, "user", "budiman")
+	anu, _ := modul.GetUserFromUsername(mconn, "user", "budiman")
 	fmt.Println(anu)
 }
 
