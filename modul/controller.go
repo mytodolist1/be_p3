@@ -2,23 +2,26 @@ package modul
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"os"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/badoux/checkmail"
 	model "github.com/mytodolist1/be_p3/model"
 )
 
-// func MongoConnect(MongoString, dbname string) *mongo.Database {
-// 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(os.Getenv(MongoString)))
-// 	if err != nil {
-// 		fmt.Printf("MongoConnect: %v\n", err)
-// 	}
-// 	return client.Database(dbname)
-// }
+func MongoConnect(MongoString, dbname string) *mongo.Database {
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(os.Getenv(MongoString)))
+	if err != nil {
+		fmt.Printf("MongoConnect: %v\n", err)
+	}
+	return client.Database(dbname)
+}
 
 func InsertOneDoc(db *mongo.Database, col string, docs interface{}) (insertedID primitive.ObjectID, err error) {
 	cols := db.Collection(col)
@@ -31,9 +34,9 @@ func InsertOneDoc(db *mongo.Database, col string, docs interface{}) (insertedID 
 }
 
 func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {
-	cols := db.Collection(col)
+	collection := db.Collection(col)
 	filter := bson.M{}
-	cursor, err := cols.Find(context.TODO(), filter)
+	cursor, err := collection.Find(context.TODO(), filter)
 	if err != nil {
 		fmt.Println("Error GetAllDocs in colection", col, ":", err)
 	}
@@ -44,54 +47,114 @@ func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {
 	return docs
 }
 
-func updateOneDoc(db *mongo.Database, id primitive.ObjectID, col string, docs interface{}) (err error) {
-	cols := db.Collection(col)
-	filter := bson.M{}
-	update := bson.M{"$set": docs}
-	result, err := cols.UpdateOne(context.Background(), filter, update)
+// validasi
+func Register(db *mongo.Database, col string, userdata model.User) error {
+	if userdata.Username == "" || userdata.Password == "" || userdata.Email == "" {
+		return fmt.Errorf("Data tidak lengkap")
+	}
+
+	if err := checkmail.ValidateFormat(userdata.Email); err != nil {
+		return fmt.Errorf("Email tidak valid")
+	}
+
+	userExists, _ := GetUserFromEmail(db, col, userdata.Email)
+	if userExists.Email != "" {
+		return fmt.Errorf("Email sudah terdaftar")
+	}
+
+	userExists, _ = GetUserFromUsername(db, col, userdata.Username)
+	if userExists.Username != "" {
+		return fmt.Errorf("Username sudah terdaftar")
+	}
+
+	if len(userdata.Password) < 6 {
+		return fmt.Errorf("Password minimal 6 karakter")
+	}
+
+	if strings.Contains(userdata.Password, " ") {
+		return fmt.Errorf("Password tidak boleh mengandung spasi")
+	}
+
+	if strings.Contains(userdata.Username, " ") {
+		return fmt.Errorf("Username tidak boleh mengandung spasi")
+	}
+
+	hash, _ := HashPassword(userdata.Password)
+	user := bson.M{
+		"_id":      primitive.NewObjectID(),
+		"email":    userdata.Email,
+		"username": userdata.Username,
+		"password": hash,
+		"role":     "user",
+	}
+
+	_, err := InsertOneDoc(db, col, user)
 	if err != nil {
-		fmt.Printf("updateOneDoc: %v\n", err)
+		return fmt.Errorf("SignUp: %v", err)
 	}
-	if result.ModifiedCount == 0 {
-		err = errors.New("no data has been changed with the specified id")
-		return
-	}
-	return
+
+	return nil
 }
 
-func deleteOneDoc(db *mongo.Database, id primitive.ObjectID, col string) (err error) {
-	cols := db.Collection(col)
-	filter := bson.M{}
-	result, err := cols.DeleteOne(context.Background(), filter)
-	if err != nil {
-		fmt.Printf("deleteOneDoc: %v %v\n", id, err)
+func LogIn(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
+	if userdata.Username == "" || userdata.Password == "" {
+		err = fmt.Errorf("Data tidak lengkap")
+		return user, false, err
 	}
-	if result.DeletedCount == 0 {
-		err = fmt.Errorf("no data has been deleted with the specified id")
-		return
+
+	userExists, _ := GetUserFromUsername(db, col, userdata.Username)
+	if userExists.Username == "" {
+		err = fmt.Errorf("Username tidak ditemukan")
+		return user, false, err
 	}
-	return
+
+	if !CheckPasswordHash(userdata.Password, userExists.Password) {
+		err = fmt.Errorf("Password salah")
+		return user, false, err
+	}
+
+	return userExists, true, nil
 }
 
 // user
-func InsertUser(db *mongo.Database, col string, userdata model.User) (insertedID primitive.ObjectID, err error) {
-	hash, _ := HashPassword(userdata.Password)
-	userdata.Password = hash
-	insertedID, err = InsertOneDoc(db, col, userdata)
+// func InsertUser(db *mongo.Database, col string, userdata model.User) (insertedID primitive.ObjectID, err error) {
+// 	hash, _ := HashPassword(userdata.Password)
+// 	userdata.Password = hash
+// 	insertedID, err = InsertOneDoc(db, col, userdata)
+// 	if err != nil {
+// 		fmt.Printf("InsertUser: %v\n", err)
+// 	}
+// 	return insertedID, err
+// }
+
+func GetUserFromID(db *mongo.Database, col string, _id primitive.ObjectID) (user model.User, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{"_id": _id}
+	err = cols.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
-		fmt.Printf("InsertUser: %v\n", err)
+		fmt.Printf("GetUserFromID: %v\n", err)
 	}
-	return insertedID, err
+	return user, nil
 }
 
-func GetUserFromUsername(db *mongo.Database, col string, username string) (user model.User) {
+func GetUserFromUsername(db *mongo.Database, col string, username string) (user model.User, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"username": username}
-	err := cols.FindOne(context.Background(), filter).Decode(&user)
+	err = cols.FindOne(context.Background(), filter).Decode(&user)
 	if err != nil {
 		fmt.Printf("GetUserFromUsername: %v\n", err)
 	}
-	return user
+	return user, nil
+}
+
+func GetUserFromEmail(db *mongo.Database, col string, email string) (user model.User, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{"email": email}
+	err = cols.FindOne(context.Background(), filter).Decode(&user)
+	if err != nil {
+		fmt.Printf("GetUserFromEmail: %v\n", err)
+	}
+	return user, nil
 }
 
 func GetAllUser(db *mongo.Database, col string) (userlist []model.User) {
