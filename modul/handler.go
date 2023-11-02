@@ -4,39 +4,59 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-
-	"github.com/whatsauth/watoken"
+	"strconv"
 
 	model "github.com/mytodolist1/be_p3/model"
+	"github.com/whatsauth/watoken"
 )
 
-func GCFHandler(MONGOCONNSTRINGENV, dbname, collectionname string) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	data := GetAllUser(mconn, collectionname)
+func GCFHandler(MONGOCONNSTRINGENV, dbname, col string, docs interface{}) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	data := GetAllDocs(mconn, col, docs)
 	return GCFReturnStruct(data)
 }
 
-func GCFPostHandler(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFHandlerRegister(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var datauser model.User
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
+	}
+	err = Register(mconn, collectionname, datauser)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Register success" + datauser.Username
+
+	return GCFReturnStruct(Response)
+}
+
+func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	var Response model.Credential
+	Response.Status = false
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var datauser model.User
+	err := json.NewDecoder(r.Body).Decode(&datauser)
+	if err != nil {
+		Response.Message = "error parsing application/json: " + err.Error()
+	}
+	user, status, err := LogIn(mconn, collectionname, datauser)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(PASETOPRIVATEKEYENV))
+	if err != nil {
+		Response.Message = "Gagal Encode Token :" + err.Error()
 	} else {
-		if IsPasswordValid(mconn, collectionname, datauser) {
-			Response.Status = true
-			tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(PASETOPRIVATEKEYENV))
-			if err != nil {
-				Response.Message = "Gagal Encode Token : " + err.Error()
-			} else {
-				Response.Message = "Selamat Datang"
-				Response.Token = tokenstring
-			}
-		} else {
-			Response.Message = "Password Salah"
-		}
+		Response.Message = "Login success" + user.Username + strconv.FormatBool(status)
+		Response.Token = tokenstring
 	}
 
 	return GCFReturnStruct(Response)
