@@ -77,8 +77,8 @@ func TestGetAllUser(t *testing.T) {
 // todo
 func TestInsertTodo(t *testing.T) {
 	var tododata model.Todo
-	tododata.Title = "Perjalanan"
-	tododata.Description = "pergi ke bali"
+	tododata.Title = "Belajar Golang"
+	tododata.Description = "Hari ini belajar testing"
 	tododata.IsDone = true
 
 	nama, err := modul.InsertTodo(mconn, "todo", tododata)
@@ -91,5 +91,10 @@ func TestInsertTodo(t *testing.T) {
 func TestGetTodoFromID(t *testing.T) {
 	id, _ := primitive.ObjectIDFromHex("653e02ab28597c2c37171d44")
 	anu := modul.GetTodoFromID(mconn, "todo", id)
+	fmt.Println(anu)
+}
+
+func TestGetTodoList(t *testing.T) {
+	anu := modul.GetTodoList(mconn, "todo")
 	fmt.Println(anu)
 }
