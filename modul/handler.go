@@ -12,9 +12,9 @@ import (
 
 func GCFHandler(MONGOCONNSTRINGENV, dbname, col string, username string) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	data, err := GetUserFromUsername(mconn, col, username)
+	data, err := GetUserByUsername(mconn, col, username)
 	if err != nil {
-		return GCFReturnStruct(err)
+		return GCFReturnStruct(err.Error())
 	}
 	return GCFReturnStruct(data)
 }
