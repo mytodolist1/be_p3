@@ -10,9 +10,9 @@ import (
 	"github.com/whatsauth/watoken"
 )
 
-func GCFHandler(MONGOCONNSTRINGENV, dbname, col string, docs interface{}) string {
+func GCFHandler(MONGOCONNSTRINGENV, dbname, col string, username string) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	data := GetAllDocs(mconn, col, docs)
+	data, _ := GetUserFromUsername(mconn, col, username)
 	return GCFReturnStruct(data)
 }
 
