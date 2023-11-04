@@ -10,11 +10,17 @@ import (
 	"github.com/whatsauth/watoken"
 )
 
-func GCFHandler(MONGOCONNSTRINGENV, dbname, col string, username string) string {
+func GCFHandler(MONGOCONNSTRINGENV, dbname, col string) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	data, err := GetUserByUsername(mconn, col, username)
+	data := GetAllUser(mconn, col)
+	return GCFReturnStruct(data)
+}
+
+func GCFHandlerGetUser(MONGOCONNSTRINGENV, dbname, col string, username string) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	data, err := GetUserFromUsername(mconn, col, username)
 	if err != nil {
-		return GCFReturnStruct(err.Error())
+		return GCFReturnStruct(err)
 	}
 	return GCFReturnStruct(data)
 }

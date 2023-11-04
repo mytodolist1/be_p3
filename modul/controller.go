@@ -119,21 +119,22 @@ func GetUserFromUsername(db *mongo.Database, col string, username string) (user 
 	filter := bson.M{"username": username}
 	err = cols.FindOne(context.Background(), filter).Decode(&user)
 	if err != nil {
-		fmt.Printf("GetUserFromUsername: \n%v", err)
-		// return user, err
+		if err == mongo.ErrNoDocuments {
+			return user, fmt.Errorf("User with username %s not found", username)
+		}
 	}
 	return user, nil
 }
 
-func GetUserByUsername(db *mongo.Database, col string, username string) (user model.User, err error) {
-	allUsers := GetAllUser(db, col)
-	for _, u := range allUsers {
-		if u.Username == username {
-			return u, nil
-		}
-	}
-	return user, fmt.Errorf("User with username %s not found", username)
-}
+// func GetUserByUsername(db *mongo.Database, col string, username string) (user model.User, err error) {
+// 	allUsers := GetAllUser(db, col)
+// 	for _, u := range allUsers {
+// 		if u.Username == username {
+// 			return u, nil
+// 		}
+// 	}
+// 	return user, fmt.Errorf("User with username %s not found", username)
+// }
 
 func GetUserFromEmail(db *mongo.Database, col string, email string) (user model.User, err error) {
 	cols := db.Collection(col)

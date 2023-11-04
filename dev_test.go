@@ -48,14 +48,14 @@ func TestGetUserFromID(t *testing.T) {
 }
 
 func TestGetUserFromUsername(t *testing.T) {
-	anu, _ := modul.GetUserFromUsername(mconn, "user", "tejo")
+	anu, _ := modul.GetUserFromUsername(mconn, "user", "tejoko")
 	fmt.Println(anu)
 }
 
-func TestGetUserByUsername(t *testing.T) {
-	anu, _ := modul.GetUserByUsername(mconn, "user", "budiman")
-	fmt.Println(anu)
-}
+// func TestGetUserByUsername(t *testing.T) {
+// 	anu, _ := modul.GetUserByUsername(mconn, "user", "budiman")
+// 	fmt.Println(anu)
+// }
 
 func TestGetUserFromEmail(t *testing.T) {
 	anu, _ := modul.GetUserFromEmail(mconn, "user", "tejo@gmail.com")
