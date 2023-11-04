@@ -10,16 +10,14 @@ import (
 	"github.com/whatsauth/watoken"
 )
 
-func GCFHandler(MONGOCONNSTRINGENV, dbname, col string, username string) (string, error) {
-    mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-    data, err := GetUserFromUsername(mconn, col, username)
-    if err != nil {
-        return "", err
-    }
-    result := GCFReturnStruct(data)
-    return result, nil
+func GCFHandler(MONGOCONNSTRINGENV, dbname, col string, username string) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	data, err := GetUserFromUsername(mconn, col, username)
+	if err != nil {
+		return GCFReturnStruct(err)
+	}
+	return GCFReturnStruct(data)
 }
-
 
 func GCFHandlerRegister(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
