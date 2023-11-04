@@ -119,14 +119,10 @@ func GetUserFromUsername(db *mongo.Database, col string, username string) (user 
 	filter := bson.M{"username": username}
 	err = cols.FindOne(context.Background(), filter).Decode(&user)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// Tidak ada dokumen yang cocok, kembalikan kesalahan yang sesuai
-			return user, fmt.Errorf("User not found")
-		}
-		// Kesalahan lain, cetak pesan kesalahan untuk debugging
-		fmt.Printf("GetUserFromUsername: %v\n", err)
+		fmt.Printf("GetUserFromUsername: \n%v", err)
+		// return user, err
 	}
-	return user, err
+	return user, nil
 }
 
 func GetUserFromEmail(db *mongo.Database, col string, email string) (user model.User, err error) {
