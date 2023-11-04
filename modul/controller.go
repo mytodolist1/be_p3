@@ -47,7 +47,7 @@ func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {
 	return docs
 }
 
-// validasi
+// user
 func Register(db *mongo.Database, col string, userdata model.User) error {
 	if userdata.Username == "" || userdata.Password == "" || userdata.Email == "" {
 		return fmt.Errorf("Data tidak lengkap")
@@ -104,17 +104,6 @@ func LogIn(db *mongo.Database, col string, userdata model.User) (user model.User
 	return userExists, true, nil
 }
 
-// user
-// func InsertUser(db *mongo.Database, col string, userdata model.User) (insertedID primitive.ObjectID, err error) {
-// 	hash, _ := HashPassword(userdata.Password)
-// 	userdata.Password = hash
-// 	insertedID, err = InsertOneDoc(db, col, userdata)
-// 	if err != nil {
-// 		fmt.Printf("InsertUser: %v\n", err)
-// 	}
-// 	return insertedID, err
-// }
-
 func GetUserFromID(db *mongo.Database, col string, _id primitive.ObjectID) (user model.User, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"_id": _id}
@@ -130,9 +119,14 @@ func GetUserFromUsername(db *mongo.Database, col string, username string) (user 
 	filter := bson.M{"username": username}
 	err = cols.FindOne(context.Background(), filter).Decode(&user)
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// Tidak ada dokumen yang cocok, kembalikan kesalahan yang sesuai
+			return user, fmt.Errorf("User not found")
+		}
+		// Kesalahan lain, cetak pesan kesalahan untuk debugging
 		fmt.Printf("GetUserFromUsername: %v\n", err)
 	}
-	return user, nil
+	return user, err
 }
 
 func GetUserFromEmail(db *mongo.Database, col string, email string) (user model.User, err error) {

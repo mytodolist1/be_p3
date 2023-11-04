@@ -6,6 +6,7 @@ import (
 
 	model "github.com/mytodolist1/be_p3/model"
 	modul "github.com/mytodolist1/be_p3/modul"
+	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -41,18 +42,6 @@ func TestLogIn(t *testing.T) {
 }
 
 // user
-// func TestInsertUser(t *testing.T) {
-//
-// 	var userdata User
-// 	userdata.Email = "budiman@gmail.com"
-// 	userdata.Username = "budiman"
-// 	userdata.Role = "admin"
-// 	userdata.Password = "secret"
-
-// 	nama := InsertUser(mconn, "user", userdata)
-// 	fmt.Println(nama)
-// }
-
 func testGetUserFromID(t *testing.T) {
 	id, _ := primitive.ObjectIDFromHex("653e03317043a1bb65ef2588")
 	anu, _ := modul.GetUserFromID(mconn, "user", id)
@@ -60,8 +49,14 @@ func testGetUserFromID(t *testing.T) {
 }
 
 func TestGetUserFromUsername(t *testing.T) {
-	anu, _ := modul.GetUserFromUsername(mconn, "user", "tejo")
-	fmt.Println(anu)
+	user, err := modul.GetUserFromUsername(mconn, "user", "budiman")
+	if err != nil {
+		t.Errorf("Error retrieving user: %v", err)
+	}
+
+	// Memeriksa apakah user.Username sesuai dengan yang diharapkan
+	expectedUsername := "budiman"
+	assert.Equal(t, user.Username, expectedUsername, "Expected username to match")
 }
 
 func TestGetUserFromEmail(t *testing.T) {
