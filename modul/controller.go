@@ -125,6 +125,16 @@ func GetUserFromUsername(db *mongo.Database, col string, username string) (user 
 	return user, nil
 }
 
+func GetUserByUsername(db *mongo.Database, col string, username string) (user model.User, err error) {
+	allUsers := GetAllUser(db, col)
+	for _, u := range allUsers {
+		if u.Username == username {
+			return u, nil
+		}
+	}
+	return user, fmt.Errorf("User with username %s not found", username)
+}
+
 func GetUserFromEmail(db *mongo.Database, col string, email string) (user model.User, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"email": email}
