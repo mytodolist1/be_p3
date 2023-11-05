@@ -33,6 +33,24 @@ func InsertOneDoc(db *mongo.Database, col string, docs interface{}) (insertedID 
 	return
 }
 
+func UpdateOneDoc(db *mongo.Database, col string, filter bson.M, update bson.M) (err error) {
+	cols := db.Collection(col)
+	_, err = cols.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		fmt.Printf("UpdateOneDoc: %v\n", err)
+	}
+	return
+}
+
+func GetOneDoc(db *mongo.Database, col string, filter bson.M, docs interface{}) interface{} {
+	collection := db.Collection(col)
+	err := collection.FindOne(context.Background(), filter).Decode(&docs)
+	if err != nil {
+		fmt.Printf("GetOneDoc: %v\n", err)
+	}
+	return docs
+}
+
 func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {
 	collection := db.Collection(col)
 	filter := bson.M{}
@@ -52,9 +70,13 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 	if userdata.Username == "" || userdata.Password == "" || userdata.Email == "" {
 		return fmt.Errorf("Data tidak lengkap")
 	}
+
+	// Periksa apakah email valid
 	if err := checkmail.ValidateFormat(userdata.Email); err != nil {
 		return fmt.Errorf("Email tidak valid")
 	}
+
+	// Periksa apakah email dan username sudah terdaftar
 	userExists, _ := GetUserFromEmail(db, col, userdata.Email)
 	if userExists.Email != "" {
 		return fmt.Errorf("Email sudah terdaftar")
@@ -63,15 +85,21 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 	if userExists.Username != "" {
 		return fmt.Errorf("Username sudah terdaftar")
 	}
+
+	// Periksa apakah password memenuhi syarat
 	if len(userdata.Password) < 6 {
 		return fmt.Errorf("Password minimal 6 karakter")
 	}
 	if strings.Contains(userdata.Password, " ") {
 		return fmt.Errorf("Password tidak boleh mengandung spasi")
 	}
+
+	// Periksa apakah username memenuhi syarat
 	if strings.Contains(userdata.Username, " ") {
 		return fmt.Errorf("Username tidak boleh mengandung spasi")
 	}
+
+	// Simpan pengguna ke basis data
 	hash, _ := HashPassword(userdata.Password)
 	user := bson.M{
 		"_id":      primitive.NewObjectID(),
@@ -92,16 +120,90 @@ func LogIn(db *mongo.Database, col string, userdata model.User) (user model.User
 		err = fmt.Errorf("Data tidak lengkap")
 		return user, false, err
 	}
+
+	// Periksa apakah pengguna dengan username tertentu ada
 	userExists, _ := GetUserFromUsername(db, col, userdata.Username)
 	if userExists.Username == "" {
 		err = fmt.Errorf("Username tidak ditemukan")
 		return user, false, err
 	}
+
+	// Periksa apakah kata sandi benar
 	if !CheckPasswordHash(userdata.Password, userExists.Password) {
 		err = fmt.Errorf("Password salah")
 		return user, false, err
 	}
 	return userExists, true, nil
+}
+
+func ChangePassword(db *mongo.Database, col string, username string, oldPassword string, newPassword string) (user model.User, status bool, err error) {
+	if username == "" || newPassword == "" || oldPassword == "" {
+		err = fmt.Errorf("Data tidak lengkap")
+		return user, false, err
+	}
+
+	// Periksa apakah pengguna dengan username tertentu ada
+	userExists, err := GetUserFromUsername(db, col, username)
+	if err != nil {
+		return user, false, err
+	}
+	if userExists.Username == "" {
+		err = fmt.Errorf("Username tidak ditemukan")
+		return user, false, err
+	}
+
+	// Periksa apakah kata sandi lama benar
+	if !CheckPasswordHash(oldPassword, userExists.Password) {
+		err = fmt.Errorf("Kata sandi lama salah")
+		return user, false, err
+	}
+
+	// Periksa apakah kata sandi baru memenuhi syarat
+	if len(newPassword) < 6 {
+		err = fmt.Errorf("Password minimal 6 karakter")
+		return user, false, err
+	}
+	if strings.Contains(newPassword, " ") {
+		err = fmt.Errorf("Password tidak boleh mengandung spasi")
+		return user, false, err
+	}
+
+	// Periksa apakah kata sandi baru berbeda dengan kata sandi lama
+	if oldPassword == newPassword {
+		err = fmt.Errorf("Kata sandi baru harus berbeda dengan kata sandi lama")
+		return user, false, err
+	}
+
+	// Ubah kata sandi pengguna
+	newPasswordHash, err := HashPassword(newPassword)
+	if err != nil {
+		return user, false, err
+	}
+
+	userExists.Password = newPasswordHash
+
+	// Simpan perubahan kata sandi ke basis data
+	err = UpdateOneDoc(db, col, bson.M{"_id": userExists.ID}, bson.M{"$set": bson.M{"password": newPasswordHash}})
+	if err != nil {
+		if err != nil {
+			return user, false, err
+		}
+		return userExists, true, nil
+	}
+	return userExists, true, nil
+}
+
+func DeleteUser(db *mongo.Database, col string, username string) error {
+	cols := db.Collection(col)
+	filter := bson.M{"username": username}
+	result, err := cols.DeleteOne(context.Background(), filter)
+	if err != nil {
+		return fmt.Errorf("error deleting data for Username %s: %s", username, err.Error())
+	}
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("no data found for Username %s", username)
+	}
+	return nil
 }
 
 func GetUserFromID(db *mongo.Database, col string, _id primitive.ObjectID) (user model.User, err error) {
@@ -117,24 +219,13 @@ func GetUserFromID(db *mongo.Database, col string, _id primitive.ObjectID) (user
 func GetUserFromUsername(db *mongo.Database, col string, username string) (user model.User, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"username": username}
-	err = cols.FindOne(context.Background(), filter).Decode(&user)
+	err = cols.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return user, fmt.Errorf("User with username %s not found", username)
-		}
+		fmt.Printf("GetUserFromUsername: %v\n", err)
+		return user, err
 	}
 	return user, nil
 }
-
-// func GetUserByUsername(db *mongo.Database, col string, username string) (user model.User, err error) {
-// 	allUsers := GetAllUser(db, col)
-// 	for _, u := range allUsers {
-// 		if u.Username == username {
-// 			return u, nil
-// 		}
-// 	}
-// 	return user, fmt.Errorf("User with username %s not found", username)
-// }
 
 func GetUserFromEmail(db *mongo.Database, col string, email string) (user model.User, err error) {
 	cols := db.Collection(col)

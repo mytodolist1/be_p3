@@ -11,7 +11,7 @@ import (
 
 var mconn = SetConnection("MONGOSTRING", "mytodolist")
 
-// validasi
+// user
 func TestRegister(t *testing.T) {
 	var userdata model.User
 	userdata.Email = "tejoko@gmail.com"
@@ -40,22 +40,55 @@ func TestLogIn(t *testing.T) {
 	}
 }
 
-// user
+func TestChangePassword(t *testing.T) {
+	username := "tejoko"
+	oldpassword := "secretbaruhehe"
+	newpassword := "secret"
+
+	var userdata model.User
+	userdata.Username = username
+	userdata.Password = newpassword
+
+	userdata, status, err := modul.ChangePassword(mconn, "user", username, oldpassword, newpassword)
+	fmt.Println("Status", status)
+	if err != nil {
+		t.Errorf("Error changing password: %v", err)
+	} else {
+		fmt.Println("Password change success for user", userdata)
+	}
+}
+
+func TestDeleteUser(t *testing.T) {
+	username := "tejo_ko"
+
+	err := modul.DeleteUser(mconn, "user", username)
+	if err != nil {
+		t.Errorf("Error deleting user: %v", err)
+	} else {
+		fmt.Println("Delete user success")
+	}
+
+	_, err = modul.GetUserFromUsername(mconn, "user", username)
+	if err == nil {
+		fmt.Println("Data masih ada")
+	}
+}
+
 func TestGetUserFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("653e03317043a1bb65ef2588")
+	id, _ := primitive.ObjectIDFromHex("653e03317043a1bb2588")
 	anu, _ := modul.GetUserFromID(mconn, "user", id)
 	fmt.Println(anu)
 }
 
 func TestGetUserFromUsername(t *testing.T) {
-	anu, _ := modul.GetUserFromUsername(mconn, "user", "tejoko")
+	anu, err := modul.GetUserFromUsername(mconn, "user", "budiman")
+	if err != nil {
+		t.Errorf("Error getting user: %v", err)
+		return
+	}
 	fmt.Println(anu)
 }
 
-// func TestGetUserByUsername(t *testing.T) {
-// 	anu, _ := modul.GetUserByUsername(mconn, "user", "budiman")
-// 	fmt.Println(anu)
-// }
 
 func TestGetUserFromEmail(t *testing.T) {
 	anu, _ := modul.GetUserFromEmail(mconn, "user", "tejo@gmail.com")
