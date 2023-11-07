@@ -30,56 +30,7 @@ func InsertOneDoc(db *mongo.Database, col string, docs interface{}) (insertedID 
 		fmt.Printf("InsertOneDoc: %v\n", err)
 	}
 	insertedID = result.InsertedID.(primitive.ObjectID)
-	return
-}
-
-// func UpdateOneDoc(db *mongo.Database, col string, filter bson.M, update bson.M) (err error) {
-// 	cols := db.Collection(col)
-// 	_, err = cols.UpdateOne(context.Background(), filter, update)
-// 	if err != nil {
-// 		fmt.Printf("UpdateOneDoc: %v\n", err)
-// 	}
-// 	// if result.ModifiedCount == 0 {
-// 	// 	err = errors.New("UpdateOneDoc: %v\n")
-// 	// 	return err
-// 	// }
-// 	return nil
-// }
-
-func GetOneDoc(db *mongo.Database, col string, filter bson.M, docs interface{}) interface{} {
-	collection := db.Collection(col)
-	err := collection.FindOne(context.Background(), filter).Decode(&docs)
-	if err != nil {
-		fmt.Printf("GetOneDoc: %v\n", err)
-	}
-	return docs
-}
-
-func DeleteOneDoc(db *mongo.Database, col string, filter bson.M) (err error) {
-	cols := db.Collection(col)
-	result, err := cols.DeleteOne(context.Background(), filter)
-	if err != nil {
-		fmt.Printf("DeleteOneDoc: %v\n", err)
-	}
-	if result.DeletedCount == 0 {
-		fmt.Printf("DeleteOneDoc: %v\n", err)
-		return
-	}
-	return
-}
-
-func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {
-	collection := db.Collection(col)
-	filter := bson.M{}
-	cursor, err := collection.Find(context.TODO(), filter)
-	if err != nil {
-		fmt.Println("Error GetAllDocs in colection", col, ":", err)
-	}
-	err = cursor.All(context.TODO(), &docs)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return docs
+	return insertedID, err
 }
 
 // user
@@ -153,51 +104,6 @@ func LogIn(db *mongo.Database, col string, userdata model.User) (user model.User
 	return userExists, true, nil
 }
 
-func ChangePassword(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
-	if userdata.Password == "" {
-		err = fmt.Errorf("Password tidak boleh kosong")
-		return user, false, err
-	}
-	userExists, err := GetUserFromUsername(db, col, userdata.Username)
-	if err != nil {
-		return user, false, err
-	}
-	if len(userdata.Password) < 6 {
-		err = fmt.Errorf("Password minimal 6 karakter")
-		return user, false, err
-	}
-	if strings.Contains(userdata.Password, " ") {
-		err = fmt.Errorf("Password tidak boleh mengandung spasi")
-		return user, false, err
-	}
-
-	if CheckPasswordHash(userdata.Password, userExists.Password) {
-		err = fmt.Errorf("Password tidak boleh sama")
-		return user, false, err
-	}
-
-	hash, _ := HashPassword(userdata.Password)
-	userExists.Password = hash
-	filter := bson.M{"username": userdata.Username}
-	update := bson.M{
-		"$set": bson.M{
-			"email":    userdata.Email,
-			"username": userdata.Username,
-			"password": userExists.Password,
-			"role":     "user",
-		},
-	}
-	result, err := db.Collection(col).UpdateOne(context.Background(), filter, update)
-	if err != nil {
-		return user, false, err
-	}
-	if result.ModifiedCount == 0 {
-		err = fmt.Errorf("PAssword tidak berhasil diupdate")
-		return user, false, err
-	}
-	return user, true, nil
-}
-
 func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
 	if userdata.Username == "" || userdata.Email == "" {
 		err = fmt.Errorf("Data tidak boleh kosong")
@@ -239,7 +145,8 @@ func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model
 			"role":     "user",
 		},
 	}
-	result, err := db.Collection(col).UpdateOne(context.Background(), filter, update)
+	cols := db.Collection(col)
+	result, err := cols.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		return user, false, err
 	}
@@ -250,22 +157,66 @@ func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model
 	return user, true, nil
 }
 
-// func UpdateUser1(db *mongo.Database, col string, userdata model.User) (err error) {
-// 	filter := bson.M{"_id": userdata.ID}
-// 	update := bson.M{"$set": userdata}
+func ChangePassword(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
+	// Periksa apakah pengguna dengan username tertentu ada
+	userExists, err := GetUserFromUsername(db, col, userdata.Username)
+	if err != nil {
+		return user, false, err
+	}
 
-// 	err = UpdateOneDoc(db, col, filter, update)
-// 	if err != nil {
-// 		return fmt.Errorf("UpdateUser: %v", err)
-// 	}
-// 	return nil
-// }
+	// Periksa apakah password memenuhi syarat
+	if userdata.Password == "" {
+		err = fmt.Errorf("Password tidak boleh kosong")
+		return user, false, err
+	}
+	if len(userdata.Password) < 6 {
+		err = fmt.Errorf("Password minimal 6 karakter")
+		return user, false, err
+	}
+	if strings.Contains(userdata.Password, " ") {
+		err = fmt.Errorf("Password tidak boleh mengandung spasi")
+		return user, false, err
+	}
+
+	// Periksa apakah password sama dengan password lama
+	if CheckPasswordHash(userdata.Password, userExists.Password) {
+		err = fmt.Errorf("Password tidak boleh sama")
+		return user, false, err
+	}
+
+	// Simpan pengguna ke basis data
+	hash, _ := HashPassword(userdata.Password)
+	userExists.Password = hash
+	filter := bson.M{"username": userdata.Username}
+	update := bson.M{
+		"$set": bson.M{
+			"email":    userdata.Email,
+			"username": userdata.Username,
+			"password": userExists.Password,
+			"role":     "user",
+		},
+	}
+	cols := db.Collection(col)
+	result, err := cols.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		return user, false, err
+	}
+	if result.ModifiedCount == 0 {
+		err = fmt.Errorf("PAssword tidak berhasil diupdate")
+		return user, false, err
+	}
+	return user, true, nil
+}
 
 func DeleteUser(db *mongo.Database, col string, username string) error {
+	cols := db.Collection(col)
 	filter := bson.M{"username": username}
-	err := DeleteOneDoc(db, col, filter)
+	result, err := cols.DeleteOne(context.Background(), filter)
 	if err != nil {
-		return fmt.Errorf("Error deleting user with username %s: %s", username, err.Error())
+		return err
+	}
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("Data tidak berhasil dihapus")
 	}
 
 	return nil

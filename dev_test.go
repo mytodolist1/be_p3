@@ -13,25 +13,27 @@ var mconn = SetConnection("MONGOSTRING", "mytodolist")
 
 // user
 func TestRegister(t *testing.T) {
-	var userdata model.User
-	userdata.Email = "tejo@gmail.com"
-	userdata.Username = "tejo"
-	userdata.Role = "user"
-	userdata.Password = "secret"
+	var data model.User
+	data.ID = primitive.NewObjectID()
+	data.Email = "nopal1@gmail.com"
+	data.Username = "nopal1"
+	data.Role = "user"
+	data.Password = "secret"
 
-	err := modul.Register(mconn, "user", userdata)
+	err := modul.Register(mconn, "user", data)
 	if err != nil {
 		t.Errorf("Error registering user: %v", err)
 	} else {
-		fmt.Println("Register success", userdata)
+		fmt.Println("Register success", data)
 	}
 }
 
 func TestLogIn(t *testing.T) {
-	var userdata model.User
-	userdata.Username = "tejo"
-	userdata.Password = "secrethehe"
-	user, status, err := modul.LogIn(mconn, "user", userdata)
+	var data model.User
+	data.Username = "nopal"
+	data.Password = "secrethehe"
+
+	user, status, err := modul.LogIn(mconn, "user", data)
 	fmt.Println("Status", status)
 	if err != nil {
 		t.Errorf("Error logging in user: %v", err)
@@ -42,12 +44,13 @@ func TestLogIn(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	var data model.User
-	data.Email = "tejo@gmail.com"
-	data.Username = "tejo"
-	data.Password = "secret123"
+	data.Email = "nopal@gmail.com"
+	data.Username = "nopal"
 	data.Role = "user"
 
-	id, err := primitive.ObjectIDFromHex("6549e6252174254280d650af")
+	data.Password = "secret" // password tidak diubah
+
+	id, err := primitive.ObjectIDFromHex("654a6513226d8ad245cd01ff")
 	data.ID = id
 	if err != nil {
 		fmt.Printf("Data tidak berhasil diubah")
@@ -65,35 +68,31 @@ func TestUpdateUser(t *testing.T) {
 
 func TestChangePassword(t *testing.T) {
 	var data model.User
-	data.Email = "tejo@gmail.com"
-	data.Username = "tejo"
-	data.Password = "secrethehe"
-	data.Role = "user"
+	data.Email = "nopal@gmail.com" // email tidak diubah
+	data.Username = "nopal"        // username tidak diubah
+	data.Role = "user"             // role tidak diubah
 
-	username := "tejo"
+	data.Password = "secret"
 
-	data, status, err := modul.ChangePassword(mconn, "user", data)
+	// username := "kepin123"
+
+	_, status, err := modul.ChangePassword(mconn, "user", data)
 	fmt.Println("Status", status)
 	if err != nil {
 		t.Errorf("Error updateting document: %v", err)
 	} else {
-		fmt.Println("Password berhasil diubah dengan username:", username)
+		fmt.Println("Password berhasil diubah dengan username:", data.Username)
 	}
 }
 
 func TestDeleteUser(t *testing.T) {
-	username := "tejo_ko"
+	username := "nopal1"
 
 	err := modul.DeleteUser(mconn, "user", username)
 	if err != nil {
 		t.Errorf("Error deleting user: %v", err)
 	} else {
 		fmt.Println("Delete user success")
-	}
-
-	_, err = modul.GetUserFromUsername(mconn, "user", username)
-	if err == nil {
-		fmt.Println("Data masih ada")
 	}
 }
 
