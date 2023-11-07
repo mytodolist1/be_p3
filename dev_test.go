@@ -29,7 +29,7 @@ func TestRegister(t *testing.T) {
 
 func TestLogIn(t *testing.T) {
 	var userdata model.User
-	userdata.Username = "tejoko"
+	userdata.Username = "tejo"
 	userdata.Password = "secret123"
 	user, status, err := modul.LogIn(mconn, "user", userdata)
 	fmt.Println("Status", status)
@@ -42,8 +42,9 @@ func TestLogIn(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	var data model.User
-	data.Email = "tejo12@gmail.com"
-	data.Username = "tejo12"
+	data.Email = "tejo@gmail.com"
+	data.Username = "tejo"
+	data.Password = "secret123"
 	data.Role = "user"
 
 	id, err := primitive.ObjectIDFromHex("6549e6252174254280d650af")
@@ -99,7 +100,7 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestGetUserFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("653e03317043a1bb2588")
+	id, _ := primitive.ObjectIDFromHex("6549e6252174254280d650af")
 	anu, _ := modul.GetUserFromID(mconn, "user", id)
 	fmt.Println(anu)
 }

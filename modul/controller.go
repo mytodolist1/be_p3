@@ -2,7 +2,6 @@ package modul
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -36,14 +35,14 @@ func InsertOneDoc(db *mongo.Database, col string, docs interface{}) (insertedID 
 
 // func UpdateOneDoc(db *mongo.Database, col string, filter bson.M, update bson.M) (err error) {
 // 	cols := db.Collection(col)
-// 	result, err := cols.UpdateOne(context.Background(), filter, update)
+// 	_, err = cols.UpdateOne(context.Background(), filter, update)
 // 	if err != nil {
 // 		fmt.Printf("UpdateOneDoc: %v\n", err)
 // 	}
-// 	if result.ModifiedCount == 0 {
-// 		err = errors.New("UpdateOneDoc: %v\n")
-// 		return err
-// 	}
+// 	// if result.ModifiedCount == 0 {
+// 	// 	err = errors.New("UpdateOneDoc: %v\n")
+// 	// 	return err
+// 	// }
 // 	return nil
 // }
 
@@ -215,32 +214,37 @@ func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model
 	}
 
 	// Simpan pengguna ke basis data
-	// hash, _ := HashPassword(userdata.Password)
-	filter := bson.M{"id": userdata.ID}
+	hash, _ := HashPassword(userdata.Password)
+	filter := bson.M{"_id": userdata.ID}
 	update := bson.M{
 		"$set": bson.M{
 			"email":    userdata.Email,
 			"username": userdata.Username,
+			"password": hash,
 			"role":     "user",
 		},
 	}
-	// err = UpdateOneDoc(db, col, filter, update)
-	// if err != nil {
-	// 	return user, false, err
-	// }
-
 	result, err := db.Collection(col).UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		fmt.Printf("UpdateUser: %v\n", err)
-		return
+		return user, false, err
 	}
 	if result.ModifiedCount == 0 {
-		err = errors.New("no data has been changed with the specified id")
-		return
+		err = fmt.Errorf("Data tidak berhasil diupdate")
+		return user, false, err
 	}
-
 	return user, true, nil
 }
+
+// func UpdateUser1(db *mongo.Database, col string, userdata model.User) (err error) {
+// 	filter := bson.M{"_id": userdata.ID}
+// 	update := bson.M{"$set": userdata}
+
+// 	err = UpdateOneDoc(db, col, filter, update)
+// 	if err != nil {
+// 		return fmt.Errorf("UpdateUser: %v", err)
+// 	}
+// 	return nil
+// }
 
 func DeleteUser(db *mongo.Database, col string, username string) error {
 	filter := bson.M{"username": username}
