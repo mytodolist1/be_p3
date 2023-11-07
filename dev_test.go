@@ -42,19 +42,23 @@ func TestLogIn(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	var data model.User
-	data.Email = "tejoko@gmail.com"
-	data.Username = "tejoko"
+	data.Email = "tejo12@gmail.com"
+	data.Username = "tejo12"
 	data.Role = "user"
-	data.Password = "secret123"
 
-	username := "tejoko"
-
-	_, status, err := modul.UpdateUser(mconn, "user", data)
-	fmt.Println("Status", status)
+	id, err := primitive.ObjectIDFromHex("6549e6252174254280d650af")
+	data.ID = id
 	if err != nil {
-		t.Errorf("Error updating document for username %s: %v", username, err)
+		fmt.Printf("Data tidak berhasil diubah")
 	} else {
-		fmt.Printf("Data berhasil diubah untuk username: %s\n", username)
+
+		_, status, err := modul.UpdateUser(mconn, "user", data)
+		fmt.Println("Status", status)
+		if err != nil {
+			t.Errorf("Error updateting document: %v", err)
+		} else {
+			fmt.Printf("Data berhasil diubah untuk id: %s\n", id)
+		}
 	}
 }
 
