@@ -100,13 +100,13 @@ func GCFHandlerChangePassword(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, c
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
 	}
-	datauser, status, err := ChangePassword(mconn, collectionname, datauser)
+	user, status, err := ChangePassword(mconn, collectionname, datauser)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
-	Response.Message = "Password change success for user" + datauser.Username + strconv.FormatBool(status)
+	Response.Message = "Password change success for user" + user.Username + strconv.FormatBool(status)
 
 	return GCFReturnStruct(Response)
 }
