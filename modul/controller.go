@@ -153,35 +153,50 @@ func LogIn(db *mongo.Database, col string, userdata model.User) (user model.User
 	return userExists, true, nil
 }
 
-// func ChangePassword(db *mongo.Database, col string, userdata model.User) (status bool, err error) {
-// 	if userdata.Username == "" || userdata.Password == "" {
-// 		err = fmt.Errorf("Data tidak lengkap")
-// 		return false, err
-// 	}
-// 	userExists, err := GetUserFromUsername(db, col, userdata.Username)
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	if userExists.Username == "" {
-// 		err = fmt.Errorf("Username tidak ditemukan")
-// 		return false, err
-// 	}
-// 	if len(userdata.Password) < 6 {
-// 		err = fmt.Errorf("Password minimal 6 karakter")
-// 		return false, err
-// 	}
-// 	if strings.Contains(userdata.Password, " ") {
-// 		err = fmt.Errorf("Password tidak boleh mengandung spasi")
-// 		return false, err
-// 	}
-// 	hash, _ := HashPassword(userdata.Password)
-// 	userExists.Password = hash
-// 	err = UpdateOneDoc(db, col, bson.M{"_id": userExists.ID}, bson.M{"$set": bson.M{"password": hash}})
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	return true, nil
-// }
+func ChangePassword(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
+	if userdata.Password == "" {
+		err = fmt.Errorf("Password tidak boleh kosong")
+		return user, false, err
+	}
+	userExists, err := GetUserFromUsername(db, col, userdata.Username)
+	if err != nil {
+		return user, false, err
+	}
+	if len(userdata.Password) < 6 {
+		err = fmt.Errorf("Password minimal 6 karakter")
+		return user, false, err
+	}
+	if strings.Contains(userdata.Password, " ") {
+		err = fmt.Errorf("Password tidak boleh mengandung spasi")
+		return user, false, err
+	}
+
+	if CheckPasswordHash(userdata.Password, userExists.Password) {
+		err = fmt.Errorf("Password tidak boleh sama")
+		return user, false, err
+	}
+
+	hash, _ := HashPassword(userdata.Password)
+	userExists.Password = hash
+	filter := bson.M{"username": userdata.Username}
+	update := bson.M{
+		"$set": bson.M{
+			"email":    userdata.Email,
+			"username": userdata.Username,
+			"password": userExists.Password,
+			"role":     "user",
+		},
+	}
+	result, err := db.Collection(col).UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		return user, false, err
+	}
+	if result.ModifiedCount == 0 {
+		err = fmt.Errorf("PAssword tidak berhasil diupdate")
+		return user, false, err
+	}
+	return user, true, nil
+}
 
 func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
 	if userdata.Username == "" || userdata.Email == "" {

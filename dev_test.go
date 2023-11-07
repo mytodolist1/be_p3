@@ -30,7 +30,7 @@ func TestRegister(t *testing.T) {
 func TestLogIn(t *testing.T) {
 	var userdata model.User
 	userdata.Username = "tejo"
-	userdata.Password = "secret123"
+	userdata.Password = "secrethehe"
 	user, status, err := modul.LogIn(mconn, "user", userdata)
 	fmt.Println("Status", status)
 	if err != nil {
@@ -63,25 +63,23 @@ func TestUpdateUser(t *testing.T) {
 	}
 }
 
-// func TestChangePassword(t *testing.T) {
-// 	var data model.User
-// 	data.Username = "tejoko"
-// 	data.Password = "secret"
+func TestChangePassword(t *testing.T) {
+	var data model.User
+	data.Email = "tejo@gmail.com"
+	data.Username = "tejo"
+	data.Password = "secrethehe"
+	data.Role = "user"
 
-// 	id, err := primitive.ObjectIDFromHex("65431a962fbb96643a28654d")
-// 	data.ID = id
-// 	if err != nil {
-// 		fmt.Printf("Data tidak berhasil diubah")
-// 	} else {
-// 		data, status, err := modul.ChangePassword(mconn, "user", data)
-// 		fmt.Println("Status", status)
-// 		if err != nil {
-// 			t.Errorf("Error updateting document: %v", err)
-// 		} else {
-// 			fmt.Println("Password berhasil diubah dengan username:", data.Username)
-// 		}
-// 	}
-// }
+	username := "tejo"
+
+	data, status, err := modul.ChangePassword(mconn, "user", data)
+	fmt.Println("Status", status)
+	if err != nil {
+		t.Errorf("Error updateting document: %v", err)
+	} else {
+		fmt.Println("Password berhasil diubah dengan username:", username)
+	}
+}
 
 func TestDeleteUser(t *testing.T) {
 	username := "tejo_ko"
