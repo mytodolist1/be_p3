@@ -25,7 +25,7 @@ func GCFHandlerGetUser(MONGOCONNSTRINGENV, dbname, col string, username string) 
 	return GCFReturnStruct(data)
 }
 
-func GCFHandlerRegister(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFHandlerRegister(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
@@ -40,7 +40,7 @@ func GCFHandlerRegister(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collect
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
-	Response.Message = "Register success" + datauser.Username
+	Response.Message = "Register success"
 
 	return GCFReturnStruct(Response)
 }
@@ -64,7 +64,7 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 	if err != nil {
 		Response.Message = "Gagal Encode Token :" + err.Error()
 	} else {
-		Response.Message = "Login success" + user.Username + strconv.FormatBool(status)
+		Response.Message = "Login success" + " " + user.Username + " " + strconv.FormatBool(status)
 		Response.Token = tokenstring
 	}
 
@@ -78,7 +78,7 @@ func GCFHandlerUpdateUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, colle
 	var datauser model.User
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		Response.Message = "Bad Request: error parsing application/json: " + err.Error()
+		Response.Message = "error parsing application/json: " + err.Error()
 	}
 	user, status, err := UpdateUser(mconn, collectionname, datauser)
 	if err != nil {
@@ -86,7 +86,7 @@ func GCFHandlerUpdateUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, colle
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
-	Response.Message = "Update success " + user.Username + " " + strconv.FormatBool(status)
+	Response.Message = "Update success " + " " + user.Username + " " + strconv.FormatBool(status)
 
 	return GCFReturnStruct(Response)
 }
@@ -106,7 +106,7 @@ func GCFHandlerChangePassword(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, c
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
-	Response.Message = "Password change success for user" + user.Username + strconv.FormatBool(status)
+	Response.Message = "Password change success for user" + " " + user.Username + " " + strconv.FormatBool(status)
 
 	return GCFReturnStruct(Response)
 }
