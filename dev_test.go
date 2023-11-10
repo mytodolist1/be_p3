@@ -14,9 +14,8 @@ var mconn = SetConnection("MONGOSTRING", "mytodolist")
 // user
 func TestRegister(t *testing.T) {
 	var data model.User
-	data.ID = primitive.NewObjectID()
-	data.Email = "nopal1@gmail.com"
-	data.Username = "nopal1"
+	data.Email = "nopal@gmail.com"
+	data.Username = "nopal"
 	data.Role = "user"
 	data.Password = "secret"
 
@@ -30,8 +29,8 @@ func TestRegister(t *testing.T) {
 
 func TestLogIn(t *testing.T) {
 	var data model.User
-	data.Username = "nopal"
-	data.Password = "secrethehe"
+	data.Username = "nopal1"
+	data.Password = "secret111"
 
 	user, status, err := modul.LogIn(mconn, "user", data)
 	fmt.Println("Status", status)
@@ -45,12 +44,12 @@ func TestLogIn(t *testing.T) {
 func TestUpdateUser(t *testing.T) {
 	var data model.User
 	data.Email = "nopal@gmail.com"
-	data.Username = "nopal"
+	data.Username = "nopal1"
 	data.Role = "user"
 
-	data.Password = "secret" // password tidak diubah
+	data.Password = "secret"
 
-	id, err := primitive.ObjectIDFromHex("654a6513226d8ad245cd01ff")
+	id, err := primitive.ObjectIDFromHex("654d9264ffbef4e358812043")
 	data.ID = id
 	if err != nil {
 		fmt.Printf("Data tidak berhasil diubah")
@@ -68,13 +67,11 @@ func TestUpdateUser(t *testing.T) {
 
 func TestChangePassword(t *testing.T) {
 	var data model.User
-	data.Email = "nopal@gmail.com" // email tidak diubah
-	data.Username = "nopal"        // username tidak diubah
-	data.Role = "user"             // role tidak diubah
+	data.Email = "nopal@gmail.com"
+	data.Username = "nopal1"
+	data.Role = "user"
 
-	data.Password = "secret"
-
-	// username := "kepin123"
+	data.Password = "secret111"
 
 	_, status, err := modul.ChangePassword(mconn, "user", data)
 	fmt.Println("Status", status)
@@ -86,7 +83,7 @@ func TestChangePassword(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-	username := "nopal1"
+	username := "tejo1"
 
 	err := modul.DeleteUser(mconn, "user", username)
 	if err != nil {

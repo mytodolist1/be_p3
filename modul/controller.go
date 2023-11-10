@@ -105,14 +105,13 @@ func LogIn(db *mongo.Database, col string, userdata model.User) (user model.User
 }
 
 func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
-	if userdata.Username == "" || userdata.Email == "" {
-		err = fmt.Errorf("Data tidak boleh kosong")
+	existingUser, err := GetUserFromID(db, col, userdata.ID)
+	if err != nil {
 		return user, false, err
 	}
 
-	// Simpan pengguna ke basis data
-	existingUser, err := GetUserFromID(db, col, userdata.ID)
-	if err != nil {
+	if userdata.Username == "" || userdata.Email == "" {
+		err = fmt.Errorf("Data tidak boleh kosong")
 		return user, false, err
 	}
 
@@ -169,10 +168,12 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 		err = fmt.Errorf("Password tidak boleh kosong")
 		return user, false, err
 	}
+
 	if len(userdata.Password) < 6 {
 		err = fmt.Errorf("Password minimal 6 karakter")
 		return user, false, err
 	}
+
 	if strings.Contains(userdata.Password, " ") {
 		err = fmt.Errorf("Password tidak boleh mengandung spasi")
 		return user, false, err
@@ -218,7 +219,6 @@ func DeleteUser(db *mongo.Database, col string, username string) error {
 	if result.DeletedCount == 0 {
 		return fmt.Errorf("Data tidak berhasil dihapus")
 	}
-
 	return nil
 }
 
@@ -228,6 +228,7 @@ func GetUserFromID(db *mongo.Database, col string, _id primitive.ObjectID) (user
 	err = cols.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		fmt.Printf("GetUserFromID: %v\n", err)
+		return user, err
 	}
 	return user, nil
 }
