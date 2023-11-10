@@ -12,7 +12,10 @@ import (
 
 func GCFHandler(MONGOCONNSTRINGENV, dbname, col string) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	data := GetAllUser(mconn, col)
+	data, err := GetAllUser(mconn, col)
+	if err != nil {
+		return GCFReturnStruct(err)
+	}
 	return GCFReturnStruct(data)
 }
 
@@ -71,7 +74,7 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 	return GCFReturnStruct(Response)
 }
 
-func GCFHandlerUpdateUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFHandlerUpdateUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
@@ -91,7 +94,7 @@ func GCFHandlerUpdateUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, colle
 	return GCFReturnStruct(Response)
 }
 
-func GCFHandlerChangePassword(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFHandlerChangePassword(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
@@ -111,7 +114,7 @@ func GCFHandlerChangePassword(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, c
 	return GCFReturnStruct(Response)
 }
 
-func GCFHandlerDeleteUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFHandlerDeleteUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
