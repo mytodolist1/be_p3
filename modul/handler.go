@@ -114,7 +114,7 @@ func GCFHandlerChangePassword(MONGOCONNSTRINGENV, dbname, collectionname string,
 	return GCFReturnStruct(Response)
 }
 
-func GCFHandlerDeleteUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFHandlerDeleteUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
