@@ -24,5 +24,12 @@ type Todo struct {
 }
 
 type TodoList struct {
-	Items []Todo `bson:"items,omitempty" json:"items,omitempty"`
+	Users    []User `bson:"users,omitempty" json:"users,omitempty"`
+	DataTodo []Todo `bson:"todolist,omitempty" json:"todolist,omitempty"`
+}
+
+type TodoResponse struct {
+	Status  bool   `bson:"status" json:"status"`
+	Message string `bson:"message,omitempty" json:"message,omitempty"`
+	Data    []Todo `bson:"data,omitempty" json:"data,omitempty"`
 }
