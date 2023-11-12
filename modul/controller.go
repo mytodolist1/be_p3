@@ -250,7 +250,11 @@ func GetUserFromUsername(db *mongo.Database, col string, username string) (user 
 	filter := bson.M{"username": username}
 	err = cols.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
-		fmt.Printf("GetUserFromUsername: %v\n", err)
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			err := fmt.Errorf("no data found for username %s", username)
+			return user, err
+		}
+		err := fmt.Errorf("error retrieving data for username %s: %s", username, err.Error())
 		return user, err
 	}
 	return user, nil
@@ -261,7 +265,12 @@ func GetUserFromEmail(db *mongo.Database, col string, email string) (user model.
 	filter := bson.M{"email": email}
 	err = cols.FindOne(context.Background(), filter).Decode(&user)
 	if err != nil {
-		fmt.Printf("GetUserFromEmail: %v\n", err)
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			err := fmt.Errorf("no data found for email %s", email)
+			return user, err
+		}
+		err := fmt.Errorf("error retrieving data for email %s: %s", email, err.Error())
+		return user, err
 	}
 	return user, nil
 }
