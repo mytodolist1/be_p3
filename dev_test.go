@@ -29,8 +29,8 @@ func TestRegister(t *testing.T) {
 
 func TestLogIn(t *testing.T) {
 	var data model.User
-	data.Username = "nopal1"
-	data.Password = "secret111"
+	data.Username = "kepin1"
+	data.Password = "secret"
 
 	user, status, err := modul.LogIn(mconn, "user", data)
 	fmt.Println("Status", status)
@@ -43,14 +43,12 @@ func TestLogIn(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	var data model.User
-	data.Email = "nopal@gmail.com"
-	data.Username = "nopal"
-	data.Role = "user"
+	data.Email = "kepin@gmail.com"
+	data.Username = "kepin"
 
-	data.Password = "secret"
-
-	id, err := primitive.ObjectIDFromHex("654d9264ffbef4e358812043")
-	data.ID = id
+	id := "654a62f37c977431c3f665bd"
+	ID, err := primitive.ObjectIDFromHex(id)
+	data.ID = ID
 	if err != nil {
 		fmt.Printf("Data tidak berhasil diubah")
 	} else {
@@ -67,36 +65,42 @@ func TestUpdateUser(t *testing.T) {
 
 func TestChangePassword(t *testing.T) {
 	var data model.User
-	data.Email = "nopal@gmail.com"
-	data.Username = "nopal1"
-	data.Role = "user"
+	data.Password = "secret"
 
-	data.Password = "secret111"
+	username := "tejoko"
+	data.Username = username
 
 	_, status, err := modul.ChangePassword(mconn, "user", data)
 	fmt.Println("Status", status)
 	if err != nil {
 		t.Errorf("Error updateting document: %v", err)
 	} else {
-		fmt.Println("Password berhasil diubah dengan username:", data.Username)
+		fmt.Println("Password berhasil diubah dengan username:", username)
 	}
 }
 
 func TestDeleteUser(t *testing.T) {
-	username := "nopal"
+	var data model.User
+	data.Username = "tejoko"
 
-	status, err := modul.DeleteUser(mconn, "user", username)
+	status, err := modul.DeleteUser(mconn, "user", data)
 	fmt.Println("Status", status)
 	if err != nil {
-		t.Errorf("Error deleting user: %v", err)
+		t.Errorf("Error deleting document: %v", err)
 	} else {
-		fmt.Println("Delete user success")
+		fmt.Println("Delete success")
 	}
 }
 
 func TestGetUserFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("654d9264ffbef4e358812043")
-	anu, err := modul.GetUserFromID(mconn, "user", id)
+	id := "6550a8f0b5b4a0a7f89941aa"
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		t.Errorf("Error converting id to ObjectID: %v", err)
+		return
+	}
+
+	anu, err := modul.GetUserFromID(mconn, "user", ID)
 	if err != nil {
 		t.Errorf("Error getting user: %v", err)
 		return

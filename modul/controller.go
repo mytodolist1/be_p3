@@ -2,6 +2,7 @@ package modul
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -105,13 +106,13 @@ func LogIn(db *mongo.Database, col string, userdata model.User) (user model.User
 }
 
 func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
-	userExists, err := GetUserFromID(db, col, userdata.ID)
-	if err != nil {
+	if userdata.Username == "" || userdata.Email == "" {
+		err = fmt.Errorf("Data tidak boleh kosong")
 		return user, false, err
 	}
 
-	if userdata.Username == "" || userdata.Email == "" {
-		err = fmt.Errorf("Data tidak boleh kosong")
+	userExists, err := GetUserFromID(db, col, userdata.ID)
+	if err != nil {
 		return user, false, err
 	}
 
@@ -134,14 +135,11 @@ func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model
 	}
 
 	// Simpan pengguna ke basis data
-	hash, _ := HashPassword(userdata.Password)
 	filter := bson.M{"_id": userdata.ID}
 	update := bson.M{
 		"$set": bson.M{
 			"email":    userdata.Email,
 			"username": userdata.Username,
-			"password": hash,
-			"role":     "user",
 		},
 	}
 	cols := db.Collection(col)
@@ -191,10 +189,7 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 	filter := bson.M{"username": userdata.Username}
 	update := bson.M{
 		"$set": bson.M{
-			"email":    userdata.Email,
-			"username": userdata.Username,
 			"password": userExists.Password,
-			"role":     "user",
 		},
 	}
 	cols := db.Collection(col)
@@ -209,8 +204,8 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 	return user, true, nil
 }
 
-func DeleteUser(db *mongo.Database, col string, username string) (status bool, err error) {
-	userExists, err := GetUserFromUsername(db, col, username)
+func DeleteUser(db *mongo.Database, col string, username model.User) (status bool, err error) {
+	userExists, err := GetUserFromUsername(db, col, username.Username)
 	if err != nil {
 		return false, err
 	}
@@ -220,7 +215,7 @@ func DeleteUser(db *mongo.Database, col string, username string) (status bool, e
 		return false, err
 	}
 
-	filter := bson.M{"username": username}
+	filter := bson.M{"username": username.Username}
 	cols := db.Collection(col)
 	result, err := cols.DeleteOne(context.Background(), filter)
 	if err != nil {
@@ -234,16 +229,17 @@ func DeleteUser(db *mongo.Database, col string, username string) (status bool, e
 }
 
 func GetUserFromID(db *mongo.Database, col string, _id primitive.ObjectID) (user model.User, err error) {
-	userID, err := primitive.ObjectIDFromHex(_id.Hex())
-	if err != nil {
-		return user, err
-	}
+	// userID := _id.Hex()
 
 	cols := db.Collection(col)
-	filter := bson.M{"_id": userID}
+	filter := bson.M{"_id": _id}
 	err = cols.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
-		fmt.Printf("GetUserFromID: %v\n", err)
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			err := fmt.Errorf("no data found for ID %s", _id)
+			return user, err
+		}
+		err := fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
 		return user, err
 	}
 	return user, nil
