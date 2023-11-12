@@ -105,7 +105,7 @@ func LogIn(db *mongo.Database, col string, userdata model.User) (user model.User
 }
 
 func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
-	existingUser, err := GetUserFromID(db, col, userdata.ID)
+	userExists, err := GetUserFromID(db, col, userdata.ID)
 	if err != nil {
 		return user, false, err
 	}
@@ -116,7 +116,7 @@ func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model
 	}
 
 	// Periksa apakah data yang akan diupdate sama dengan data yang sudah ada
-	if userdata.Username == existingUser.Username && userdata.Email == existingUser.Email {
+	if userdata.Username == userExists.Username && userdata.Email == userExists.Email {
 		err = fmt.Errorf("Data yang ingin diupdate tidak boleh sama")
 		return user, false, err
 	}
@@ -135,11 +135,13 @@ func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model
 
 	// Simpan pengguna ke basis data
 	hash, _ := HashPassword(userdata.Password)
+	userExists.Email = userdata.Email
+	userExists.Username = userdata.Username
 	filter := bson.M{"_id": userdata.ID}
 	update := bson.M{
 		"$set": bson.M{
-			"email":    userdata.Email,
-			"username": userdata.Username,
+			"email":    userExists.Email,
+			"username": userExists.Username,
 			"password": hash,
 			"role":     "user",
 		},
@@ -287,16 +289,16 @@ func GetTodoFromID(db *mongo.Database, col string, id primitive.ObjectID) (todo 
 	return todo
 }
 
-func GetTodoList(db *mongo.Database, col string) (todolist model.TodoList) {
+func GetTodoList(db *mongo.Database, col string) (todo []model.Todo) {
 	cols := db.Collection(col)
 	filter := bson.M{}
 	cursor, err := cols.Find(context.Background(), filter)
 	if err != nil {
 		fmt.Println("Error GetTodoList in colection", col, ":", err)
 	}
-	err = cursor.All(context.Background(), &todolist.Items)
+	err = cursor.All(context.Background(), &todo)
 	if err != nil {
 		fmt.Println(err)
 	}
-	return todolist
+	return todo
 }

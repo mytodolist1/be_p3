@@ -44,7 +44,7 @@ func TestLogIn(t *testing.T) {
 func TestUpdateUser(t *testing.T) {
 	var data model.User
 	data.Email = "nopal@gmail.com"
-	data.Username = "nopal1"
+	data.Username = "nopal"
 	data.Role = "user"
 
 	data.Password = "secret"
