@@ -123,7 +123,7 @@ func GCFHandlerDeleteUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, colle
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
 	}
-	status, err := DeleteUser(mconn, collectionname, datauser.Username)
+	status, err := DeleteUser(mconn, collectionname, datauser)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
