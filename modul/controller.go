@@ -135,13 +135,11 @@ func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model
 
 	// Simpan pengguna ke basis data
 	hash, _ := HashPassword(userdata.Password)
-	userExists.Email = userdata.Email
-	userExists.Username = userdata.Username
 	filter := bson.M{"_id": userdata.ID}
 	update := bson.M{
 		"$set": bson.M{
-			"email":    userExists.Email,
-			"username": userExists.Username,
+			"email":    userdata.Email,
+			"username": userdata.Username,
 			"password": hash,
 			"role":     "user",
 		},
@@ -211,22 +209,38 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 	return user, true, nil
 }
 
-func DeleteUser(db *mongo.Database, col string, username string) error {
-	cols := db.Collection(col)
+func DeleteUser(db *mongo.Database, col string, username string) (status bool, err error) {
+	userExists, err := GetUserFromUsername(db, col, username)
+	if err != nil {
+		return false, err
+	}
+
+	if userExists.Username == "" {
+		err = fmt.Errorf("Username tidak ditemukan")
+		return false, err
+	}
+
 	filter := bson.M{"username": username}
+	cols := db.Collection(col)
 	result, err := cols.DeleteOne(context.Background(), filter)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if result.DeletedCount == 0 {
-		return fmt.Errorf("Data tidak berhasil dihapus")
+		err = fmt.Errorf("Data tidak berhasil dihapus")
+		return false, err
 	}
-	return nil
+	return true, nil
 }
 
 func GetUserFromID(db *mongo.Database, col string, _id primitive.ObjectID) (user model.User, err error) {
+	userID, err := primitive.ObjectIDFromHex(_id.Hex())
+	if err != nil {
+		return user, err
+	}
+
 	cols := db.Collection(col)
-	filter := bson.M{"_id": _id}
+	filter := bson.M{"_id": userID}
 	err = cols.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		fmt.Printf("GetUserFromID: %v\n", err)

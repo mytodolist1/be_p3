@@ -83,9 +83,10 @@ func TestChangePassword(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-	username := "tejo1"
+	username := "nopal"
 
-	err := modul.DeleteUser(mconn, "user", username)
+	status, err := modul.DeleteUser(mconn, "user", username)
+	fmt.Println("Status", status)
 	if err != nil {
 		t.Errorf("Error deleting user: %v", err)
 	} else {
@@ -94,8 +95,12 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestGetUserFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("6549e6252174254280d650af")
-	anu, _ := modul.GetUserFromID(mconn, "user", id)
+	id, _ := primitive.ObjectIDFromHex("654d9264ffbef4e358812043")
+	anu, err := modul.GetUserFromID(mconn, "user", id)
+	if err != nil {
+		t.Errorf("Error getting user: %v", err)
+		return
+	}
 	fmt.Println(anu)
 }
 
