@@ -10,18 +10,19 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/aiteung/atdb"
 	"github.com/badoux/checkmail"
 	model "github.com/mytodolist1/be_p3/model"
 )
 
-func MongoConnect(MongoString, dbname string) *mongo.Database {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(os.Getenv(MongoString)))
-	if err != nil {
-		fmt.Printf("MongoConnect: %v\n", err)
+func MongoConnect(MONGOCONNSTRINGENV, dbname string) *mongo.Database {
+	var DBmongoinfo = atdb.DBInfo{
+		// DBString: "mongodb+srv://admin:admin@projectexp.pa7k8.gcp.mongodb.net", //os.Getenv(MONGOCONNSTRINGENV),
+		DBString: os.Getenv(MONGOCONNSTRINGENV),
+		DBName:   dbname,
 	}
-	return client.Database(dbname)
+	return atdb.MongoConnect(DBmongoinfo)
 }
 
 func InsertOneDoc(db *mongo.Database, col string, docs interface{}) (insertedID primitive.ObjectID, err error) {
