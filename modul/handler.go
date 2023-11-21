@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	model "github.com/mytodolist1/be_p3/model"
 	"github.com/whatsauth/watoken"
 )
 
+// user
 func GCFHandler(MONGOCONNSTRINGENV, dbname, col string) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	data, err := GetAllUser(mconn, col)
@@ -131,6 +133,179 @@ func GCFHandlerDeleteUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, colle
 	Response.Status = true
 	Response.Message = "Delete user success" + " " + datauser.Username + " " + strconv.FormatBool(status)
 
+	return GCFReturnStruct(Response)
+}
+
+// todo
+func GCFHandlerGetAllTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	var Response model.TodoResponse
+	Response.Status = false
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var datauser model.Todo
+
+	token := r.Header.Get("Authorization")
+	token = strings.TrimPrefix(token, "Bearer ")
+	if token == "" {
+		Response.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Response)
+	}
+
+	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&datauser)
+	if err != nil {
+		Response.Message = "error parsing application/json3: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	_, err = GetTodoList(mconn, collectionname)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Get todo success"
+	Response.Data = datauser
+	return GCFReturnStruct(Response)
+}
+
+func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	var Response model.TodoResponse
+	Response.Status = false
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var datauser model.Todo
+
+	token := r.Header.Get("Authorization")
+	token = strings.TrimPrefix(token, "Bearer ")
+	if token == "" {
+		Response.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Response)
+	}
+
+	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&datauser)
+	if err != nil {
+		Response.Message = "error parsing application/json3: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	_, err = GetTodoFromID(mconn, collectionname, datauser.ID)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Get todo success"
+	return GCFReturnStruct(Response)
+}
+
+func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	var Response model.TodoResponse
+	Response.Status = false
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var datauser model.Todo
+
+	token := r.Header.Get("Authorization")
+	token = strings.TrimPrefix(token, "Bearer ")
+	if token == "" {
+		Response.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Response)
+	}
+
+	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&datauser)
+	if err != nil {
+		Response.Message = "error parsing application/json3: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	_, err = InsertTodo(mconn, collectionname, datauser)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Insert todo success"
+	return GCFReturnStruct(Response)
+}
+
+func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	var Response model.TodoResponse
+	Response.Status = false
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var datauser model.Todo
+
+	token := r.Header.Get("Authorization")
+	token = strings.TrimPrefix(token, "Bearer ")
+	if token == "" {
+		Response.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Response)
+	}
+
+	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&datauser)
+	if err != nil {
+		Response.Message = "error parsing application/json3: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	_, status, err := UpdateTodo(mconn, collectionname, datauser)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Update todo success" + " " + strconv.FormatBool(status)
+	Response.Data = datauser
+	return GCFReturnStruct(Response)
+}
+
+func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	var Response model.TodoResponse
+	Response.Status = false
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var datauser model.Todo
+
+	token := r.Header.Get("Authorization")
+	token = strings.TrimPrefix(token, "Bearer ")
+	if token == "" {
+		Response.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Response)
+	}
+
+	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&datauser)
+	if err != nil {
+		Response.Message = "error parsing application/json3: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+	status, err := DeleteTodo(mconn, collectionname, datauser.ID)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Delete todo success" + " " + strconv.FormatBool(status)
 	return GCFReturnStruct(Response)
 }
 
