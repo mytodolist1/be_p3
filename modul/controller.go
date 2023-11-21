@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/aiteung/atdb"
 	"github.com/badoux/checkmail"
@@ -264,7 +266,7 @@ func GetUserFromUsername(db *mongo.Database, col string, username string) (user 
 func GetUserFromEmail(db *mongo.Database, col string, email string) (user model.User, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"email": email}
-	err = cols.FindOne(context.Background(), filter).Decode(&user)
+	err = cols.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			err := fmt.Errorf("no data found for email %s", email)
@@ -277,48 +279,117 @@ func GetUserFromEmail(db *mongo.Database, col string, email string) (user model.
 }
 
 func GetAllUser(db *mongo.Database, col string) (userlist []model.User, err error) {
+	ctx := context.TODO()
 	cols := db.Collection(col)
 	filter := bson.M{}
-	cursor, err := cols.Find(context.Background(), filter)
+
+	cur, err := cols.Find(ctx, filter)
 	if err != nil {
 		fmt.Println("Error GetAllUser in colection", col, ":", err)
+		return nil, err
 	}
-	err = cursor.All(context.TODO(), &userlist)
+
+	// defer cur.Close(ctx)
+	defer func() {
+		if cerr := cur.Close(ctx); cerr != nil {
+			fmt.Println("Error closing cursor:", cerr)
+		}
+	}()
+
+	err = cur.All(context.TODO(), &userlist)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Error reading documents:", err)
+		return nil, err
 	}
-	return userlist, err
+
+	return userlist, nil
 }
 
 // todo
 func InsertTodo(db *mongo.Database, col string, todo model.Todo) (insertedID primitive.ObjectID, err error) {
+	todo.TimeStamp.CreatedAt = time.Now()
+	todo.TimeStamp.UpdatedAt = time.Now()
+
 	insertedID, err = InsertOneDoc(db, col, todo)
 	if err != nil {
 		fmt.Printf("InsertTodo: %v\n", err)
 	}
-	return insertedID, err
+	return insertedID, nil
 }
 
-func GetTodoFromID(db *mongo.Database, col string, id primitive.ObjectID) (todo model.Todo) {
+func GetTodoFromID(db *mongo.Database, col string, _id primitive.ObjectID) (todo model.Todo, err error) {
 	cols := db.Collection(col)
-	filter := bson.M{"_id": id}
-	err := cols.FindOne(context.Background(), filter).Decode(&todo)
+	filter := bson.M{"_id": _id}
+	err = cols.FindOne(context.Background(), filter).Decode(&todo)
 	if err != nil {
-		fmt.Printf("GetTodoFromID: %v\n", err)
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			fmt.Println("no data found for ID", _id)
+		} else {
+			fmt.Println("error retrieving data for ID", _id, ":", err.Error())
+		}
 	}
-	return todo
+	return todo, nil
 }
 
-func GetTodoList(db *mongo.Database, col string) (todo []model.Todo) {
+func GetTodoList(db *mongo.Database, col string) (todo []model.Todo, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{}
 	cursor, err := cols.Find(context.Background(), filter)
 	if err != nil {
 		fmt.Println("Error GetTodoList in colection", col, ":", err)
+		return nil, err
 	}
 	err = cursor.All(context.Background(), &todo)
 	if err != nil {
 		fmt.Println(err)
 	}
-	return todo
+	return todo, nil
+}
+
+func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (todos model.Todo, status bool, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{"_id": todo.ID}
+	update := bson.M{
+		"$set": bson.M{
+			"title":               todo.Title,
+			"description":         todo.Description,
+			"deadline":            todo.Deadline,
+			"timestamp.updatedat": time.Now(),
+		},
+		"$setOnInsert": bson.M{
+			"timestamp.createdat": todo.TimeStamp.CreatedAt,
+		},
+	}
+
+	options := options.Update().SetUpsert(true)
+
+	result, err := cols.UpdateOne(context.Background(), filter, update, options)
+	if err != nil {
+		return todos, false, err
+	}
+	if result.ModifiedCount == 0 && result.UpsertedCount == 0 {
+		err = fmt.Errorf("Data tidak berhasil diupdate")
+		return todos, false, err
+	}
+
+	err = cols.FindOne(context.Background(), filter).Decode(&todos)
+	if err != nil {
+		return todos, false, err
+	}
+
+	return todos, true, nil
+}
+
+func DeleteTodo(db *mongo.Database, col string, _id primitive.ObjectID) (status bool, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{"_id": _id}
+	result, err := cols.DeleteOne(context.Background(), filter)
+	if err != nil {
+		return false, err
+	}
+	if result.DeletedCount == 0 {
+		err = fmt.Errorf("Data tidak berhasil dihapus")
+		return false, err
+	}
+	return true, nil
 }
