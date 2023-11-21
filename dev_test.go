@@ -133,25 +133,78 @@ func TestGetAllUser(t *testing.T) {
 
 // todo
 func TestInsertTodo(t *testing.T) {
-	var tododata model.Todo
-	tododata.Title = "Belajar Golang"
-	tododata.Description = "Hari ini belajar testing"
-	tododata.IsDone = true
+	var data model.Todo
+	data.Title = "Belajar"
+	data.Description = "Hari ini belajar testing"
+	data.Deadline = "02/02/2020"
+	data.IsDone = false
 
-	nama, err := modul.InsertTodo(mconn, "todo", tododata)
+	id, err := modul.InsertTodo(mconn, "todo", data)
 	if err != nil {
 		t.Errorf("Error inserting todo: %v", err)
 	}
-	fmt.Println(nama)
+	fmt.Println(id)
 }
 
 func TestGetTodoFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("653e02ab28597c2c37171d44")
-	anu := modul.GetTodoFromID(mconn, "todo", id)
+	id, _ := primitive.ObjectIDFromHex("655c4408d06d3d2ddba5d1d7")
+	anu, err := modul.GetTodoFromID(mconn, "todo", id)
+	if err != nil {
+		t.Errorf("Error getting todo: %v", err)
+		return
+	}
 	fmt.Println(anu)
 }
 
 func TestGetTodoList(t *testing.T) {
-	anu := modul.GetTodoList(mconn, "todo")
+	anu, err := modul.GetTodoList(mconn, "todo")
+	if err != nil {
+		t.Errorf("Error getting todo: %v", err)
+		return
+	}
 	fmt.Println(anu)
+}
+
+func TestUpdateTodo(t *testing.T) {
+	var data model.Todo
+	data.Title = "Belajar Golang"
+	data.Description = "Hari ini belajar testing 2"
+	data.Deadline = "02/02/2021"
+
+	id := "655c4408d06d3d2ddba5d1d7"
+	ID, err := primitive.ObjectIDFromHex(id)
+	data.ID = ID
+	if err != nil {
+		fmt.Printf("Data tidak berhasil diubah")
+	} else {
+
+		_, status, err := modul.UpdateTodo(mconn, "todo", data)
+		fmt.Println("Status", status)
+		if err != nil {
+			t.Errorf("Error updating todo with id: %v", err)
+			return
+		} else {
+			fmt.Printf("Data berhasil diubah untuk id: %s\n", id)
+		}
+		fmt.Println(data)
+	}
+}
+
+func TestDeleteTodo(t *testing.T) {
+	id := "655c4408d06d3d2ddba5d1d7"
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		t.Errorf("Error converting id to ObjectID: %v", err)
+		return
+	} else {
+
+		status, err := modul.DeleteTodo(mconn, "todo", ID)
+		fmt.Println("Status", status)
+		if err != nil {
+			t.Errorf("Error deleting document: %v", err)
+			return
+		} else {
+			fmt.Println("Delete success")
+		}
+	}
 }
