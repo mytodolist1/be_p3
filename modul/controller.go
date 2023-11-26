@@ -208,18 +208,45 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 	return user, true, nil
 }
 
-func DeleteUser(db *mongo.Database, col string, username model.User) (status bool, err error) {
-	filter := bson.M{"username": username.Username}
+// func DeleteUser(db *mongo.Database, col string, username model.User) (status bool, err error) {
+// 	filter := bson.M{"username": username.Username}
+// 	cols := db.Collection(col)
+// 	result, err := cols.DeleteOne(context.Background(), filter)
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	if result.DeletedCount == 0 {
+// 		err = fmt.Errorf("Data tidak berhasil dihapus")
+// 		return false, err
+// 	}
+// 	return true, nil
+// }
+
+func DeleteUser(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
+	userExist, err := GetUserFromUsername(db, col, userdata.Username)
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+		return user, false, err
+	}
+
+	if userExist.Username == "" {
+		err = fmt.Errorf("Username tidak ditemukan")
+		return user, false, err
+	}
+
+	filter := bson.M{"username": userExist.Username}
 	cols := db.Collection(col)
 	result, err := cols.DeleteOne(context.Background(), filter)
 	if err != nil {
-		return false, err
+		return user, false, err
 	}
+
 	if result.DeletedCount == 0 {
 		err = fmt.Errorf("Data tidak berhasil dihapus")
-		return false, err
+		return user, false, err
 	}
-	return true, nil
+	
+	return user, true, nil
 }
 
 func GetUserFromID(db *mongo.Database, col string, _id primitive.ObjectID) (user model.User, err error) {

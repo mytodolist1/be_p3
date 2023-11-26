@@ -287,14 +287,14 @@ func GCFHandlerDeleteUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, colle
 		return GCFReturnStruct(Response)
 	}
 
-	_, err := DeleteUser(mconn, collectionname, datauser)
+	user, _, err := DeleteUser(mconn, collectionname, datauser)
 	if err != nil {
 		Response.Message = "Error deleting user data: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
 
 	Response.Status = true
-	Response.Message = "Delete user success" + " " + datauser.Username
+	Response.Message = "Delete user " + user.Username + " success"
 
 	return GCFReturnStruct(Response)
 }
