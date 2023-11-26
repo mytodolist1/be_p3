@@ -18,6 +18,7 @@ type Credential struct {
 	Status  bool   `bson:"status" json:"status"`
 	Token   string `bson:"token,omitempty" json:"token,omitempty"`
 	Message string `bson:"message,omitempty" json:"message,omitempty"`
+	Data    []User   `bson:"data,omitempty" json:"data,omitempty"`
 }
 
 type Todo struct {

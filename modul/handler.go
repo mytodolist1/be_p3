@@ -21,13 +21,14 @@ func GCFHandlerGetAllUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
 	}
-	_, err = GetAllUser(mconn, collectionname)
+	userlist, err := GetAllUser(mconn, collectionname)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
 	Response.Message = "Get User Success"
+	Response.Data = userlist
 
 	return GCFReturnStruct(Response)
 }

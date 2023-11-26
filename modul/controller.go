@@ -252,14 +252,20 @@ func GetUserFromUsername(db *mongo.Database, col string, username string) (user 
 	cols := db.Collection(col)
 	filter := bson.M{"username": username}
 	err = cols.FindOne(context.TODO(), filter).Decode(&user)
+	// if err != nil {
+	// 	if errors.Is(err, mongo.ErrNoDocuments) {
+	// 		err := fmt.Errorf("no data found for username %s", username)
+	// 		return user, err
+	// 	}
+	// 	err := fmt.Errorf("error retrieving data for username %s: %s", username, err.Error())
+	// 	return user, err
+	// }
+
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			err := fmt.Errorf("no data found for username %s", username)
-			return user, err
-		}
-		err := fmt.Errorf("error retrieving data for username %s: %s", username, err.Error())
+		err = fmt.Errorf("Username tidak ditemukan %s", username)
 		return user, err
 	}
+
 	return user, nil
 }
 
