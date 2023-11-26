@@ -52,12 +52,12 @@ func GCFHandlerGetAllUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *
 	var Response model.Credential
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.User
+	// var datauser model.User
 
-	err := json.NewDecoder(r.Body).Decode(&datauser)
-	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
-	}
+	// err := json.NewDecoder(r.Body).Decode(&datauser)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json: " + err.Error()
+	// }
 
 	userlist, err := GetAllUser(mconn, collectionname)
 	if err != nil {
@@ -76,16 +76,21 @@ func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname stri
 	var Response model.Credential
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.User
-	err := json.NewDecoder(r.Body).Decode(&datauser)
-	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
-	}
-	user, err := GetUserFromUsername(mconn, collectionname, datauser.Username)
-	if err != nil {
-		Response.Message = "error parsing application/json2: " + err.Error()
+
+	// Mengambil nilai parameter "username" dari URL
+	username := r.URL.Query().Get("username")
+
+	if username == "" {
+		Response.Message = "Missing 'username' parameter in the URL"
 		return GCFReturnStruct(Response)
 	}
+
+	user, err := GetUserFromUsername(mconn, collectionname, username)
+	if err != nil {
+		Response.Message = "Error retrieving user data: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+
 	Response.Status = true
 	Response.Message = "Hello user"
 	Response.Data = []model.User{user}
