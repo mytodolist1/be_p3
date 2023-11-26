@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -253,6 +254,7 @@ func GetUserFromUsername(db *mongo.Database, col string, username string) (user 
 	filter := bson.M{"username": username}
 	err = cols.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
+		log.Println("Error:", err)
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			err := fmt.Errorf("no data found for username %s", username)
 			return user, err
