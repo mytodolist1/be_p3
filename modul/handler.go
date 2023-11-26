@@ -9,6 +9,7 @@ import (
 
 	model "github.com/mytodolist1/be_p3/model"
 	"github.com/whatsauth/watoken"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // user
@@ -144,22 +145,100 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 	return GCFReturnStruct(Response)
 }
 
+// func GCFHandlerUpdateUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	var Response model.Credential
+// 	Response.Status = false
+// 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+// 	var datauser model.User
+// 	err := json.NewDecoder(r.Body).Decode(&datauser)
+// 	if err != nil {
+// 		Response.Message = "error parsing application/json: " + err.Error()
+// 	}
+// 	user, status, err := UpdateUser(mconn, collectionname, datauser)
+// 	if err != nil {
+// 		Response.Message = err.Error()
+// 		return GCFReturnStruct(Response)
+// 	}
+// 	Response.Status = true
+// 	Response.Message = "Update success " + " " + user.Username + " " + strconv.FormatBool(status)
+
+// 	return GCFReturnStruct(Response)
+// }
+
+// func GCFHandlerChangePassword(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	var Response model.Credential
+// 	Response.Status = false
+// 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+// 	var datauser model.User
+// 	err := json.NewDecoder(r.Body).Decode(&datauser)
+// 	if err != nil {
+// 		Response.Message = "error parsing application/json: " + err.Error()
+// 	}
+// 	user, status, err := ChangePassword(mconn, collectionname, datauser)
+// 	if err != nil {
+// 		Response.Message = err.Error()
+// 		return GCFReturnStruct(Response)
+// 	}
+// 	Response.Status = true
+// 	Response.Message = "Password change success for user" + " " + user.Username + " " + strconv.FormatBool(status)
+
+// 	return GCFReturnStruct(Response)
+// }
+
+// func GCFHandlerDeleteUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	var Response model.Credential
+// 	Response.Status = false
+// 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+// 	var datauser model.User
+// 	err := json.NewDecoder(r.Body).Decode(&datauser)
+// 	if err != nil {
+// 		Response.Message = "error parsing application/json: " + err.Error()
+// 	}
+// 	status, err := DeleteUser(mconn, collectionname, datauser)
+// 	if err != nil {
+// 		Response.Message = err.Error()
+// 		return GCFReturnStruct(Response)
+// 	}
+// 	Response.Status = true
+// 	Response.Message = "Delete user success" + " " + datauser.Username + " " + strconv.FormatBool(status)
+
+// 	return GCFReturnStruct(Response)
+// }
+
 func GCFHandlerUpdateUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var datauser model.User
-	err := json.NewDecoder(r.Body).Decode(&datauser)
+
+	id := r.URL.Query().Get("_id")
+	if id == "" {
+		Response.Message = "Missing '_id' parameter in the URL"
+		return GCFReturnStruct(Response)
+	}
+
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		Response.Message = "Invalid '_id' parameter in the URL"
+		return GCFReturnStruct(Response)
+	}
+
+	datauser.ID = ID
+
+	err = json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
 	}
-	user, status, err := UpdateUser(mconn, collectionname, datauser)
+
+	user, _, err := UpdateUser(mconn, collectionname, datauser)
 	if err != nil {
-		Response.Message = err.Error()
+		Response.Message = "Error updating user data: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
+
 	Response.Status = true
-	Response.Message = "Update success " + " " + user.Username + " " + strconv.FormatBool(status)
+	Response.Message = "Update success " + " " + user.Username
+	Response.Data = []model.User{user}
 
 	return GCFReturnStruct(Response)
 }
@@ -169,37 +248,53 @@ func GCFHandlerChangePassword(MONGOCONNSTRINGENV, dbname, collectionname string,
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var datauser model.User
+
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		Response.Message = "Missing 'username' parameter in the URL"
+		return GCFReturnStruct(Response)
+	}
+
+	datauser.Username = username
+
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
 	}
-	user, status, err := ChangePassword(mconn, collectionname, datauser)
+
+	user, _, err := ChangePassword(mconn, collectionname, datauser)
 	if err != nil {
-		Response.Message = err.Error()
+		Response.Message = "Error changing password: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
+
 	Response.Status = true
-	Response.Message = "Password change success for user" + " " + user.Username + " " + strconv.FormatBool(status)
+	Response.Message = "Password change success for user" + " " + user.Username
+	Response.Data = []model.User{user}
 
 	return GCFReturnStruct(Response)
 }
 
-func GCFHandlerDeleteUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFHandlerDeleteUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var datauser model.User
-	err := json.NewDecoder(r.Body).Decode(&datauser)
-	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
-	}
-	status, err := DeleteUser(mconn, collectionname, datauser)
-	if err != nil {
-		Response.Message = err.Error()
+
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		Response.Message = "Missing 'username' parameter in the URL"
 		return GCFReturnStruct(Response)
 	}
+
+	_, err := DeleteUser(mconn, collectionname, datauser)
+	if err != nil {
+		Response.Message = "Error deleting user data: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+
 	Response.Status = true
-	Response.Message = "Delete user success" + " " + datauser.Username + " " + strconv.FormatBool(status)
+	Response.Message = "Delete user success" + " " + datauser.Username
 
 	return GCFReturnStruct(Response)
 }
