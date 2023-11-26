@@ -15,43 +15,60 @@ import (
 func GCFHandlerGetAllUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
+
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+
 	var datauser model.User
-	err := json.NewDecoder(r.Body).Decode(&datauser)
-	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
-	}
-	userlist, err := GetAllUser(mconn, collectionname)
-	if err != nil {
-		Response.Message = err.Error()
+	if err := json.NewDecoder(r.Body).Decode(&datauser); err != nil {
+		Response.Message = "error parsing JSON: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
-	Response.Status = true
-	Response.Message = "Get User Success"
-	Response.Data = userlist
+
+	if datauser.Username == "" {
+		userlist, err := GetAllUser(mconn, collectionname)
+		if err != nil {
+			Response.Message = "error getting users: " + err.Error()
+			return GCFReturnStruct(Response)
+		}
+
+		Response.Status = true
+		Response.Message = "Get All Users Success"
+		Response.Data = userlist
+
+	} else {
+		user, err := GetUserFromUsername(mconn, collectionname, datauser.Username)
+		if err != nil {
+			Response.Message = "error getting user: " + err.Error()
+			return GCFReturnStruct(Response)
+		}
+
+		Response.Status = true
+		Response.Message = "Get User Success"
+		Response.Data = []model.User{user}
+	}
 
 	return GCFReturnStruct(Response)
 }
 
-func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.Credential
-	Response.Status = false
-	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.User
-	err := json.NewDecoder(r.Body).Decode(&datauser)
-	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
-	}
-	user, err := GetUserFromUsername(mconn, collectionname, datauser.Username)
-	if err != nil {
-		Response.Message = err.Error()
-		return GCFReturnStruct(Response)
-	}
-	Response.Status = true
-	Response.Message = "Hello " + " " + user.Username
+// func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	var Response model.Credential
+// 	Response.Status = false
+// 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+// 	var datauser model.User
+// 	err := json.NewDecoder(r.Body).Decode(&datauser)
+// 	if err != nil {
+// 		Response.Message = "error parsing application/json: " + err.Error()
+// 	}
+// 	user, err := GetUserFromUsername(mconn, collectionname, datauser.Username)
+// 	if err != nil {
+// 		Response.Message = err.Error()
+// 		return GCFReturnStruct(Response)
+// 	}
+// 	Response.Status = true
+// 	Response.Message = "Hello " + " " + user.Username
 
-	return GCFReturnStruct(Response)
-}
+// 	return GCFReturnStruct(Response)
+// }
 
 func GCFHandlerRegister(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
