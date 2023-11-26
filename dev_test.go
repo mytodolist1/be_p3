@@ -83,12 +83,12 @@ func TestDeleteUser(t *testing.T) {
 	var data model.User
 	data.Username = "admin"
 
-	user, status, err := modul.DeleteUser(mconn, "user", data)
+	status, err := modul.DeleteUser(mconn, "user", data)
 	fmt.Println("Status", status)
 	if err != nil {
 		t.Errorf("Error deleting document: %v", err)
 	} else {
-		fmt.Println("Delete user" + user.Username + "success")
+		fmt.Println("Delete user" + data.Username + "success")
 	}
 }
 

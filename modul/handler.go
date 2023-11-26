@@ -104,15 +104,18 @@ func GCFHandlerRegister(MONGOCONNSTRINGENV, dbname, collectionname string, r *ht
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var datauser model.User
+
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
 	}
+
 	err = Register(mconn, collectionname, datauser)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
+
 	Response.Status = true
 	Response.Message = "Register success"
 
@@ -124,19 +127,23 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var datauser model.User
+
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
 	}
+
 	user, _, err := LogIn(mconn, collectionname, datauser)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
+
 	Response.Status = true
 	tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(PASETOPRIVATEKEYENV))
 	if err != nil {
 		Response.Message = "Gagal Encode Token :" + err.Error()
+
 	} else {
 		Response.Message = "Selamat Datang" + " " + user.Username
 		Response.Token = tokenstring
@@ -287,14 +294,21 @@ func GCFHandlerDeleteUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, colle
 		return GCFReturnStruct(Response)
 	}
 
-	user, _, err := DeleteUser(mconn, collectionname, datauser)
+	datauser.Username = username
+
+	err := json.NewDecoder(r.Body).Decode(&datauser)
+	if err != nil {
+		Response.Message = "error parsing application/json: " + err.Error()
+	}
+
+	_, err = DeleteUser(mconn, collectionname, datauser)
 	if err != nil {
 		Response.Message = "Error deleting user data: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
 
 	Response.Status = true
-	Response.Message = "Delete user " + user.Username + " success"
+	Response.Message = "Delete user " + datauser.Username + " success"
 
 	return GCFReturnStruct(Response)
 }

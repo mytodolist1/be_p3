@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -208,45 +207,27 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 	return user, true, nil
 }
 
-// func DeleteUser(db *mongo.Database, col string, username model.User) (status bool, err error) {
-// 	filter := bson.M{"username": username.Username}
-// 	cols := db.Collection(col)
-// 	result, err := cols.DeleteOne(context.Background(), filter)
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	if result.DeletedCount == 0 {
-// 		err = fmt.Errorf("Data tidak berhasil dihapus")
-// 		return false, err
-// 	}
-// 	return true, nil
-// }
-
-func DeleteUser(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
-	userExist, err := GetUserFromUsername(db, col, userdata.Username)
+func DeleteUser(db *mongo.Database, col string, userdata model.User) (status bool, err error) {
+	_, err = GetUserFromUsername(db, col, userdata.Username)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-		return user, false, err
-	}
-
-	if userExist.Username == "" {
 		err = fmt.Errorf("Username tidak ditemukan")
-		return user, false, err
+		return false, err
 	}
 
-	filter := bson.M{"username": userExist.Username}
+	filter := bson.M{"username": userdata.Username}
 	cols := db.Collection(col)
+
 	result, err := cols.DeleteOne(context.Background(), filter)
 	if err != nil {
-		return user, false, err
+		err = fmt.Errorf("Error deleting document: %v", err)
+		return false, err
 	}
 
 	if result.DeletedCount == 0 {
-		err = fmt.Errorf("Data tidak berhasil dihapus")
-		return user, false, err
+		return false, fmt.Errorf("Failed to delete user")
 	}
-	
-	return user, true, nil
+
+	return true, nil
 }
 
 func GetUserFromID(db *mongo.Database, col string, _id primitive.ObjectID) (user model.User, err error) {
@@ -271,7 +252,6 @@ func GetUserFromUsername(db *mongo.Database, col string, username string) (user 
 	filter := bson.M{"username": username}
 	err = cols.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
-		log.Println("Error:", err)
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			err := fmt.Errorf("no data found for username %s", username)
 			return user, err
