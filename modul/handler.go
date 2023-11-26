@@ -12,71 +12,43 @@ import (
 )
 
 // user
-func GCFHandlerGetAllUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFHandlerGetAllUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var datauser model.User
-
-	token := r.Header.Get("Authorization")
-	token = strings.TrimPrefix(token, "Bearer ")
-	if token == "" {
-		Response.Message = "error parsing application/json1:"
-		return GCFReturnStruct(Response)
-	}
-
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
-		return GCFReturnStruct(Response)
+		Response.Message = "error parsing application/json: " + err.Error()
 	}
-
-	err = json.NewDecoder(r.Body).Decode(&datauser)
-	if err != nil {
-		Response.Message = "error parsing application/json3: " + err.Error()
-		return GCFReturnStruct(Response)
-	}
-	_, err = GetAllUser(mconn, collectionname)
+	_, _, err = UpdateUser(mconn, collectionname, datauser)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
-	Response.Message = "Get all user success"
+	Response.Message = "Get User Success"
+
 	return GCFReturnStruct(Response)
 }
 
-func GCFHandlerGetUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var datauser model.User
-
-	token := r.Header.Get("Authorization")
-	token = strings.TrimPrefix(token, "Bearer ")
-	if token == "" {
-		Response.Message = "error parsing application/json1:"
-		return GCFReturnStruct(Response)
-	}
-
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
-		return GCFReturnStruct(Response)
+		Response.Message = "error parsing application/json: " + err.Error()
 	}
-
-	err = json.NewDecoder(r.Body).Decode(&datauser)
-	if err != nil {
-		Response.Message = "error parsing application/json3: " + err.Error()
-		return GCFReturnStruct(Response)
-	}
-	_, err = GetUserFromUsername(mconn, collectionname, datauser.Username)
+	user, _, err := UpdateUser(mconn, collectionname, datauser)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
-	Response.Message = "Get user success"
+	Response.Message = "Hello " + " " + user.Username
+
 	return GCFReturnStruct(Response)
 }
 
