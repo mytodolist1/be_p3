@@ -208,23 +208,45 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 	return user, true, nil
 }
 
-func DeleteUser(db *mongo.Database, col string, username model.User) (status bool, err error) {
-	userExists, err := GetUserFromUsername(db, col, username.Username)
-	if err != nil {
+// func DeleteUser(db *mongo.Database, col string, username model.User) (status bool, err error) {
+// 	userExists, err := GetUserFromUsername(db, col, username.Username)
+// 	if err != nil {
+// 		return false, err
+// 	}
+
+// 	if userExists.Username == "" {
+// 		err = fmt.Errorf("Username tidak ditemukan")
+// 		return false, err
+// 	}
+
+// 	filter := bson.M{"username": username.Username}
+// 	cols := db.Collection(col)
+// 	result, err := cols.DeleteOne(context.Background(), filter)
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	if result.DeletedCount == 0 {
+// 		err = fmt.Errorf("Data tidak berhasil dihapus")
+// 		return false, err
+// 	}
+// 	return true, nil
+// }
+
+func DeleteUser(db *mongo.Database, col string, userdata model.User) (status bool, err error) {
+
+	if userdata.Username == "" {
+		err = fmt.Errorf("Username tidak boleh kosong")
 		return false, err
 	}
 
-	if userExists.Username == "" {
-		err = fmt.Errorf("Username tidak ditemukan")
-		return false, err
-	}
-
-	filter := bson.M{"username": username.Username}
 	cols := db.Collection(col)
+	filter := bson.M{"username": userdata.Username}
+
 	result, err := cols.DeleteOne(context.Background(), filter)
 	if err != nil {
 		return false, err
 	}
+
 	if result.DeletedCount == 0 {
 		err = fmt.Errorf("Data tidak berhasil dihapus")
 		return false, err
