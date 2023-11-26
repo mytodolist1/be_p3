@@ -134,8 +134,8 @@ func TestGetAllUser(t *testing.T) {
 // todo
 func TestInsertTodo(t *testing.T) {
 	var data model.Todo
-	data.Title = "Belajar"
-	data.Description = "Hari ini belajar testing"
+	data.Title = "Pergi ke sana"
+	data.Description = "membeli itu ini"
 	data.Deadline = "02/02/2020"
 	data.IsDone = false
 
@@ -168,10 +168,10 @@ func TestGetTodoList(t *testing.T) {
 func TestUpdateTodo(t *testing.T) {
 	var data model.Todo
 	data.Title = "Belajar Golang"
-	data.Description = "Hari ini belajar testing 2"
+	data.Description = "Hari ini belajar golang"
 	data.Deadline = "02/02/2021"
 
-	id := "655c4408d06d3d2ddba5d1d7"
+	id := "655c5047370b53741a9705d8"
 	ID, err := primitive.ObjectIDFromHex(id)
 	data.ID = ID
 	if err != nil {

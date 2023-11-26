@@ -279,27 +279,19 @@ func GetUserFromEmail(db *mongo.Database, col string, email string) (user model.
 }
 
 func GetAllUser(db *mongo.Database, col string) (userlist []model.User, err error) {
-	ctx := context.TODO()
 	cols := db.Collection(col)
 	filter := bson.M{}
 
-	cur, err := cols.Find(ctx, filter)
+	cur, err := cols.Find(context.Background(), filter)
 	if err != nil {
 		fmt.Println("Error GetAllUser in colection", col, ":", err)
-		return nil, err
+		return userlist, err
 	}
 
-	// defer cur.Close(ctx)
-	defer func() {
-		if cerr := cur.Close(ctx); cerr != nil {
-			fmt.Println("Error closing cursor:", cerr)
-		}
-	}()
-
-	err = cur.All(context.TODO(), &userlist)
+	err = cur.All(context.Background(), &userlist)
 	if err != nil {
 		fmt.Println("Error reading documents:", err)
-		return nil, err
+		return userlist, err
 	}
 
 	return userlist, nil
