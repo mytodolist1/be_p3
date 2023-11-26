@@ -81,7 +81,7 @@ func TestChangePassword(t *testing.T) {
 
 func TestDeleteUser(t *testing.T) {
 	var data model.User
-	data.Username = "tejoko"
+	data.Username = "flash"
 
 	status, err := modul.DeleteUser(mconn, "user", data)
 	fmt.Println("Status", status)
