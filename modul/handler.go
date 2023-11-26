@@ -21,7 +21,7 @@ func GCFHandlerGetAllUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
 	}
-	_, _, err = UpdateUser(mconn, collectionname, datauser)
+	_, err = GetAllUser(mconn, collectionname)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
@@ -41,7 +41,7 @@ func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname stri
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
 	}
-	user, _, err := UpdateUser(mconn, collectionname, datauser)
+	user, err := GetUserFromUsername(mconn, collectionname, datauser.Username)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
