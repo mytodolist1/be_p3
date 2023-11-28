@@ -14,9 +14,8 @@ var mconn = SetConnection("MONGOSTRING", "mytodolist")
 // user
 func TestRegister(t *testing.T) {
 	var data model.User
-	data.ID = primitive.NewObjectID()
-	data.Email = "nopal1@gmail.com"
-	data.Username = "nopal1"
+	data.Email = "nopal@gmail.com"
+	data.Username = "nopal"
 	data.Role = "user"
 	data.Password = "secret"
 
@@ -30,8 +29,8 @@ func TestRegister(t *testing.T) {
 
 func TestLogIn(t *testing.T) {
 	var data model.User
-	data.Username = "nopal"
-	data.Password = "secrethehe"
+	data.Username = "tejoko"
+	data.Password = "secret"
 
 	user, status, err := modul.LogIn(mconn, "user", data)
 	fmt.Println("Status", status)
@@ -44,14 +43,12 @@ func TestLogIn(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	var data model.User
-	data.Email = "nopal@gmail.com"
-	data.Username = "nopal"
-	data.Role = "user"
+	data.Email = "tejoko@gmail.com"
+	data.Username = "tejoko"
 
-	data.Password = "secret" // password tidak diubah
-
-	id, err := primitive.ObjectIDFromHex("654a6513226d8ad245cd01ff")
-	data.ID = id
+	id := "6550a8f0b5b4a0a7f89941aa"
+	ID, err := primitive.ObjectIDFromHex(id)
+	data.ID = ID
 	if err != nil {
 		fmt.Printf("Data tidak berhasil diubah")
 	} else {
@@ -68,37 +65,46 @@ func TestUpdateUser(t *testing.T) {
 
 func TestChangePassword(t *testing.T) {
 	var data model.User
-	data.Email = "nopal@gmail.com" // email tidak diubah
-	data.Username = "nopal"        // username tidak diubah
-	data.Role = "user"             // role tidak diubah
-
 	data.Password = "secret"
 
-	// username := "kepin123"
+	username := "tejoko"
+	data.Username = username
 
 	_, status, err := modul.ChangePassword(mconn, "user", data)
 	fmt.Println("Status", status)
 	if err != nil {
 		t.Errorf("Error updateting document: %v", err)
 	} else {
-		fmt.Println("Password berhasil diubah dengan username:", data.Username)
+		fmt.Println("Password berhasil diubah dengan username:", username)
 	}
 }
 
 func TestDeleteUser(t *testing.T) {
-	username := "nopal1"
+	var data model.User
+	data.Username = "admin"
 
-	err := modul.DeleteUser(mconn, "user", username)
+	status, err := modul.DeleteUser(mconn, "user", data)
+	fmt.Println("Status", status)
 	if err != nil {
-		t.Errorf("Error deleting user: %v", err)
+		t.Errorf("Error deleting document: %v", err)
 	} else {
-		fmt.Println("Delete user success")
+		fmt.Println("Delete user" + data.Username + "success")
 	}
 }
 
 func TestGetUserFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("6549e6252174254280d650af")
-	anu, _ := modul.GetUserFromID(mconn, "user", id)
+	id := "6550a8f0b5b4a0a7f89941aa"
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		t.Errorf("Error converting id to ObjectID: %v", err)
+		return
+	}
+
+	anu, err := modul.GetUserFromID(mconn, "user", ID)
+	if err != nil {
+		t.Errorf("Error getting user: %v", err)
+		return
+	}
 	fmt.Println(anu)
 }
 
@@ -117,31 +123,88 @@ func TestGetUserFromEmail(t *testing.T) {
 }
 
 func TestGetAllUser(t *testing.T) {
-	anu := modul.GetAllUser(mconn, "user")
+	anu, err := modul.GetAllUser(mconn, "user")
+	if err != nil {
+		t.Errorf("Error getting user: %v", err)
+		return
+	}
 	fmt.Println(anu)
 }
 
 // todo
 func TestInsertTodo(t *testing.T) {
-	var tododata model.Todo
-	tododata.Title = "Belajar Golang"
-	tododata.Description = "Hari ini belajar testing"
-	tododata.IsDone = true
+	var data model.Todo
+	data.Title = "Pergi ke sana"
+	data.Description = "membeli itu ini"
+	data.Deadline = "02/02/2020"
+	data.IsDone = false
 
-	nama, err := modul.InsertTodo(mconn, "todo", tododata)
+	id, err := modul.InsertTodo(mconn, "todo", data)
 	if err != nil {
 		t.Errorf("Error inserting todo: %v", err)
 	}
-	fmt.Println(nama)
+	fmt.Println(id)
 }
 
 func TestGetTodoFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("653e02ab28597c2c37171d44")
-	anu := modul.GetTodoFromID(mconn, "todo", id)
+	id, _ := primitive.ObjectIDFromHex("655c4408d06d3d2ddba5d1d7")
+	anu, err := modul.GetTodoFromID(mconn, "todo", id)
+	if err != nil {
+		t.Errorf("Error getting todo: %v", err)
+		return
+	}
 	fmt.Println(anu)
 }
 
 func TestGetTodoList(t *testing.T) {
-	anu := modul.GetTodoList(mconn, "todo")
+	anu, err := modul.GetTodoList(mconn, "todo")
+	if err != nil {
+		t.Errorf("Error getting todo: %v", err)
+		return
+	}
 	fmt.Println(anu)
+}
+
+func TestUpdateTodo(t *testing.T) {
+	var data model.Todo
+	data.Title = "Belajar Golang"
+	data.Description = "Hari ini belajar golang"
+	data.Deadline = "02/02/2021"
+
+	id := "655c5047370b53741a9705d8"
+	ID, err := primitive.ObjectIDFromHex(id)
+	data.ID = ID
+	if err != nil {
+		fmt.Printf("Data tidak berhasil diubah")
+	} else {
+
+		_, status, err := modul.UpdateTodo(mconn, "todo", data)
+		fmt.Println("Status", status)
+		if err != nil {
+			t.Errorf("Error updating todo with id: %v", err)
+			return
+		} else {
+			fmt.Printf("Data berhasil diubah untuk id: %s\n", id)
+		}
+		fmt.Println(data)
+	}
+}
+
+func TestDeleteTodo(t *testing.T) {
+	id := "655c4408d06d3d2ddba5d1d7"
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		t.Errorf("Error converting id to ObjectID: %v", err)
+		return
+	} else {
+
+		status, err := modul.DeleteTodo(mconn, "todo", ID)
+		fmt.Println("Status", status)
+		if err != nil {
+			t.Errorf("Error deleting document: %v", err)
+			return
+		} else {
+			fmt.Println("Delete success")
+		}
+	}
 }
