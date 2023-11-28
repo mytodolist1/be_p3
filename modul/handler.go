@@ -309,7 +309,7 @@ func GCFHandlerGetTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collecti
 	}
 
 	Response.Status = true
-	Response.Message = "Get todo success"
+	Response.Message = "Get todolist success"
 	Response.Data = todolist
 
 	return GCFReturnStruct(Response)
@@ -473,18 +473,32 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
+	id := r.URL.Query().Get("_id")
+	if id == "" {
+		Response.Message = "Missing '_id' parameter in the URL"
+		return GCFReturnStruct(Response)
+	}
+
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		Response.Message = "Invalid '_id' parameter in the URL"
+		return GCFReturnStruct(Response)
+	}
+
+	datatodo.ID = ID
+
 	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
-	status, err := DeleteTodo(mconn, collectionname, datatodo.ID)
+	_, err = DeleteTodo(mconn, collectionname, datatodo.ID)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
-	Response.Message = "Delete todo success" + " " + strconv.FormatBool(status)
+	Response.Message = "Delete todo success"
 	return GCFReturnStruct(Response)
 }
 
