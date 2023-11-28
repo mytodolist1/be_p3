@@ -18,4 +18,5 @@ type Task struct {
 	Name        string `json:"name,omitempty" bson:"name,omitempty"`
 	Description string `json:"description,omitempty" bson:"description,omitempty"`
 	Deadline    string `json:"deadline,omitempty" bson:"deadline,omitempty"`
+	Done        bool   `json:"done,omitempty" bson:"done,omitempty"`
 }
