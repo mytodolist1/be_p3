@@ -13,42 +13,6 @@ import (
 )
 
 // user
-// func GCFHandlerGetUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-// 	var Response model.Credential
-// 	Response.Status = false
-// 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-// 	var datauser model.User
-
-// 	err := json.NewDecoder(r.Body).Decode(&datauser)
-// 	if err != nil {
-// 		Response.Message = "error parsing application/json: " + err.Error()
-// 	}
-
-// 	if datauser.Username == "" {
-// 		userlist, err := GetAllUser(mconn, collectionname)
-// 		if err != nil {
-// 			Response.Message = err.Error()
-// 			return GCFReturnStruct(Response)
-// 		}
-// 		Response.Status = true
-// 		Response.Message = "Get User Success"
-// 		Response.Data = userlist
-
-// 		return GCFReturnStruct(Response)
-// 	}
-
-// 	user, err := GetUserFromUsername(mconn, collectionname, datauser.Username)
-// 	if err != nil {
-// 		Response.Message = err.Error()
-// 		return GCFReturnStruct(Response)
-// 	}
-// 	Response.Status = true
-// 	Response.Message = "Hello user " + user.Username
-// 	Response.Data = []model.User{user}
-
-// 	return GCFReturnStruct(Response)
-// }
-
 func GCFHandlerGetAllUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
@@ -78,7 +42,6 @@ func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname stri
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 
-	// Mengambil nilai parameter "username" dari URL
 	username := r.URL.Query().Get("username")
 
 	if username == "" {
@@ -314,7 +277,7 @@ func GCFHandlerDeleteUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, colle
 }
 
 // todo
-func GCFHandlerGetAllTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFHandlerGetTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.TodoResponse
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
@@ -338,14 +301,14 @@ func GCFHandlerGetAllTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
-	_, err = GetTodoList(mconn, collectionname)
+	todolist, err := GetTodoList(mconn, collectionname)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
 	Response.Message = "Get todo success"
-	Response.Data = datauser
+	Response.Data = todolist
 	return GCFReturnStruct(Response)
 }
 
@@ -441,14 +404,14 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
-	_, status, err := UpdateTodo(mconn, collectionname, datauser)
+	todo, status, err := UpdateTodo(mconn, collectionname, datauser)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
 	Response.Message = "Update todo success" + " " + strconv.FormatBool(status)
-	Response.Data = datauser
+	Response.Data = []model.Todo{todo}
 	return GCFReturnStruct(Response)
 }
 

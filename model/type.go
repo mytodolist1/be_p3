@@ -43,5 +43,5 @@ type TodoList struct {
 type TodoResponse struct {
 	Status  bool   `bson:"status" json:"status"`
 	Message string `bson:"message,omitempty" json:"message,omitempty"`
-	Data    Todo   `bson:"data,omitempty" json:"data,omitempty"`
+	Data    []Todo   `bson:"data,omitempty" json:"data,omitempty"`
 }
