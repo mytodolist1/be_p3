@@ -282,6 +282,7 @@ func GCFHandlerGetTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collecti
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	var datatodo model.Todo
+	// var datauser model.User
 
 	token := r.Header.Get("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ")
@@ -295,6 +296,11 @@ func GCFHandlerGetTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collecti
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
 	}
+
+	// if userInfo.Id != datauser.Username {
+	// 	Response.Message = "Unauthorized access: User mismatch"
+	// 	return GCFReturnStruct(Response)
+	// }
 
 	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {

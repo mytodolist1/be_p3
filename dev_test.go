@@ -9,13 +9,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var mconn = SetConnection("MONGOSTRING", "mytodolist")
+var mconn = modul.MongoConnect("MONGOSTRING", "mytodolist")
 
 // user
 func TestRegister(t *testing.T) {
 	var data model.User
-	data.Email = "nopal@gmail.com"
-	data.Username = "nopal"
+	data.Email = "nopal1@gmail.com"
+	data.Username = "nopal1"
 	data.Role = "user"
 	data.Password = "secret"
 
@@ -29,8 +29,9 @@ func TestRegister(t *testing.T) {
 
 func TestLogIn(t *testing.T) {
 	var data model.User
-	data.Username = "tejoko"
+	data.Username = "budiman"
 	data.Password = "secret"
+	data.Role = "admin"
 
 	user, status, err := modul.LogIn(mconn, "user", data)
 	fmt.Println("Status", status)
@@ -136,8 +137,9 @@ func TestInsertTodo(t *testing.T) {
 	var data model.Todo
 	data.Title = "Pergi ke sana"
 	data.Description = "membeli itu ini"
-	data.Deadline = "02/02/2020"
-	data.IsDone = false
+	data.Deadline = "02/02/2021"
+	// data.IsDone = false
+	data.User.Username = "nopal"
 
 	id, err := modul.InsertTodo(mconn, "todo", data)
 	if err != nil {
@@ -149,6 +151,15 @@ func TestInsertTodo(t *testing.T) {
 func TestGetTodoFromID(t *testing.T) {
 	id, _ := primitive.ObjectIDFromHex("655c4408d06d3d2ddba5d1d7")
 	anu, err := modul.GetTodoFromID(mconn, "todo", id)
+	if err != nil {
+		t.Errorf("Error getting todo: %v", err)
+		return
+	}
+	fmt.Println(anu)
+}
+
+func TestGetTodoFromUsername(t *testing.T) {
+	anu, err := modul.GetTodoFromUsername(mconn, "todo", "nopal")
 	if err != nil {
 		t.Errorf("Error getting todo: %v", err)
 		return
@@ -208,3 +219,49 @@ func TestDeleteTodo(t *testing.T) {
 		}
 	}
 }
+
+// // paseto
+// func TestGeneratePasswordHash(t *testing.T) {
+// 	password := "secret"
+// 	hash, _ := modul.HashPassword(password) // ignore error for the sake of simplicity
+
+// 	fmt.Println("Password:", password)
+// 	fmt.Println("Hash:    ", hash)
+
+// 	match := modul.CheckPasswordHash(password, hash)
+// 	fmt.Println("Match:   ", match)
+// }
+
+// func TestGeneratePrivateKeyPaseto(t *testing.T) {
+// 	privateKey, publicKey := watoken.GenerateKey()
+// 	fmt.Println("Private Key: ", privateKey)
+// 	fmt.Println("Public Key: ", publicKey)
+// 	hasil, err := watoken.Encode("mytodolist", privateKey)
+// 	fmt.Println("hasil: ", hasil, err)
+// }
+
+// func TestHashFunction(t *testing.T) {
+// 	// mconn := SetConnection("MONGOSTRING", "mytodolist")
+
+// 	var userdata model.User
+// 	userdata.Username = "budiman"
+// 	userdata.Password = "secret"
+
+// 	filter := bson.M{"username": userdata.Username}
+// 	res := atdb.GetOneDoc[model.User](mconn, "user", filter)
+// 	fmt.Println("Mongo User Result: ", res)
+// 	hash, _ := modul.HashPassword(userdata.Password)
+// 	fmt.Println("Hash Password : ", hash)
+// 	match := modul.CheckPasswordHash(userdata.Password, res.Password)
+// 	fmt.Println("Match:   ", match)
+// }
+
+// func TestIsPasswordValid(t *testing.T) {
+// 	// mconn := SetConnection("MONGOSTRING", "mytodolist")
+// 	var userdata model.User
+// 	userdata.Username = "budiman"
+// 	userdata.Password = "secret"
+
+// 	anu := modul.IsPasswordValid(mconn, "user", userdata)
+// 	fmt.Println(anu)
+// }

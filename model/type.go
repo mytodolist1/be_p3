@@ -25,7 +25,7 @@ type Todo struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Title       string             `bson:"title,omitempty" json:"title,omitempty"`
 	Description string             `bson:"description,omitempty" json:"description,omitempty"`
-	Deadline    string             `bson:"deadline,omitempty" json:"deadline,omitempty"`
+	Deadline    string          `bson:"deadline,omitempty" json:"deadline,omitempty"`
 	TimeStamp   TimeStamp          `bson:"timestamp,omitempty" json:"timestamp,omitempty"`
 	IsDone      bool               `bson:"isdone,omitempty" json:"isdone,omitempty"`
 	User        User               `bson:"user,omitempty" json:"user,omitempty"`
