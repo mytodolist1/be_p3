@@ -281,7 +281,7 @@ func GCFHandlerGetTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collecti
 	var Response model.TodoResponse
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.Todo
+	var datatodo model.Todo
 
 	token := r.Header.Get("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ")
@@ -296,19 +296,22 @@ func GCFHandlerGetTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collecti
 		return GCFReturnStruct(Response)
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&datauser)
+	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
+
 	todolist, err := GetTodoList(mconn, collectionname)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
+
 	Response.Status = true
 	Response.Message = "Get todo success"
 	Response.Data = todolist
+
 	return GCFReturnStruct(Response)
 }
 
@@ -316,7 +319,7 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 	var Response model.TodoResponse
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.Todo
+	var datatodo model.Todo
 
 	token := r.Header.Get("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ")
@@ -331,18 +334,36 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 		return GCFReturnStruct(Response)
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&datauser)
+	id := r.URL.Query().Get("_id")
+	if id == "" {
+		Response.Message = "Missing '_id' parameter in the URL"
+		return GCFReturnStruct(Response)
+	}
+
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		Response.Message = "Invalid '_id' parameter in the URL"
+		return GCFReturnStruct(Response)
+	}
+
+	datatodo.ID = ID
+
+	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
-	_, err = GetTodoFromID(mconn, collectionname, datauser.ID)
+
+	todo, err := GetTodoFromID(mconn, collectionname, datatodo.ID)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
+
 	Response.Status = true
 	Response.Message = "Get todo success"
+	Response.Data = []model.Todo{todo}
+
 	return GCFReturnStruct(Response)
 }
 
@@ -350,7 +371,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	var Response model.TodoResponse
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.Todo
+	var datatodo model.Todo
 
 	token := r.Header.Get("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ")
@@ -365,18 +386,19 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&datauser)
+	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
-	_, err = InsertTodo(mconn, collectionname, datauser)
+	_, err = InsertTodo(mconn, collectionname, datatodo)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
 	Response.Message = "Insert todo success"
+
 	return GCFReturnStruct(Response)
 }
 
@@ -384,7 +406,7 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	var Response model.TodoResponse
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.Todo
+	var datatodo model.Todo
 
 	token := r.Header.Get("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ")
@@ -399,19 +421,36 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&datauser)
+	id := r.URL.Query().Get("_id")
+	if id == "" {
+		Response.Message = "Missing '_id' parameter in the URL"
+		return GCFReturnStruct(Response)
+	}
+
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		Response.Message = "Invalid '_id' parameter in the URL"
+		return GCFReturnStruct(Response)
+	}
+
+	datatodo.ID = ID
+
+	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
-	todo, status, err := UpdateTodo(mconn, collectionname, datauser)
+
+	todo, status, err := UpdateTodo(mconn, collectionname, datatodo)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
+
 	Response.Status = true
 	Response.Message = "Update todo success" + " " + strconv.FormatBool(status)
 	Response.Data = []model.Todo{todo}
+
 	return GCFReturnStruct(Response)
 }
 
@@ -419,7 +458,7 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	var Response model.TodoResponse
 	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.Todo
+	var datatodo model.Todo
 
 	token := r.Header.Get("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ")
@@ -434,12 +473,12 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&datauser)
+	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
-	status, err := DeleteTodo(mconn, collectionname, datauser.ID)
+	status, err := DeleteTodo(mconn, collectionname, datatodo.ID)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
