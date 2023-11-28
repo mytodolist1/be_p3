@@ -14,7 +14,7 @@ type Credential struct {
 }
 
 type Task struct {
-	ID          string `json:"id,omitempty" bson:"_id,omitempty"`
+	ID          int    `json:"id,omitempty" bson:"id,omitempty"`
 	Name        string `json:"name,omitempty" bson:"name,omitempty"`
 	Description string `json:"description,omitempty" bson:"description,omitempty"`
 	Deadline    string `json:"deadline,omitempty" bson:"deadline,omitempty"`
