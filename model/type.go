@@ -18,7 +18,7 @@ type Credential struct {
 	Status  bool   `bson:"status" json:"status"`
 	Token   string `bson:"token,omitempty" json:"token,omitempty"`
 	Message string `bson:"message,omitempty" json:"message,omitempty"`
-	Data    []User   `bson:"data,omitempty" json:"data,omitempty"`
+	Data    []User `bson:"data,omitempty" json:"data,omitempty"`
 }
 
 type Todo struct {
@@ -28,6 +28,7 @@ type Todo struct {
 	Deadline    string             `bson:"deadline,omitempty" json:"deadline,omitempty"`
 	TimeStamp   TimeStamp          `bson:"timestamp,omitempty" json:"timestamp,omitempty"`
 	IsDone      bool               `bson:"isdone,omitempty" json:"isdone,omitempty"`
+	User        User               `bson:"user,omitempty" json:"user,omitempty"`
 }
 
 type TimeStamp struct {
@@ -35,13 +36,13 @@ type TimeStamp struct {
 	UpdatedAt time.Time `bson:"updatedat,omitempty" json:"updatedat,omitempty"`
 }
 
-type TodoList struct {
-	Users    []User `bson:"users,omitempty" json:"users,omitempty"`
-	DataTodo []Todo `bson:"todolist,omitempty" json:"todolist,omitempty"`
-}
+// type TodoList struct {
+// 	Users    []User `bson:"users,omitempty" json:"users,omitempty"`
+// 	DataTodo []Todo `bson:"todolist,omitempty" json:"todolist,omitempty"`
+// }
 
 type TodoResponse struct {
 	Status  bool   `bson:"status" json:"status"`
 	Message string `bson:"message,omitempty" json:"message,omitempty"`
-	Data    []Todo   `bson:"data,omitempty" json:"data,omitempty"`
+	Data    []Todo `bson:"data,omitempty" json:"data,omitempty"`
 }
