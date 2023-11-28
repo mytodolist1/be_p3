@@ -12,11 +12,3 @@ type Credential struct {
 	Token   string `json:"token,omitempty" bson:"token,omitempty"`
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
 }
-
-type Task struct {
-	ID          int    `json:"id,omitempty" bson:"id,omitempty"`
-	Name        string `json:"name,omitempty" bson:"name,omitempty"`
-	Description string `json:"description,omitempty" bson:"description,omitempty"`
-	Deadline    string `json:"deadline,omitempty" bson:"deadline,omitempty"`
-	Done        bool   `json:"done,omitempty" bson:"done,omitempty"`
-}
