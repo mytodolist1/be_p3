@@ -46,11 +46,3 @@ type TodoResponse struct {
 	Message string `bson:"message,omitempty" json:"message,omitempty"`
 	Data    []Todo `bson:"data,omitempty" json:"data,omitempty"`
 }
-
-type Payload struct {
-	ID   primitive.ObjectID `json:"_id"`
-	User string             `json:"user"`
-	Exp  time.Time          `json:"exp"`
-	Iat  time.Time          `json:"iat"`
-	Nbf  time.Time          `json:"nbf"`
-}
