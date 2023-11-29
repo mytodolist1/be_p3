@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 
 	model "github.com/mytodolist1/be_p3/model"
@@ -122,11 +121,11 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Responsed)
 	}
 
-	userlogin, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
-	if err != nil {
-		Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
-		return GCFReturnStruct(Responsed)
-	}
+	userlogin := watoken.DecodeGetId(os.Getenv(PASETOPUBLICKEY), token)
+	// if err != nil {
+	// 	Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
+	// 	return GCFReturnStruct(Responsed)
+	// }
 
 	id := r.URL.Query().Get("_id")
 	if id == "" {
@@ -142,7 +141,7 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 	datauser.ID = ID
 
-	if userlogin.Id != datauser.Username {
+	if userlogin != datauser.Username {
 		Responsed.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Responsed)
 	}
@@ -176,11 +175,11 @@ func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 		return GCFReturnStruct(Responsed)
 	}
 
-	userlogin, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
-	if err != nil {
-		Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
-		return GCFReturnStruct(Responsed)
-	}
+	userlogin := watoken.DecodeGetId(os.Getenv(PASETOPUBLICKEY), token)
+	// if err != nil {
+	// 	Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
+	// 	return GCFReturnStruct(Responsed)
+	// }
 
 	username := r.URL.Query().Get("username")
 	if username == "" {
@@ -190,12 +189,12 @@ func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 
 	datauser.Username = username
 
-	if userlogin.Id != username {
+	if userlogin != datauser.Username {
 		Responsed.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Responsed)
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&datauser)
+	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
 		Responsed.Message = "error parsing application/json: " + err.Error()
 	}
@@ -224,11 +223,11 @@ func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Responsed)
 	}
 
-	userlogin, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
-	if err != nil {
-		Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
-		return GCFReturnStruct(Responsed)
-	}
+	userlogin := watoken.DecodeGetId(os.Getenv(PASETOPUBLICKEY), token)
+	// if err != nil {
+	// 	Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
+	// 	return GCFReturnStruct(Responsed)
+	// }
 
 	username := r.URL.Query().Get("username")
 	if username == "" {
@@ -238,12 +237,12 @@ func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 	datauser.Username = username
 
-	if userlogin.Id != username {
+	if userlogin != datauser.Username {
 		Responsed.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Responsed)
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&datauser)
+	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
 		Responsed.Message = "error parsing application/json: " + err.Error()
 	}
@@ -272,18 +271,18 @@ func GCFHandlerGetTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collecti
 		return GCFReturnStruct(Response)
 	}
 
-	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
-	if err != nil {
-		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
-		return GCFReturnStruct(Response)
-	}
+	userInfo := watoken.DecodeGetId(os.Getenv(PASETOPUBLICKEY), token)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+	// 	return GCFReturnStruct(Response)
+	// }
 
-	if userInfo.Id != datauser.Username {
+	if userInfo != datauser.Username {
 		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&datatodo)
+	err := json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
@@ -313,11 +312,11 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
-	if err != nil {
-		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
-		return GCFReturnStruct(Response)
-	}
+	userInfo := watoken.DecodeGetId(os.Getenv(PASETOPUBLICKEY), token)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+	// 	return GCFReturnStruct(Response)
+	// }
 
 	username := r.URL.Query().Get("username")
 	if username == "" {
@@ -327,12 +326,12 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 
 	datauser.Username = username
 
-	if userInfo.Id != username {
+	if userInfo != datauser.Username {
 		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&datatodo)
+	err := json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
@@ -362,11 +361,11 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 		return GCFReturnStruct(Response)
 	}
 
-	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
-	if err != nil {
-		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
-		return GCFReturnStruct(Response)
-	}
+	userInfo := watoken.DecodeGetId(os.Getenv(PASETOPUBLICKEY), token)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+	// 	return GCFReturnStruct(Response)
+	// }
 
 	id := r.URL.Query().Get("_id")
 	if id == "" {
@@ -382,7 +381,7 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 
 	datatodo.ID = ID
 
-	if userInfo.Id != datauser.Username {
+	if userInfo != datauser.Username {
 		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
@@ -417,18 +416,18 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
-	if err != nil {
-		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
-		return GCFReturnStruct(Response)
-	}
+	userInfo := watoken.DecodeGetId(os.Getenv(PASETOPUBLICKEY), token)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+	// 	return GCFReturnStruct(Response)
+	// }
 
-	if userInfo.Id != datauser.Username {
+	if userInfo != datauser.Username {
 		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&datatodo)
+	err := json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
@@ -455,11 +454,11 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	userlogin, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
-	if err != nil {
-		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
-		return GCFReturnStruct(Response)
-	}
+	userlogin := watoken.DecodeGetId(os.Getenv(PASETOPUBLICKEY), token)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+	// 	return GCFReturnStruct(Response)
+	// }
 
 	id := r.URL.Query().Get("_id")
 	if id == "" {
@@ -475,7 +474,7 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 	datatodo.ID = ID
 
-	if userlogin.Id != datauser.Username {
+	if userlogin != datauser.Username {
 		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
@@ -486,14 +485,14 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	todo, status, err := UpdateTodo(mconn, collectionname, datatodo)
+	todo, _, err := UpdateTodo(mconn, collectionname, datatodo)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 
 	Response.Status = true
-	Response.Message = "Update todo success" + " " + strconv.FormatBool(status)
+	Response.Message = "Update todo success"
 	Response.Data = []model.Todo{todo}
 
 	return GCFReturnStruct(Response)
@@ -510,11 +509,11 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	userlogin, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
-	if err != nil {
-		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
-		return GCFReturnStruct(Response)
-	}
+	userlogin := watoken.DecodeGetId(os.Getenv(PASETOPUBLICKEY), token)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+	// 	return GCFReturnStruct(Response)
+	// }
 
 	id := r.URL.Query().Get("_id")
 	if id == "" {
@@ -530,7 +529,7 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 	datatodo.ID = ID
 
-	if userlogin.Id != datauser.Username {
+	if userlogin != datauser.Username {
 		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
@@ -547,7 +546,7 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 	Response.Status = true
 	Response.Message = "Delete todo success"
-	
+
 	return GCFReturnStruct(Response)
 }
 
