@@ -12,277 +12,257 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+var (
+	Responsed model.Credential
+	Response  model.TodoResponse
+	datauser  model.User
+	datatodo  model.Todo
+)
+
 // user
 func GCFHandlerGetAllUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.Credential
-	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	// var datauser model.User
-
-	// err := json.NewDecoder(r.Body).Decode(&datauser)
-	// if err != nil {
-	// 	Response.Message = "error parsing application/json: " + err.Error()
-	// }
+	Responsed.Status = false
 
 	userlist, err := GetAllUser(mconn, collectionname)
 	if err != nil {
-		Response.Message = err.Error()
-		return GCFReturnStruct(Response)
+		Responsed.Message = err.Error()
+		return GCFReturnStruct(Responsed)
 	}
 
-	Response.Status = true
-	Response.Message = "Get User Success"
-	Response.Data = userlist
+	Responsed.Status = true
+	Responsed.Message = "Get User Success"
+	Responsed.Data = userlist
 
-	return GCFReturnStruct(Response)
+	return GCFReturnStruct(Responsed)
 }
 
 func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.Credential
-	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	Responsed.Status = false
 
 	username := r.URL.Query().Get("username")
 
 	if username == "" {
-		Response.Message = "Missing 'username' parameter in the URL"
-		return GCFReturnStruct(Response)
+		Responsed.Message = "Missing 'username' parameter in the URL"
+		return GCFReturnStruct(Responsed)
 	}
 
 	user, err := GetUserFromUsername(mconn, collectionname, username)
 	if err != nil {
-		Response.Message = "Error retrieving user data: " + err.Error()
-		return GCFReturnStruct(Response)
+		Responsed.Message = "Error retrieving user data: " + err.Error()
+		return GCFReturnStruct(Responsed)
 	}
 
-	Response.Status = true
-	Response.Message = "Hello user"
-	Response.Data = []model.User{user}
+	Responsed.Status = true
+	Responsed.Message = "Hello user"
+	Responsed.Data = []model.User{user}
 
-	return GCFReturnStruct(Response)
+	return GCFReturnStruct(Responsed)
 }
 
 func GCFHandlerRegister(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.Credential
-	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.User
+	Responsed.Status = false
 
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
+		Responsed.Message = "error parsing application/json: " + err.Error()
 	}
 
 	err = Register(mconn, collectionname, datauser)
 	if err != nil {
-		Response.Message = err.Error()
-		return GCFReturnStruct(Response)
+		Responsed.Message = err.Error()
+		return GCFReturnStruct(Responsed)
 	}
 
-	Response.Status = true
-	Response.Message = "Register success"
+	Responsed.Status = true
+	Responsed.Message = "Register success"
 
-	return GCFReturnStruct(Response)
+	return GCFReturnStruct(Responsed)
 }
 
 func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.Credential
-	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.User
+	Responsed.Status = false
 
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
+		Responsed.Message = "error parsing application/json: " + err.Error()
 	}
 
 	user, _, err := LogIn(mconn, collectionname, datauser)
 	if err != nil {
-		Response.Message = err.Error()
-		return GCFReturnStruct(Response)
+		Responsed.Message = err.Error()
+		return GCFReturnStruct(Responsed)
 	}
 
-	Response.Status = true
+	Responsed.Status = true
 	tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(PASETOPRIVATEKEYENV))
 	if err != nil {
-		Response.Message = "Gagal Encode Token :" + err.Error()
+		Responsed.Message = "Gagal Encode Token :" + err.Error()
 
 	} else {
-		Response.Message = "Selamat Datang" + " " + user.Username
-		Response.Token = tokenstring
+		Responsed.Message = "Selamat Datang" + " " + user.Username
+		Responsed.Token = tokenstring
 	}
 
-	return GCFReturnStruct(Response)
+	return GCFReturnStruct(Responsed)
 }
 
-// func GCFHandlerUpdateUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-// 	var Response model.Credential
-// 	Response.Status = false
-// 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-// 	var datauser model.User
-// 	err := json.NewDecoder(r.Body).Decode(&datauser)
-// 	if err != nil {
-// 		Response.Message = "error parsing application/json: " + err.Error()
-// 	}
-// 	user, status, err := UpdateUser(mconn, collectionname, datauser)
-// 	if err != nil {
-// 		Response.Message = err.Error()
-// 		return GCFReturnStruct(Response)
-// 	}
-// 	Response.Status = true
-// 	Response.Message = "Update success " + " " + user.Username + " " + strconv.FormatBool(status)
-
-// 	return GCFReturnStruct(Response)
-// }
-
-// func GCFHandlerChangePassword(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-// 	var Response model.Credential
-// 	Response.Status = false
-// 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-// 	var datauser model.User
-// 	err := json.NewDecoder(r.Body).Decode(&datauser)
-// 	if err != nil {
-// 		Response.Message = "error parsing application/json: " + err.Error()
-// 	}
-// 	user, status, err := ChangePassword(mconn, collectionname, datauser)
-// 	if err != nil {
-// 		Response.Message = err.Error()
-// 		return GCFReturnStruct(Response)
-// 	}
-// 	Response.Status = true
-// 	Response.Message = "Password change success for user" + " " + user.Username + " " + strconv.FormatBool(status)
-
-// 	return GCFReturnStruct(Response)
-// }
-
-// func GCFHandlerDeleteUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-// 	var Response model.Credential
-// 	Response.Status = false
-// 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-// 	var datauser model.User
-// 	err := json.NewDecoder(r.Body).Decode(&datauser)
-// 	if err != nil {
-// 		Response.Message = "error parsing application/json: " + err.Error()
-// 	}
-// 	status, err := DeleteUser(mconn, collectionname, datauser)
-// 	if err != nil {
-// 		Response.Message = err.Error()
-// 		return GCFReturnStruct(Response)
-// 	}
-// 	Response.Status = true
-// 	Response.Message = "Delete user success" + " " + datauser.Username + " " + strconv.FormatBool(status)
-
-// 	return GCFReturnStruct(Response)
-// }
-
-func GCFHandlerUpdateUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.Credential
-	Response.Status = false
+func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.User
+	Responsed.Status = false
+
+	token := r.Header.Get("Authorization")
+	token = strings.TrimPrefix(token, "Bearer ")
+	if token == "" {
+		Responsed.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Responsed)
+	}
+
+	userlogin, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Responsed)
+	}
+
+	if userlogin.Id != datauser.Username {
+		Responsed.Message = "Unauthorized access: User mismatch"
+		return GCFReturnStruct(Responsed)
+	}
 
 	id := r.URL.Query().Get("_id")
 	if id == "" {
-		Response.Message = "Missing '_id' parameter in the URL"
-		return GCFReturnStruct(Response)
+		Responsed.Message = "Missing '_id' parameter in the URL"
+		return GCFReturnStruct(Responsed)
 	}
 
 	ID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		Response.Message = "Invalid '_id' parameter in the URL"
-		return GCFReturnStruct(Response)
+		Responsed.Message = "Invalid '_id' parameter in the URL"
+		return GCFReturnStruct(Responsed)
 	}
 
 	datauser.ID = ID
 
 	err = json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
+		Responsed.Message = "error parsing application/json: " + err.Error()
 	}
 
 	user, _, err := UpdateUser(mconn, collectionname, datauser)
 	if err != nil {
-		Response.Message = "Error updating user data: " + err.Error()
-		return GCFReturnStruct(Response)
+		Responsed.Message = "Error updating user data: " + err.Error()
+		return GCFReturnStruct(Responsed)
 	}
 
-	Response.Status = true
-	Response.Message = "Update success " + " " + user.Username
-	Response.Data = []model.User{user}
+	Responsed.Status = true
+	Responsed.Message = "Update success " + " " + user.Username
+	Responsed.Data = []model.User{user}
 
-	return GCFReturnStruct(Response)
+	return GCFReturnStruct(Responsed)
 }
 
-func GCFHandlerChangePassword(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.Credential
-	Response.Status = false
+func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.User
+	Responsed.Status = false
+
+	token := r.Header.Get("Authorization")
+	token = strings.TrimPrefix(token, "Bearer ")
+	if token == "" {
+		Responsed.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Responsed)
+	}
+
+	userlogin, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Responsed)
+	}
+
+	if userlogin.Id != datauser.Username {
+		Responsed.Message = "Unauthorized access: User mismatch"
+		return GCFReturnStruct(Responsed)
+	}
 
 	username := r.URL.Query().Get("username")
 	if username == "" {
-		Response.Message = "Missing 'username' parameter in the URL"
-		return GCFReturnStruct(Response)
+		Responsed.Message = "Missing 'username' parameter in the URL"
+		return GCFReturnStruct(Responsed)
 	}
 
 	datauser.Username = username
 
-	err := json.NewDecoder(r.Body).Decode(&datauser)
+	err = json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
+		Responsed.Message = "error parsing application/json: " + err.Error()
 	}
 
 	user, _, err := ChangePassword(mconn, collectionname, datauser)
 	if err != nil {
-		Response.Message = "Error changing password: " + err.Error()
-		return GCFReturnStruct(Response)
+		Responsed.Message = "Error changing password: " + err.Error()
+		return GCFReturnStruct(Responsed)
 	}
 
-	Response.Status = true
-	Response.Message = "Password change success for user" + " " + user.Username
-	Response.Data = []model.User{user}
+	Responsed.Status = true
+	Responsed.Message = "Password change success for user" + " " + user.Username
+	Responsed.Data = []model.User{user}
 
-	return GCFReturnStruct(Response)
+	return GCFReturnStruct(Responsed)
 }
 
-func GCFHandlerDeleteUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.Credential
-	Response.Status = false
+func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datauser model.User
+	Responsed.Status = false
+
+	token := r.Header.Get("Authorization")
+	token = strings.TrimPrefix(token, "Bearer ")
+	if token == "" {
+		Responsed.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Responsed)
+	}
+
+	userlogin, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Responsed)
+	}
+
+	if userlogin.Id != datauser.Username {
+		Responsed.Message = "Unauthorized access: User mismatch"
+		return GCFReturnStruct(Responsed)
+	}
 
 	username := r.URL.Query().Get("username")
 	if username == "" {
-		Response.Message = "Missing 'username' parameter in the URL"
-		return GCFReturnStruct(Response)
+		Responsed.Message = "Missing 'username' parameter in the URL"
+		return GCFReturnStruct(Responsed)
 	}
 
 	datauser.Username = username
 
-	err := json.NewDecoder(r.Body).Decode(&datauser)
+	err = json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		Response.Message = "error parsing application/json: " + err.Error()
+		Responsed.Message = "error parsing application/json: " + err.Error()
 	}
 
 	_, err = DeleteUser(mconn, collectionname, datauser)
 	if err != nil {
-		Response.Message = "Error deleting user data: " + err.Error()
-		return GCFReturnStruct(Response)
+		Responsed.Message = "Error deleting user data: " + err.Error()
+		return GCFReturnStruct(Responsed)
 	}
 
-	Response.Status = true
-	Response.Message = "Delete user " + datauser.Username + " success"
+	Responsed.Status = true
+	Responsed.Message = "Delete user " + datauser.Username + " success"
 
-	return GCFReturnStruct(Response)
+	return GCFReturnStruct(Responsed)
 }
 
 // todo
 func GCFHandlerGetTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.TodoResponse
-	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datatodo model.Todo
-	// var datauser model.User
+	Response.Status = false
 
 	token := r.Header.Get("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ")
@@ -291,16 +271,16 @@ func GCFHandlerGetTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collecti
 		return GCFReturnStruct(Response)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
 	}
 
-	// if userInfo.Id != datauser.Username {
-	// 	Response.Message = "Unauthorized access: User mismatch"
-	// 	return GCFReturnStruct(Response)
-	// }
+	if userInfo.Id != datauser.Username {
+		Response.Message = "Unauthorized access: User mismatch"
+		return GCFReturnStruct(Response)
+	}
 
 	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
@@ -321,11 +301,9 @@ func GCFHandlerGetTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collecti
 	return GCFReturnStruct(Response)
 }
 
-func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.TodoResponse
-	Response.Status = false
+func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datatodo model.Todo
+	Response.Status = false
 
 	token := r.Header.Get("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ")
@@ -334,9 +312,69 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 		return GCFReturnStruct(Response)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	if userInfo.Id != datauser.Username {
+		Response.Message = "Unauthorized access: User mismatch"
+		return GCFReturnStruct(Response)
+	}
+
+	// id := r.URL.Query().Get("_id")
+	// if id == "" {
+	// 	Response.Message = "Missing '_id' parameter in the URL"
+	// 	return GCFReturnStruct(Response)
+	// }
+
+	// ID, err := primitive.ObjectIDFromHex(id)
+	// if err != nil {
+	// 	Response.Message = "Invalid '_id' parameter in the URL"
+	// 	return GCFReturnStruct(Response)
+	// }
+
+	// datatodo.ID = ID
+
+	err = json.NewDecoder(r.Body).Decode(&datatodo)
+	if err != nil {
+		Response.Message = "error parsing application/json3: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
+
+	todo, err := GetTodoFromUsername(mconn, collectionname, datauser.Username)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+
+	Response.Status = true
+	Response.Message = "Get todo success"
+	Response.Data = todo
+
+	return GCFReturnStruct(Response)
+}
+
+func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	Response.Status = false
+
+	token := r.Header.Get("Authorization")
+	token = strings.TrimPrefix(token, "Bearer ")
+	if token == "" {
+		Response.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Response)
+	}
+
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	if userInfo.Id != datauser.Username {
+		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
 
@@ -374,10 +412,8 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 }
 
 func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.TodoResponse
-	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datatodo model.Todo
+	Response.Status = false
 
 	token := r.Header.Get("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ")
@@ -386,9 +422,14 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	if userInfo.Id != datauser.Username {
+		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
 
@@ -409,10 +450,8 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 }
 
 func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.TodoResponse
-	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datatodo model.Todo
+	Response.Status = false
 
 	token := r.Header.Get("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ")
@@ -421,9 +460,14 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userlogin, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	if userlogin.Id != datauser.Username {
+		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
 
@@ -461,10 +505,8 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 }
 
 func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	var Response model.TodoResponse
-	Response.Status = false
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	var datatodo model.Todo
+	Response.Status = false
 
 	token := r.Header.Get("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ")
@@ -473,9 +515,14 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userlogin, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	if userlogin.Id != datauser.Username {
+		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
 

@@ -25,7 +25,7 @@ type Todo struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Title       string             `bson:"title,omitempty" json:"title,omitempty"`
 	Description string             `bson:"description,omitempty" json:"description,omitempty"`
-	Deadline    string          `bson:"deadline,omitempty" json:"deadline,omitempty"`
+	Deadline    string             `bson:"deadline,omitempty" json:"deadline,omitempty"`
 	TimeStamp   TimeStamp          `bson:"timestamp,omitempty" json:"timestamp,omitempty"`
 	IsDone      bool               `bson:"isdone,omitempty" json:"isdone,omitempty"`
 	User        User               `bson:"user,omitempty" json:"user,omitempty"`
@@ -45,4 +45,12 @@ type TodoResponse struct {
 	Status  bool   `bson:"status" json:"status"`
 	Message string `bson:"message,omitempty" json:"message,omitempty"`
 	Data    []Todo `bson:"data,omitempty" json:"data,omitempty"`
+}
+
+type Payload struct {
+	ID   primitive.ObjectID `json:"_id"`
+	User string             `json:"user"`
+	Exp  time.Time          `json:"exp"`
+	Iat  time.Time          `json:"iat"`
+	Nbf  time.Time          `json:"nbf"`
 }
