@@ -141,7 +141,13 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 	datauser.ID = ID
 
-	if userlogin != datauser.Username {
+	existingUser, err := GetUserFromID(mconn, collectionname, ID)
+	if err != nil {
+		Responsed.Message = "Error querying user data: " + err.Error()
+		return GCFReturnStruct(Responsed)
+	}
+
+	if userlogin != existingUser.Username {
 		Responsed.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Responsed)
 	}
