@@ -42,11 +42,12 @@ func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname stri
 	Responsed.Status = false
 
 	username := r.URL.Query().Get("username")
-
 	if username == "" {
 		Responsed.Message = "Missing 'username' parameter in the URL"
 		return GCFReturnStruct(Responsed)
 	}
+
+	datauser.Username = username
 
 	user, err := GetUserFromUsername(mconn, collectionname, username)
 	if err != nil {
@@ -127,11 +128,6 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Responsed)
 	}
 
-	if userlogin.Id != datauser.Username {
-		Responsed.Message = "Unauthorized access: User mismatch"
-		return GCFReturnStruct(Responsed)
-	}
-
 	id := r.URL.Query().Get("_id")
 	if id == "" {
 		Responsed.Message = "Missing '_id' parameter in the URL"
@@ -145,6 +141,11 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 
 	datauser.ID = ID
+
+	if userlogin.Id != datauser.Username {
+		Responsed.Message = "Unauthorized access: User mismatch"
+		return GCFReturnStruct(Responsed)
+	}
 
 	err = json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
@@ -181,11 +182,6 @@ func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 		return GCFReturnStruct(Responsed)
 	}
 
-	if userlogin.Id != datauser.Username {
-		Responsed.Message = "Unauthorized access: User mismatch"
-		return GCFReturnStruct(Responsed)
-	}
-
 	username := r.URL.Query().Get("username")
 	if username == "" {
 		Responsed.Message = "Missing 'username' parameter in the URL"
@@ -193,6 +189,11 @@ func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 	}
 
 	datauser.Username = username
+
+	if userlogin.Id != username {
+		Responsed.Message = "Unauthorized access: User mismatch"
+		return GCFReturnStruct(Responsed)
+	}
 
 	err = json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
@@ -318,24 +319,18 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	if userInfo.Id != datauser.Username {
-		Response.Message = "Unauthorized access: User mismatch"
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		Response.Message = "Missing 'username' parameter in the URL"
 		return GCFReturnStruct(Response)
 	}
 
-	// id := r.URL.Query().Get("_id")
-	// if id == "" {
-	// 	Response.Message = "Missing '_id' parameter in the URL"
-	// 	return GCFReturnStruct(Response)
-	// }
+	datauser.Username = username
 
-	// ID, err := primitive.ObjectIDFromHex(id)
-	// if err != nil {
-	// 	Response.Message = "Invalid '_id' parameter in the URL"
-	// 	return GCFReturnStruct(Response)
-	// }
-
-	// datatodo.ID = ID
+	if userInfo.Id != username {
+		Response.Message = "Unauthorized access: User mismatch"
+		return GCFReturnStruct(Response)
+	}
 
 	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
@@ -373,11 +368,6 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 		return GCFReturnStruct(Response)
 	}
 
-	if userInfo.Id != datauser.Username {
-		Response.Message = "Unauthorized access: User mismatch"
-		return GCFReturnStruct(Response)
-	}
-
 	id := r.URL.Query().Get("_id")
 	if id == "" {
 		Response.Message = "Missing '_id' parameter in the URL"
@@ -391,6 +381,11 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 	}
 
 	datatodo.ID = ID
+
+	if userInfo.Id != datauser.Username {
+		Response.Message = "Unauthorized access: User mismatch"
+		return GCFReturnStruct(Response)
+	}
 
 	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
@@ -466,11 +461,6 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	if userlogin.Id != datauser.Username {
-		Response.Message = "Unauthorized access: User mismatch"
-		return GCFReturnStruct(Response)
-	}
-
 	id := r.URL.Query().Get("_id")
 	if id == "" {
 		Response.Message = "Missing '_id' parameter in the URL"
@@ -484,6 +474,11 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 
 	datatodo.ID = ID
+
+	if userlogin.Id != datauser.Username {
+		Response.Message = "Unauthorized access: User mismatch"
+		return GCFReturnStruct(Response)
+	}
 
 	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
@@ -521,11 +516,6 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	if userlogin.Id != datauser.Username {
-		Response.Message = "Unauthorized access: User mismatch"
-		return GCFReturnStruct(Response)
-	}
-
 	id := r.URL.Query().Get("_id")
 	if id == "" {
 		Response.Message = "Missing '_id' parameter in the URL"
@@ -540,6 +530,11 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 	datatodo.ID = ID
 
+	if userlogin.Id != datauser.Username {
+		Response.Message = "Unauthorized access: User mismatch"
+		return GCFReturnStruct(Response)
+	}
+
 	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
 		Response.Message = "error parsing application/json3: " + err.Error()
@@ -552,6 +547,7 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 	Response.Status = true
 	Response.Message = "Delete todo success"
+	
 	return GCFReturnStruct(Response)
 }
 
