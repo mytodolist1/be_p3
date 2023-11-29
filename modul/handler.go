@@ -229,11 +229,6 @@ func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Responsed)
 	}
 
-	if userlogin.Id != datauser.Username {
-		Responsed.Message = "Unauthorized access: User mismatch"
-		return GCFReturnStruct(Responsed)
-	}
-
 	username := r.URL.Query().Get("username")
 	if username == "" {
 		Responsed.Message = "Missing 'username' parameter in the URL"
@@ -241,6 +236,11 @@ func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 
 	datauser.Username = username
+
+	if userlogin.Id != username {
+		Responsed.Message = "Unauthorized access: User mismatch"
+		return GCFReturnStruct(Responsed)
+	}
 
 	err = json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
