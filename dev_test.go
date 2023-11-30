@@ -14,8 +14,8 @@ var mconn = modul.MongoConnect("MONGOSTRING", "mytodolist")
 // user
 func TestRegister(t *testing.T) {
 	var data model.User
-	data.Email = "budiman@gmail.com"
-	data.Username = "budiman"
+	data.Email = "hehe1@gmail.com"
+	data.Username = "hehe1"
 	// data.Role = "user"
 	data.Password = "secret"
 	data.ConfirmPassword = "secret"
@@ -95,7 +95,7 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestGetUserFromID(t *testing.T) {
-	id := "6550a8f0b5b4a0a7f89941aa"
+	id := "656877141a72c5656be2662d"
 	ID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		t.Errorf("Error converting id to ObjectID: %v", err)
@@ -220,49 +220,3 @@ func TestDeleteTodo(t *testing.T) {
 		}
 	}
 }
-
-// // paseto
-// func TestGeneratePasswordHash(t *testing.T) {
-// 	password := "secret"
-// 	hash, _ := modul.HashPassword(password) // ignore error for the sake of simplicity
-
-// 	fmt.Println("Password:", password)
-// 	fmt.Println("Hash:    ", hash)
-
-// 	match := modul.CheckPasswordHash(password, hash)
-// 	fmt.Println("Match:   ", match)
-// }
-
-// func TestGeneratePrivateKeyPaseto(t *testing.T) {
-// 	privateKey, publicKey := watoken.GenerateKey()
-// 	fmt.Println("Private Key: ", privateKey)
-// 	fmt.Println("Public Key: ", publicKey)
-// 	hasil, err := watoken.Encode("mytodolist", privateKey)
-// 	fmt.Println("hasil: ", hasil, err)
-// }
-
-// func TestHashFunction(t *testing.T) {
-// 	// mconn := SetConnection("MONGOSTRING", "mytodolist")
-
-// 	var userdata model.User
-// 	userdata.Username = "budiman"
-// 	userdata.Password = "secret"
-
-// 	filter := bson.M{"username": userdata.Username}
-// 	res := atdb.GetOneDoc[model.User](mconn, "user", filter)
-// 	fmt.Println("Mongo User Result: ", res)
-// 	hash, _ := modul.HashPassword(userdata.Password)
-// 	fmt.Println("Hash Password : ", hash)
-// 	match := modul.CheckPasswordHash(userdata.Password, res.Password)
-// 	fmt.Println("Match:   ", match)
-// }
-
-// func TestIsPasswordValid(t *testing.T) {
-// 	// mconn := SetConnection("MONGOSTRING", "mytodolist")
-// 	var userdata model.User
-// 	userdata.Username = "budiman"
-// 	userdata.Password = "secret"
-
-// 	anu := modul.IsPasswordValid(mconn, "user", userdata)
-// 	fmt.Println(anu)
-// }

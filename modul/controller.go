@@ -45,7 +45,7 @@ func InsertOneDoc(db *mongo.Database, col string, docs interface{}) (insertedID 
 // }
 
 // user
-func GenerateUID(u *model.User) string {
+func GenerateUID(u model.User) string {
 	uid := uuid.New()
 	u.UID = uid.String()
 
@@ -93,7 +93,7 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 		return fmt.Errorf("Password dan konfirmasi password tidak sama")
 	}
 
-	uid := GenerateUID(&userdata)
+	uid := GenerateUID(userdata)
 
 	// Simpan pengguna ke basis data
 	hash, _ := HashPassword(userdata.Password)
