@@ -325,11 +325,13 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 	// 	return GCFReturnStruct(Response)
 	// }
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
 	}
+
+	datauser.UID = userInfo.Id
 
 	username := r.URL.Query().Get("username")
 	if username == "" {
@@ -376,11 +378,13 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 	// 	return GCFReturnStruct(Response)
 	// }
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
 	}
+
+	datauser.UID = userInfo.Id
 
 	id := r.URL.Query().Get("_id")
 	if id == "" {
@@ -430,11 +434,13 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 	// datauser.UID = userInfo
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
 	}
+
+	datauser.UID = userInfo.Id
 
 	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
@@ -472,11 +478,13 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	// 	return GCFReturnStruct(Response)
 	// }
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
 	}
+
+	datauser.UID = userInfo.Id
 
 	id := r.URL.Query().Get("_id")
 	if id == "" {
@@ -529,11 +537,13 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	// 	return GCFReturnStruct(Response)
 	// }
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
 	}
+
+	datauser.UID = userInfo.Id
 
 	id := r.URL.Query().Get("_id")
 	if id == "" {
