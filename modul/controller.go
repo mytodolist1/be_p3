@@ -58,7 +58,8 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 	}
 
 	// Periksa apakah email valid
-	if err := checkmail.ValidateFormat(userdata.Email); err != nil {
+	err := checkmail.ValidateFormat(userdata.Email)
+	if err != nil {
 		return fmt.Errorf("Email tidak valid")
 	}
 
@@ -116,7 +117,7 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 		{Key: "role", Value: "user"},
 	}
 
-	_, err := InsertOneDoc(db, col, user)
+	_, err = InsertOneDoc(db, col, user)
 	if err != nil {
 		return fmt.Errorf("SignUp: %v", err)
 	}
