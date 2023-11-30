@@ -140,9 +140,10 @@ func TestInsertTodo(t *testing.T) {
 	data.Description = "membeli itu ini"
 	data.Deadline = "02/02/2021"
 	// data.IsDone = false
-	data.User.Username = "nopal"
+	
+	uid := "0040f398-1200-4f36-8332-6752ab3e55c0"
 
-	id, err := modul.InsertTodo(mconn, "todo", data)
+	id, err := modul.InsertTodo(mconn, "todo", data, uid)
 	if err != nil {
 		t.Errorf("Error inserting todo: %v", err)
 	}

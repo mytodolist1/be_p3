@@ -369,7 +369,7 @@ func GetAllUser(db *mongo.Database, col string) (userlist []model.User, err erro
 }
 
 // todo
-func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo) (insertedID primitive.ObjectID, err error) {
+func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) (insertedID primitive.ObjectID, err error) {
 	objectId := primitive.NewObjectID()
 
 	// todo := bson.M{
@@ -398,7 +398,7 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo) (insertedID 
 		}},
 		{Key: "isdone", Value: todoDoc.IsDone},
 		{Key: "user", Value: bson.D{
-			{Key: "username", Value: todoDoc.User.Username},
+			{Key: "uid", Value: uid},
 		}},
 	}
 
