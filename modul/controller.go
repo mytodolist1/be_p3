@@ -97,25 +97,25 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 
 	// Simpan pengguna ke basis data
 	hash, _ := HashPassword(userdata.Password)
-	// user := bson.M{
-	// 	"_id":      primitive.NewObjectID(),
-	// 	"uid":      uid,
-	// 	"email":    userdata.Email,
-	// 	"username": userdata.Username,
-	// 	"password": hash,
-	// 	// "confirmpassword": userdata.ConfirmPassword, // todo: remove this field from db
-	// 	"role": "user",
-	// }
-
-	user := bson.D{
-		{Key: "_id", Value: primitive.NewObjectID()},
-		{Key: "uid", Value: uid},
-		{Key: "email", Value: userdata.Email},
-		{Key: "username", Value: userdata.Username},
-		{Key: "password", Value: hash},
-		// {Key: "confirmpassword", Value: userdata.ConfirmPassword}, // todo: remove this field from db
-		{Key: "role", Value: "user"},
+	user := bson.M{
+		"_id":      primitive.NewObjectID(),
+		"uid":      uid,
+		"email":    userdata.Email,
+		"username": userdata.Username,
+		"password": hash,
+		// "confirmpassword": userdata.ConfirmPassword, // todo: remove this field from db
+		"role": "user",
 	}
+
+	// user := bson.D{
+	// 	{Key: "_id", Value: primitive.NewObjectID()},
+	// 	{Key: "uid", Value: uid},
+	// 	{Key: "email", Value: userdata.Email},
+	// 	{Key: "username", Value: userdata.Username},
+	// 	{Key: "password", Value: hash},
+	// 	// {Key: "confirmpassword", Value: userdata.ConfirmPassword}, // todo: remove this field from db
+	// 	{Key: "role", Value: "user"},
+	// }
 
 	_, err = InsertOneDoc(db, col, user)
 	if err != nil {
@@ -365,35 +365,35 @@ func GetAllUser(db *mongo.Database, col string) (userlist []model.User, err erro
 func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo) (insertedID primitive.ObjectID, err error) {
 	objectId := primitive.NewObjectID()
 
-	// todo := bson.M{
-	// 	"_id":         objectId,
-	// 	"title":       todoDoc.Title,
-	// 	"description": todoDoc.Description,
-	// 	"deadline":    todoDoc.Deadline,
-	// 	"timestamp": bson.M{
-	// 		"createdat": time.Now(),
-	// 		"updatedat": time.Now(),
-	// 	},
-	// 	"isdone": todoDoc.IsDone,
-	// 	"user": model.User{
-	// 		Username: todoDoc.User.Username,
-	// 	},
-	// }
-
-	todo := bson.D{
-		{Key: "_id", Value: objectId},
-		{Key: "title", Value: todoDoc.Title},
-		{Key: "description", Value: todoDoc.Description},
-		{Key: "deadline", Value: todoDoc.Deadline},
-		{Key: "timestamp", Value: bson.D{
-			{Key: "createdat", Value: time.Now()},
-			{Key: "updatedat", Value: time.Now()},
-		}},
-		{Key: "isdone", Value: todoDoc.IsDone},
-		{Key: "user", Value: bson.D{
-			{Key: "username", Value: todoDoc.User.Username},
-		}},
+	todo := bson.M{
+		"_id":         objectId,
+		"title":       todoDoc.Title,
+		"description": todoDoc.Description,
+		"deadline":    todoDoc.Deadline,
+		"timestamp": bson.M{
+			"createdat": time.Now(),
+			"updatedat": time.Now(),
+		},
+		"isdone": todoDoc.IsDone,
+		"user": model.User{
+			Username: todoDoc.User.Username,
+		},
 	}
+
+	// todo := bson.D{
+	// 	{Key: "_id", Value: objectId},
+	// 	{Key: "title", Value: todoDoc.Title},
+	// 	{Key: "description", Value: todoDoc.Description},
+	// 	{Key: "deadline", Value: todoDoc.Deadline},
+	// 	{Key: "timestamp", Value: bson.D{
+	// 		{Key: "createdat", Value: time.Now()},
+	// 		{Key: "updatedat", Value: time.Now()},
+	// 	}},
+	// 	{Key: "isdone", Value: todoDoc.IsDone},
+	// 	{Key: "user", Value: bson.D{
+	// 		{Key: "username", Value: todoDoc.User.Username},
+	// 	}},
+	// }
 
 	insertedID, err = InsertOneDoc(db, col, todo)
 	if err != nil {
