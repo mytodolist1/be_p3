@@ -67,6 +67,7 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 	if userExists.Email != "" {
 		return fmt.Errorf("Email sudah terdaftar")
 	}
+
 	userExists, _ = GetUserFromUsername(db, col, userdata.Username)
 	if userExists.Username != "" {
 		return fmt.Errorf("Username sudah terdaftar")
@@ -76,6 +77,7 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 	if len(userdata.Password) < 6 {
 		return fmt.Errorf("Password minimal 6 karakter")
 	}
+
 	if strings.Contains(userdata.Password, " ") {
 		return fmt.Errorf("Password tidak boleh mengandung spasi")
 	}
@@ -94,20 +96,31 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 
 	// Simpan pengguna ke basis data
 	hash, _ := HashPassword(userdata.Password)
-	user := bson.M{
-		"_id":      primitive.NewObjectID(),
-		"uid":      uid,
-		"email":    userdata.Email,
-		"username": userdata.Username,
-		"password": hash,
-		// "confirmpassword": userdata.ConfirmPassword, // todo: remove this field from db
-		"role": "user",
+	// user := bson.M{
+	// 	"_id":      primitive.NewObjectID(),
+	// 	"uid":      uid,
+	// 	"email":    userdata.Email,
+	// 	"username": userdata.Username,
+	// 	"password": hash,
+	// 	// "confirmpassword": userdata.ConfirmPassword, // todo: remove this field from db
+	// 	"role": "user",
+	// }
+
+	user := bson.D{
+		{Key: "_id", Value: primitive.NewObjectID()},
+		{Key: "uid", Value: uid},
+		{Key: "email", Value: userdata.Email},
+		{Key: "username", Value: userdata.Username},
+		{Key: "password", Value: hash},
+		// {Key: "confirmpassword", Value: userdata.ConfirmPassword}, // todo: remove this field from db
+		{Key: "role", Value: "user"},
 	}
 
 	_, err := InsertOneDoc(db, col, user)
 	if err != nil {
 		return fmt.Errorf("SignUp: %v", err)
 	}
+
 	return nil
 }
 
@@ -176,15 +189,18 @@ func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model
 			"username": userdata.Username,
 		},
 	}
+
 	cols := db.Collection(col)
 	result, err := cols.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		return user, false, err
 	}
+
 	if result.ModifiedCount == 0 {
 		err = fmt.Errorf("Data tidak berhasil diupdate")
 		return user, false, err
 	}
+
 	return user, true, nil
 }
 
@@ -239,10 +255,12 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 	if err != nil {
 		return user, false, err
 	}
+
 	if result.ModifiedCount == 0 {
 		err = fmt.Errorf("PAssword tidak berhasil diupdate")
 		return user, false, err
 	}
+
 	return user, true, nil
 }
 
@@ -270,49 +288,56 @@ func DeleteUser(db *mongo.Database, col string, userdata model.User) (status boo
 }
 
 func GetUserFromID(db *mongo.Database, col string, _id primitive.ObjectID) (user model.User, err error) {
-	// userID := _id.Hex()
-
 	cols := db.Collection(col)
 	filter := bson.M{"_id": _id}
+
 	err = cols.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			err := fmt.Errorf("no data found for ID %s", _id)
 			return user, err
 		}
+
 		err := fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
 		return user, err
 	}
+
 	return user, nil
 }
 
 func GetUserFromUsername(db *mongo.Database, col string, username string) (user model.User, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"username": username}
+
 	err = cols.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			err := fmt.Errorf("no data found for username %s", username)
 			return user, err
 		}
+
 		err := fmt.Errorf("error retrieving data for username %s: %s", username, err.Error())
 		return user, err
 	}
+
 	return user, nil
 }
 
 func GetUserFromEmail(db *mongo.Database, col string, email string) (user model.User, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"email": email}
+
 	err = cols.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			err := fmt.Errorf("no data found for email %s", email)
 			return user, err
 		}
+
 		err := fmt.Errorf("error retrieving data for email %s: %s", email, err.Error())
 		return user, err
 	}
+
 	return user, nil
 }
 
@@ -339,19 +364,34 @@ func GetAllUser(db *mongo.Database, col string) (userlist []model.User, err erro
 func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo) (insertedID primitive.ObjectID, err error) {
 	objectId := primitive.NewObjectID()
 
-	todo := bson.M{
-		"_id":         objectId,
-		"title":       todoDoc.Title,
-		"description": todoDoc.Description,
-		"deadline":    todoDoc.Deadline,
-		"timestamp": bson.M{
-			"createdat": time.Now(),
-			"updatedat": time.Now(),
-		},
-		"isdone": todoDoc.IsDone,
-		"user": model.User{
-			Username: todoDoc.User.Username,
-		},
+	// todo := bson.M{
+	// 	"_id":         objectId,
+	// 	"title":       todoDoc.Title,
+	// 	"description": todoDoc.Description,
+	// 	"deadline":    todoDoc.Deadline,
+	// 	"timestamp": bson.M{
+	// 		"createdat": time.Now(),
+	// 		"updatedat": time.Now(),
+	// 	},
+	// 	"isdone": todoDoc.IsDone,
+	// 	"user": model.User{
+	// 		Username: todoDoc.User.Username,
+	// 	},
+	// }
+
+	todo := bson.D{
+		{Key: "_id", Value: objectId},
+		{Key: "title", Value: todoDoc.Title},
+		{Key: "description", Value: todoDoc.Description},
+		{Key: "deadline", Value: todoDoc.Deadline},
+		{Key: "timestamp", Value: bson.D{
+			{Key: "createdat", Value: time.Now()},
+			{Key: "updatedat", Value: time.Now()},
+		}},
+		{Key: "isdone", Value: todoDoc.IsDone},
+		{Key: "user", Value: bson.D{
+			{Key: "username", Value: todoDoc.User.Username},
+		}},
 	}
 
 	insertedID, err = InsertOneDoc(db, col, todo)
@@ -381,30 +421,36 @@ func GetTodoFromID(db *mongo.Database, col string, _id primitive.ObjectID) (todo
 func GetTodoFromUsername(db *mongo.Database, col string, username string) (todo []model.Todo, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"user.username": username}
+
 	cursor, err := cols.Find(context.Background(), filter)
 	if err != nil {
 		fmt.Println("Error GetTodoFromUsername in colection", col, ":", err)
 		return nil, err
 	}
+
 	err = cursor.All(context.Background(), &todo)
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	return todo, nil
 }
 
 func GetTodoList(db *mongo.Database, col string) (todo []model.Todo, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{}
+
 	cursor, err := cols.Find(context.Background(), filter)
 	if err != nil {
 		fmt.Println("Error GetTodoList in colection", col, ":", err)
 		return nil, err
 	}
+
 	err = cursor.All(context.Background(), &todo)
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	return todo, nil
 }
 
@@ -429,6 +475,7 @@ func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (todos model.To
 	if err != nil {
 		return todos, false, err
 	}
+
 	if result.ModifiedCount == 0 && result.UpsertedCount == 0 {
 		err = fmt.Errorf("Data tidak berhasil diupdate")
 		return todos, false, err
@@ -445,13 +492,16 @@ func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (todos model.To
 func DeleteTodo(db *mongo.Database, col string, _id primitive.ObjectID) (status bool, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"_id": _id}
+
 	result, err := cols.DeleteOne(context.Background(), filter)
 	if err != nil {
 		return false, err
 	}
+
 	if result.DeletedCount == 0 {
 		err = fmt.Errorf("Data tidak berhasil dihapus")
 		return false, err
 	}
+
 	return true, nil
 }
