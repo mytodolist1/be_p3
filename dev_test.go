@@ -111,7 +111,7 @@ func TestGetUserFromID(t *testing.T) {
 }
 
 func TestGetUserFromUsername(t *testing.T) {
-	anu, err := modul.GetUserFromUsername(mconn, "user", "budiman")
+	anu, err := modul.GetUserFromUsername(mconn, "user", "qiqi1")
 	if err != nil {
 		t.Errorf("Error getting user: %v", err)
 		return

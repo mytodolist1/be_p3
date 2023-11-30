@@ -148,7 +148,7 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 
 	if userlogin != existingUser.UID {
-		Responsed.Message = "Unauthorized access: User mismatch"
+		Responsed.Message = "Unauthorized access: User mismatch" + userlogin + " " + existingUser.UID
 		return GCFReturnStruct(Responsed)
 	}
 
@@ -202,7 +202,7 @@ func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 	}
 
 	if userlogin != existingUser.UID {
-		Responsed.Message = "Unauthorized access: User mismatch"
+		Responsed.Message = "Unauthorized access: User mismatch" + userlogin + " " + existingUser.UID
 		return GCFReturnStruct(Responsed)
 	}
 
@@ -256,7 +256,7 @@ func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 
 	if userlogin != existingUser.UID {
-		Responsed.Message = "Unauthorized access: User mismatch"
+		Responsed.Message = "Unauthorized access: User mismatch" + userlogin + " " + existingUser.UID
 		return GCFReturnStruct(Responsed)
 	}
 
