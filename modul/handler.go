@@ -98,7 +98,7 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 	}
 
 	Responsed.Status = true
-	tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(PASETOPRIVATEKEYENV))
+	tokenstring, err := watoken.Encode(datauser.UID, os.Getenv(PASETOPRIVATEKEYENV))
 	if err != nil {
 		Responsed.Message = "Gagal Encode Token :" + err.Error()
 
@@ -147,7 +147,7 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Responsed)
 	}
 
-	if userlogin != existingUser.Username {
+	if userlogin != existingUser.UID {
 		Responsed.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Responsed)
 	}
@@ -201,7 +201,7 @@ func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 		return GCFReturnStruct(Responsed)
 	}
 
-	if userlogin != existingUser.Username {
+	if userlogin != existingUser.UID {
 		Responsed.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Responsed)
 	}
@@ -255,7 +255,7 @@ func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Responsed)
 	}
 
-	if userlogin != existingUser.Username {
+	if userlogin != existingUser.UID {
 		Responsed.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Responsed)
 	}
@@ -350,7 +350,7 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Responsed)
 	}
 
-	if userInfo != existingUser.Username {
+	if userInfo != existingUser.UID {
 		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
@@ -411,7 +411,7 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 		return GCFReturnStruct(Responsed)
 	}
 
-	if userInfo != existingUser.Username {
+	if userInfo != existingUser.UID {
 		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
@@ -474,11 +474,13 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
+
 	_, err = InsertTodo(mconn, collectionname, datatodo)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
+
 	Response.Status = true
 	Response.Message = "Insert todo success"
 
@@ -522,7 +524,7 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Responsed)
 	}
 
-	if userlogin != existingUser.Username {
+	if userlogin != existingUser.UID {
 		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
@@ -583,7 +585,7 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Responsed)
 	}
 
-	if userlogin != existingUser.Username {
+	if userlogin != existingUser.UID {
 		Response.Message = "Unauthorized access: User mismatch"
 		return GCFReturnStruct(Response)
 	}
@@ -593,11 +595,13 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
 	}
+
 	_, err = DeleteTodo(mconn, collectionname, datatodo.ID)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
+	
 	Response.Status = true
 	Response.Message = "Delete todo success"
 

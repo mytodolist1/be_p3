@@ -14,24 +14,25 @@ var mconn = modul.MongoConnect("MONGOSTRING", "mytodolist")
 // user
 func TestRegister(t *testing.T) {
 	var data model.User
-	data.Email = "nopal1@gmail.com"
-	data.Username = "nopal1"
+	data.Email = "fulan1@gmail.com"
+	data.Username = "fulan1"
 	data.Role = "user"
 	data.Password = "secret"
+	data.ConfirmPassword = "secret"
 
 	err := modul.Register(mconn, "user", data)
 	if err != nil {
 		t.Errorf("Error registering user: %v", err)
 	} else {
-		fmt.Println("Register success", data)
+		fmt.Println("Register success", data.Username)
 	}
 }
 
 func TestLogIn(t *testing.T) {
 	var data model.User
-	data.Username = "budiman"
+	data.Username = "fulan1"
 	data.Password = "secret"
-	data.Role = "admin"
+	data.Role = "user"
 
 	user, status, err := modul.LogIn(mconn, "user", data)
 	fmt.Println("Status", status)
@@ -44,10 +45,10 @@ func TestLogIn(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	var data model.User
-	data.Email = "tejoko@gmail.com"
-	data.Username = "tejoko"
+	data.Email = "fulan12@gmail.com"
+	data.Username = "fulan12"
 
-	id := "6550a8f0b5b4a0a7f89941aa"
+	id := "6568592b8012346866b0ea1e"
 	ID, err := primitive.ObjectIDFromHex(id)
 	data.ID = ID
 	if err != nil {

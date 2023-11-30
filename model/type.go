@@ -7,11 +7,13 @@ import (
 )
 
 type User struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	Email    string             `bson:"email,omitempty" json:"email,omitempty"`
-	Username string             `bson:"username,omitempty" json:"username,omitempty"`
-	Password string             `bson:"password,omitempty" json:"password,omitempty"`
-	Role     string             `bson:"role,omitempty" json:"role,omitempty"`
+	ID              primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	UID             string             `bson:"uid,omitempty" json:"uid,omitempty"`
+	Email           string             `bson:"email,omitempty" json:"email,omitempty"`
+	Username        string             `bson:"username,omitempty" json:"username,omitempty"`
+	Password        string             `bson:"password,omitempty" json:"password,omitempty"`
+	ConfirmPassword string             `bson:"confirmpassword,omitempty" json:"confirmpassword,omitempty"`
+	Role            string             `bson:"role,omitempty" json:"role,omitempty"`
 }
 
 type Credential struct {

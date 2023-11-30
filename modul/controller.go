@@ -15,6 +15,7 @@ import (
 
 	"github.com/aiteung/atdb"
 	"github.com/badoux/checkmail"
+	"github.com/google/uuid"
 	model "github.com/mytodolist1/be_p3/model"
 )
 
@@ -44,8 +45,15 @@ func InsertOneDoc(db *mongo.Database, col string, docs interface{}) (insertedID 
 // }
 
 // user
+func GenerateUID(u *model.User) string {
+	uid := uuid.New()
+	u.UID = uid.String()
+
+	return u.UID
+}
+
 func Register(db *mongo.Database, col string, userdata model.User) error {
-	if userdata.Username == "" || userdata.Password == "" || userdata.Email == "" {
+	if userdata.Email == "" || userdata.Username == "" || userdata.Password == "" || userdata.ConfirmPassword == "" {
 		return fmt.Errorf("Data tidak lengkap")
 	}
 
@@ -77,15 +85,25 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 		return fmt.Errorf("Username tidak boleh mengandung spasi")
 	}
 
+	// Periksa apakah password dan konfirmasi password sama
+	if userdata.Password != userdata.ConfirmPassword {
+		return fmt.Errorf("Password dan konfirmasi password tidak sama")
+	}
+
+	uid := GenerateUID(&userdata)
+
 	// Simpan pengguna ke basis data
 	hash, _ := HashPassword(userdata.Password)
 	user := bson.M{
 		"_id":      primitive.NewObjectID(),
+		"uid":      uid,
 		"email":    userdata.Email,
 		"username": userdata.Username,
 		"password": hash,
-		"role":     "user",
+		// "confirmpassword": userdata.ConfirmPassword, // todo: remove this field from db
+		"role": "user",
 	}
+
 	_, err := InsertOneDoc(db, col, user)
 	if err != nil {
 		return fmt.Errorf("SignUp: %v", err)
@@ -178,7 +196,7 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 	}
 
 	// Periksa apakah password memenuhi syarat
-	if userdata.Password == "" {
+	if userdata.Password == "" || userdata.ConfirmPassword == "" {
 		err = fmt.Errorf("Password tidak boleh kosong")
 		return user, false, err
 	}
@@ -199,6 +217,12 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 		return user, false, err
 	}
 
+	// Periksa apakah password dan konfirmasi password sama
+	if userdata.Password != userdata.ConfirmPassword {
+		err = fmt.Errorf("Password dan konfirmasi password tidak sama")
+		return user, false, err
+	}
+
 	// Simpan pengguna ke basis data
 	hash, _ := HashPassword(userdata.Password)
 	userExists.Password = hash
@@ -206,8 +230,10 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 	update := bson.M{
 		"$set": bson.M{
 			"password": userExists.Password,
+			// "confirmPassword": userExists.ConfirmPassword, // todo: remove this field from db
 		},
 	}
+
 	cols := db.Collection(col)
 	result, err := cols.UpdateOne(context.Background(), filter, update)
 	if err != nil {
