@@ -12,9 +12,7 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
 	fmt.Println("Private Key: ", privateKey)
 	fmt.Println("Public Key: ", publicKey)
-
-	// uid := "81381f10-cd45-42e4-a72c-642f34bdd53d"
-	hasil, err := watoken.Encode("uid", privateKey)
+	hasil, err := watoken.Encode("mytodolist", privateKey)
 	fmt.Println("hasil: ", hasil, err)
 }
 
