@@ -177,11 +177,18 @@ func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 		return GCFReturnStruct(Responsed)
 	}
 
-	userlogin := watoken.DecodeGetId(os.Getenv(PASETOPUBLICKEY), token)
-	// if err != nil {
-	// 	Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
+	// userlogin := watoken.DecodeGetId(os.Getenv(PASETOPUBLICKEY), token)
+
+	// if userlogin != existingUser.UID {
+	// 	Responsed.Message = "Unauthorized access: User mismatch" + userlogin + " " + existingUser.UID
 	// 	return GCFReturnStruct(Responsed)
 	// }
+
+	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Responsed)
+	}
 
 	username := r.URL.Query().Get("username")
 	if username == "" {
@@ -190,17 +197,6 @@ func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 	}
 
 	datauser.Username = username
-
-	existingUser, err := GetUserFromUsername(mconn, collectionname, username)
-	if err != nil {
-		Responsed.Message = "Error querying user data: " + err.Error()
-		return GCFReturnStruct(Responsed)
-	}
-
-	if userlogin != existingUser.UID {
-		Responsed.Message = "Unauthorized access: User mismatch" + userlogin + " " + existingUser.UID
-		return GCFReturnStruct(Responsed)
-	}
 
 	err = json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {

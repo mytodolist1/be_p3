@@ -45,7 +45,7 @@ func InsertOneDoc(db *mongo.Database, col string, docs interface{}) (insertedID 
 // }
 
 // user
-func GenerateUID(u model.User) string {
+func GenerateUID(u *model.User) string {
 	uid := uuid.New()
 	u.UID = uid.String()
 
@@ -93,29 +93,29 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 		return fmt.Errorf("Password dan konfirmasi password tidak sama")
 	}
 
-	uid := GenerateUID(userdata)
+	uid := GenerateUID(&userdata)
 
 	// Simpan pengguna ke basis data
 	hash, _ := HashPassword(userdata.Password)
-	user := bson.M{
-		"_id":      primitive.NewObjectID(),
-		"uid":      uid,
-		"email":    userdata.Email,
-		"username": userdata.Username,
-		"password": hash,
-		// "confirmpassword": userdata.ConfirmPassword, // todo: remove this field from db
-		"role": "user",
-	}
-
-	// user := bson.D{
-	// 	{Key: "_id", Value: primitive.NewObjectID()},
-	// 	{Key: "uid", Value: uid},
-	// 	{Key: "email", Value: userdata.Email},
-	// 	{Key: "username", Value: userdata.Username},
-	// 	{Key: "password", Value: hash},
-	// 	// {Key: "confirmpassword", Value: userdata.ConfirmPassword}, // todo: remove this field from db
-	// 	{Key: "role", Value: "user"},
+	// user := bson.M{
+	// 	"_id":      primitive.NewObjectID(),
+	// 	"uid":      uid,
+	// 	"email":    userdata.Email,
+	// 	"username": userdata.Username,
+	// 	"password": hash,
+	// 	// "confirmpassword": userdata.ConfirmPassword, // todo: remove this field from db
+	// 	"role": "user",
 	// }
+
+	user := bson.D{
+		{Key: "_id", Value: primitive.NewObjectID()},
+		{Key: "uid", Value: uid},
+		{Key: "email", Value: userdata.Email},
+		{Key: "username", Value: userdata.Username},
+		{Key: "password", Value: hash},
+		// {Key: "confirmpassword", Value: userdata.ConfirmPassword}, // todo: remove this field from db
+		{Key: "role", Value: "user"},
+	}
 
 	_, err = InsertOneDoc(db, col, user)
 	if err != nil {
@@ -184,11 +184,18 @@ func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model
 
 	// Simpan pengguna ke basis data
 	filter := bson.M{"_id": userdata.ID}
-	update := bson.M{
-		"$set": bson.M{
-			"email":    userdata.Email,
-			"username": userdata.Username,
-		},
+	// update := bson.M{
+	// 	"$set": bson.M{
+	// 		"email":    userdata.Email,
+	// 		"username": userdata.Username,
+	// 	},
+	// }
+
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "email", Value: userdata.Email},
+			{Key: "username", Value: userdata.Username},
+		}},
 	}
 
 	cols := db.Collection(col)
@@ -365,35 +372,35 @@ func GetAllUser(db *mongo.Database, col string) (userlist []model.User, err erro
 func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo) (insertedID primitive.ObjectID, err error) {
 	objectId := primitive.NewObjectID()
 
-	todo := bson.M{
-		"_id":         objectId,
-		"title":       todoDoc.Title,
-		"description": todoDoc.Description,
-		"deadline":    todoDoc.Deadline,
-		"timestamp": bson.M{
-			"createdat": time.Now(),
-			"updatedat": time.Now(),
-		},
-		"isdone": todoDoc.IsDone,
-		"user": model.User{
-			Username: todoDoc.User.Username,
-		},
-	}
-
-	// todo := bson.D{
-	// 	{Key: "_id", Value: objectId},
-	// 	{Key: "title", Value: todoDoc.Title},
-	// 	{Key: "description", Value: todoDoc.Description},
-	// 	{Key: "deadline", Value: todoDoc.Deadline},
-	// 	{Key: "timestamp", Value: bson.D{
-	// 		{Key: "createdat", Value: time.Now()},
-	// 		{Key: "updatedat", Value: time.Now()},
-	// 	}},
-	// 	{Key: "isdone", Value: todoDoc.IsDone},
-	// 	{Key: "user", Value: bson.D{
-	// 		{Key: "username", Value: todoDoc.User.Username},
-	// 	}},
+	// todo := bson.M{
+	// 	"_id":         objectId,
+	// 	"title":       todoDoc.Title,
+	// 	"description": todoDoc.Description,
+	// 	"deadline":    todoDoc.Deadline,
+	// 	"timestamp": bson.M{
+	// 		"createdat": time.Now(),
+	// 		"updatedat": time.Now(),
+	// 	},
+	// 	"isdone": todoDoc.IsDone,
+	// 	"user": model.User{
+	// 		Username: todoDoc.User.Username,
+	// 	},
 	// }
+
+	todo := bson.D{
+		{Key: "_id", Value: objectId},
+		{Key: "title", Value: todoDoc.Title},
+		{Key: "description", Value: todoDoc.Description},
+		{Key: "deadline", Value: todoDoc.Deadline},
+		{Key: "timestamp", Value: bson.D{
+			{Key: "createdat", Value: time.Now()},
+			{Key: "updatedat", Value: time.Now()},
+		}},
+		{Key: "isdone", Value: todoDoc.IsDone},
+		{Key: "user", Value: bson.D{
+			{Key: "username", Value: todoDoc.User.Username},
+		}},
+	}
 
 	insertedID, err = InsertOneDoc(db, col, todo)
 	if err != nil {
@@ -458,16 +465,28 @@ func GetTodoList(db *mongo.Database, col string) (todo []model.Todo, err error) 
 func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (todos model.Todo, status bool, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"_id": todo.ID}
-	update := bson.M{
-		"$set": bson.M{
-			"title":               todo.Title,
-			"description":         todo.Description,
-			"deadline":            todo.Deadline,
-			"timestamp.updatedat": time.Now(),
-		},
-		"$setOnInsert": bson.M{
-			"timestamp.createdat": todo.TimeStamp.CreatedAt,
-		},
+	// update := bson.M{
+	// 	"$set": bson.M{
+	// 		"title":               todo.Title,
+	// 		"description":         todo.Description,
+	// 		"deadline":            todo.Deadline,
+	// 		"timestamp.updatedat": time.Now(),
+	// 	},
+	// 	"$setOnInsert": bson.M{
+	// 		"timestamp.createdat": todo.TimeStamp.CreatedAt,
+	// 	},
+	// }
+
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "title", Value: todo.Title},
+			{Key: "description", Value: todo.Description},
+			{Key: "deadline", Value: todo.Deadline},
+			{Key: "timestamp.updatedat", Value: time.Now()},
+		}},
+		{Key: "$setOnInsert", Value: bson.D{
+			{Key: "timestamp.createdat", Value: todo.TimeStamp.CreatedAt},
+		}},
 	}
 
 	options := options.Update().SetUpsert(true)
