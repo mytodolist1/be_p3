@@ -434,18 +434,18 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 	// datauser.UID = userInfo
 
-	userInfo, _ := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
-	// if err != nil {
-	// 	Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
-	// 	return GCFReturnStruct(Response)
-	// }
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
 
 	if userInfo.Id != datauser.UID {
 		Response.Message = "Unauthorized access: User mismatch" + ", " + datauser.UID + ", " + userInfo.Id
 		return GCFReturnStruct(Response)
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&datatodo)
+	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
 		Response.Message = "error parsing application/json3: " + err.Error()
 		return GCFReturnStruct(Response)
@@ -458,7 +458,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 
 	Response.Status = true
-	Response.Message = "Insert todo success"
+	Response.Message = "Insert todo success" + ", " + datauser.UID + ", " + userInfo.Id
 
 	return GCFReturnStruct(Response)
 }
