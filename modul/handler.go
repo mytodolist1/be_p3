@@ -424,7 +424,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	Response.Status = false
 
 	token := r.Header.Get("Authorization")
-	token = strings.TrimPrefix(token, "Bearer ")
+	// token = strings.TrimPrefix(token, "Bearer ")
 	if token == "" {
 		Response.Message = "error parsing application/json1:"
 		return GCFReturnStruct(Response)
@@ -441,7 +441,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	// }
 
 	if userInfo.Id != datauser.UID {
-		Response.Message = "Unauthorized access: User mismatch " + userInfo.Id + " " + datauser.UID
+		Response.Message = "Unauthorized access: User mismatch" + ", " + datauser.UID + ", " + userInfo.Id
 		return GCFReturnStruct(Response)
 	}
 
