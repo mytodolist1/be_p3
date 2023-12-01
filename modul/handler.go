@@ -363,18 +363,23 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	todo1, err := GetTodoFromUsername(mconn, collectionname, datauser.Username)
-	if err != nil {
-		Response.Message = err.Error()
+	if datatodo.User.UID != userInfo.Id {
+		Response.Message = "Unauthorized access: User mismatch" + ", " + datatodo.User.UID + ", " + userInfo.Id
 		return GCFReturnStruct(Response)
 	}
 
-	for _, t := range todo1 {
-		if userInfo.Id != t.User.UID {
-			Response.Message = "Unauthorized access: User mismatch" + ", " + t.User.UID + ", " + userInfo.Id
-			return GCFReturnStruct(Response)
-		}
-	}
+	// todo1, err := GetTodoFromUsername(mconn, collectionname, datauser.Username)
+	// if err != nil {
+	// 	Response.Message = err.Error()
+	// 	return GCFReturnStruct(Response)
+	// }
+
+	// for _, t := range todo1 {
+	// 	if userInfo.Id != t.User.UID {
+	// 		Response.Message = "Unauthorized access: User mismatch" + ", " + t.User.UID + ", " + userInfo.Id
+	// 		return GCFReturnStruct(Response)
+	// 	}
+	// }
 
 	// username := r.URL.Query().Get("username")
 	// if username == "" {
@@ -390,7 +395,7 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	todo, err := GetTodoFromUsername(mconn, collectionname, datauser.Username)
+	todo, err := GetTodoFromToken(mconn, collectionname, userInfo.Id)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
@@ -492,18 +497,20 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	todo1, err := GetTodoFromUsername(mconn, collectionname, datauser.Username)
-	if err != nil {
-		Response.Message = err.Error()
-		return GCFReturnStruct(Response)
-	}
+	datatodo.User.UID = userInfo.Id
 
-	for _, t := range todo1 {
-		if userInfo.Id != t.User.UID {
-			Response.Message = "Unauthorized access: User mismatch" + ", " + t.User.UID + ", " + userInfo.Id
-			return GCFReturnStruct(Response)
-		}
-	}
+	// todo1, err := GetTodoFromUsername(mconn, collectionname, datauser.Username)
+	// if err != nil {
+	// 	Response.Message = err.Error()
+	// 	return GCFReturnStruct(Response)
+	// }
+
+	// for _, t := range todo1 {
+	// 	if userInfo.Id != t.User.UID {
+	// 		Response.Message = "Unauthorized access: User mismatch" + ", " + t.User.UID + ", " + userInfo.Id
+	// 		return GCFReturnStruct(Response)
+	// 	}
+	// }
 
 	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
@@ -518,7 +525,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 
 	Response.Status = true
-	Response.Message = "Insert todo success" + ", " + datauser.Username + ", " + userInfo.Id
+	Response.Message = "Insert todo success" + ", " + datauser.Username
 
 	return GCFReturnStruct(Response)
 }
@@ -547,7 +554,7 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	datauser.UID = userInfo.Id
+	// datauser.UID = userInfo.Id
 
 	id := r.URL.Query().Get("_id")
 	if id == "" {

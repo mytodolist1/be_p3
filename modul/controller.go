@@ -461,6 +461,24 @@ func GetTodoFromUsername(db *mongo.Database, col string, username string) (todo 
 	return todo, nil
 }
 
+func GetTodoFromToken(db *mongo.Database, col string, uid string) (todo []model.Todo, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{"user.uid": uid}
+
+	cursor, err := cols.Find(context.Background(), filter)
+	if err != nil {
+		fmt.Println("Error GetTodoFromToken in colection", col, ":", err)
+		return nil, err
+	}
+
+	err = cursor.All(context.Background(), &todo)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return todo, nil
+}
+
 func GetTodoList(db *mongo.Database, col string) (todo []model.Todo, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{}
