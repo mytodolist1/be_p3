@@ -98,7 +98,7 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 	}
 
 	Responsed.Status = true
-	tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(PASETOPRIVATEKEYENV))
+	tokenstring, err := watoken.Encode(user.UID, os.Getenv(PASETOPRIVATEKEYENV))
 	if err != nil {
 		Responsed.Message = "Gagal Encode Token :" + err.Error()
 

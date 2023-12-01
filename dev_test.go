@@ -14,8 +14,8 @@ var mconn = modul.MongoConnect("MONGOSTRING", "mytodolist")
 // user
 func TestRegister(t *testing.T) {
 	var data model.User
-	data.Email = "hehe1@gmail.com"
-	data.Username = "hehe1"
+	data.Email = "susi@gmail.com"
+	data.Username = "susi"
 	// data.Role = "user"
 	data.Password = "secret"
 	data.ConfirmPassword = "secret"

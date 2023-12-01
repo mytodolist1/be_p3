@@ -107,7 +107,7 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 
 	// uid := GenerateUID(&userdata)
 
-	uid, err := GenerateUID(10)
+	uid, err := GenerateUID(8)
 	if err != nil {
 		return fmt.Errorf("GenerateUID: %v", err)
 	}
