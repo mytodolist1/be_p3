@@ -257,11 +257,11 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&datatodo)
-	if err != nil {
-		Response.Message = "error parsing application/json3: " + err.Error()
-		return GCFReturnStruct(Response)
-	}
+	// err = json.NewDecoder(r.Body).Decode(&datatodo)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json3: " + err.Error()
+	// 	return GCFReturnStruct(Response)
+	// }
 
 	todo, err := GetTodoFromToken(mconn, collectionname, userInfo.Id)
 	if err != nil {
@@ -304,15 +304,13 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 		return GCFReturnStruct(Response)
 	}
 
-	datatodo.ID = ID
+	// err = json.NewDecoder(r.Body).Decode(&datatodo)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json3: " + err.Error()
+	// 	return GCFReturnStruct(Response)
+	// }
 
-	err = json.NewDecoder(r.Body).Decode(&datatodo)
-	if err != nil {
-		Response.Message = "error parsing application/json3: " + err.Error()
-		return GCFReturnStruct(Response)
-	}
-
-	todo, err := GetTodoFromID(mconn, collectionname, datatodo.ID)
+	todo, err := GetTodoFromID(mconn, collectionname, ID)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
@@ -437,15 +435,13 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	datatodo.ID = ID
+	// err = json.NewDecoder(r.Body).Decode(&datatodo)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json3: " + err.Error()
+	// 	return GCFReturnStruct(Response)
+	// }
 
-	err = json.NewDecoder(r.Body).Decode(&datatodo)
-	if err != nil {
-		Response.Message = "error parsing application/json3: " + err.Error()
-		return GCFReturnStruct(Response)
-	}
-
-	_, err = DeleteTodo(mconn, collectionname, datatodo.ID)
+	_, err = DeleteTodo(mconn, collectionname, ID)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
