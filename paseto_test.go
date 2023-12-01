@@ -35,7 +35,7 @@ func TestGenerateTokenPaseto(t *testing.T) {
 
 func TestDecoedTokenPaseto(t *testing.T) {
 	publicKey := "3fca58bcee37564ae23005b9aefe51b93cda7327a0831f533cae57f26ae70398"
-	tokenstring := "v4.public.eyJleHAiOiIyMDIzLTEyLTAxVDA2OjE0OjQ0WiIsImlhdCI6IjIwMjMtMTItMDFUMDQ6MTQ6NDRaIiwiaWQiOiIiLCJuYmYiOiIyMDIzLTEyLTAxVDA0OjE0OjQ0WiJ9dSRcGGyCmi6AAtqDSgKT16xgm-0nwwLxqK2OuFcG98OrOjcTrvMnFoXLqvXTntLgiEKjwakuN19Dhw-0wAD8Bw"
+	tokenstring := "v4.public.eyJleHAiOiIyMDIzLTEyLTAxVDA2OjMzOjMyWiIsImlhdCI6IjIwMjMtMTItMDFUMDQ6MzM6MzJaIiwiaWQiOiJxaXFpIiwibmJmIjoiMjAyMy0xMi0wMVQwNDozMzozMloifWNdG8-O7zBRsXlT78B8T5QEH-UlvYqUWBgSa22gAIs2noox_o5QZ-gj4if8gOYurkLa2oU7T7wHWBNwOxI0sAU"
 
 	uid, err := watoken.Decode(publicKey, tokenstring)
 	require.NoError(t, err)
@@ -46,7 +46,7 @@ func TestDecodeToken(t *testing.T) {
 	//privateKey := "461ce0e87748fd656c518b870da217dc200fc8d3b6275dda8cf14943424bf8c49e2ece1954df1ea8b151fba59cc7cbd4fb810b69716149e1c26169227bd5b6868ac78b29e58b97d4018d66ad9aed4c608028f8e188dd976fa5f61fb46b47c37365d8d07b2b8d915ec9771904b608e6ba1a91b815f9e8aece8255a660b528287e"
 	publicKey := "3fca58bcee37564ae23005b9aefe51b93cda7327a0831f533cae57f26ae70398"
 	//userid := "awangga"
-	tokenstring := "v4.public.eyJleHAiOiIyMDIzLTEyLTAxVDA2OjE0OjQ0WiIsImlhdCI6IjIwMjMtMTItMDFUMDQ6MTQ6NDRaIiwiaWQiOiIiLCJuYmYiOiIyMDIzLTEyLTAxVDA0OjE0OjQ0WiJ9dSRcGGyCmi6AAtqDSgKT16xgm-0nwwLxqK2OuFcG98OrOjcTrvMnFoXLqvXTntLgiEKjwakuN19Dhw-0wAD8Bw"
+	tokenstring := "v4.public.eyJleHAiOiIyMDIzLTEyLTAxVDA2OjMzOjMyWiIsImlhdCI6IjIwMjMtMTItMDFUMDQ6MzM6MzJaIiwiaWQiOiJxaXFpIiwibmJmIjoiMjAyMy0xMi0wMVQwNDozMzozMloifWNdG8-O7zBRsXlT78B8T5QEH-UlvYqUWBgSa22gAIs2noox_o5QZ-gj4if8gOYurkLa2oU7T7wHWBNwOxI0sAU"
 	idstring := watoken.DecodeGetId(publicKey, tokenstring)
 	if idstring == "" {
 		fmt.Println("expire token")

@@ -103,7 +103,7 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 		Responsed.Message = "Gagal Encode Token :" + err.Error()
 
 	} else {
-		Responsed.Message = "Selamat Datang" + " " + user.Username
+		Responsed.Message = "Selamat Datang" + " " + user.UID
 		Responsed.Token = tokenstring
 	}
 
