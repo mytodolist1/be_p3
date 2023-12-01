@@ -98,7 +98,7 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 	}
 
 	Responsed.Status = true
-	tokenstring, err := watoken.Encode(datauser.UID, os.Getenv(PASETOPRIVATEKEYENV))
+	tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(PASETOPRIVATEKEYENV))
 	if err != nil {
 		Responsed.Message = "Gagal Encode Token :" + err.Error()
 
@@ -440,8 +440,8 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	if userInfo.Id != datauser.UID {
-		Response.Message = "Unauthorized access: User mismatch" + ", " + datauser.UID + ", " + userInfo.Id
+	if userInfo.Id != datauser.Username {
+		Response.Message = "Unauthorized access: User mismatch" + ", " + datauser.Username + ", " + userInfo.Id
 		return GCFReturnStruct(Response)
 	}
 
@@ -458,7 +458,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 
 	Response.Status = true
-	Response.Message = "Insert todo success" + ", " + datauser.UID + ", " + userInfo.Id
+	Response.Message = "Insert todo success" + ", " + datauser.Username + ", " + userInfo.Id
 
 	return GCFReturnStruct(Response)
 }
