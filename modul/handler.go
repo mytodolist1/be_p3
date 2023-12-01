@@ -363,7 +363,7 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	datatodo.User.UID = datauser.UID
+	// datatodo.User.UID = datauser.UID
 
 	if userInfo.Id != datauser.UID {
 		Response.Message = "Unauthorized access: User mismatch" + ", " + datauser.UID + ", " + userInfo.Id
@@ -427,13 +427,13 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 
 	datatodo.ID = ID
 
-	todo1, err := GetTodoFromID(mconn, collectionname, ID)
+	_, err = GetTodoFromID(mconn, collectionname, ID)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 
-	todo1.User.UID = datauser.UID
+	// todo1.User.UID = datauser.UID
 
 	if userInfo.Id != datauser.UID {
 		Response.Message = "Unauthorized access: User mismatch" + ", " + datauser.UID + ", " + userInfo.Id
@@ -623,13 +623,13 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 	datatodo.ID = ID
 
-	todo1, err := GetTodoFromID(mconn, collectionname, ID)
+	_, err = GetTodoFromID(mconn, collectionname, ID)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 
-	todo1.User.UID = datauser.UID
+	// todo1.User.UID = datauser.UID
 
 	if userInfo.Id != datauser.UID {
 		Response.Message = "Unauthorized access: User mismatch" + ", " + datauser.UID + ", " + userInfo.Id
