@@ -38,11 +38,6 @@ type TimeStamp struct {
 	UpdatedAt time.Time `bson:"updatedat,omitempty" json:"updatedat,omitempty"`
 }
 
-// type TodoList struct {
-// 	Users    []User `bson:"users,omitempty" json:"users,omitempty"`
-// 	DataTodo []Todo `bson:"todolist,omitempty" json:"todolist,omitempty"`
-// }
-
 type TodoResponse struct {
 	Status  bool   `bson:"status" json:"status"`
 	Message string `bson:"message,omitempty" json:"message,omitempty"`

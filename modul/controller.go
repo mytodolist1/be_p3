@@ -23,7 +23,6 @@ import (
 
 func MongoConnect(MONGOCONNSTRINGENV, dbname string) *mongo.Database {
 	var DBmongoinfo = atdb.DBInfo{
-		// DBString: "mongodb+srv://admin:admin@projectexp.pa7k8.gcp.mongodb.net", //os.Getenv(MONGOCONNSTRINGENV),
 		DBString: os.Getenv(MONGOCONNSTRINGENV),
 		DBName:   dbname,
 	}
@@ -47,13 +46,6 @@ func InsertOneDoc(db *mongo.Database, col string, docs interface{}) (insertedID 
 // }
 
 // user
-// func GenerateUID(u *model.User) string {
-// 	uid := uuid.New()
-// 	u.UID = uid.String()
-
-// 	return u.UID
-// }
-
 func GenerateUID(len int) (string, error) {
 	bytes := make([]byte, len)
 	_, err := rand.Read(bytes)
@@ -114,23 +106,12 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 
 	// Simpan pengguna ke basis data
 	hash, _ := HashPassword(userdata.Password)
-	// user := bson.M{
-	// 	"_id":      primitive.NewObjectID(),
-	// 	"uid":      uid,
-	// 	"email":    userdata.Email,
-	// 	"username": userdata.Username,
-	// 	"password": hash,
-	// 	// "confirmpassword": userdata.ConfirmPassword, // todo: remove this field from db
-	// 	"role": "user",
-	// }
-
 	user := bson.D{
 		{Key: "_id", Value: primitive.NewObjectID()},
 		{Key: "uid", Value: uid},
 		{Key: "email", Value: userdata.Email},
 		{Key: "username", Value: userdata.Username},
 		{Key: "password", Value: hash},
-		// {Key: "confirmpassword", Value: userdata.ConfirmPassword}, // todo: remove this field from db
 		{Key: "role", Value: "user"},
 	}
 
@@ -201,13 +182,6 @@ func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model
 
 	// Simpan pengguna ke basis data
 	filter := bson.M{"_id": userdata.ID}
-	// update := bson.M{
-	// 	"$set": bson.M{
-	// 		"email":    userdata.Email,
-	// 		"username": userdata.Username,
-	// 	},
-	// }
-
 	update := bson.D{
 		{Key: "$set", Value: bson.D{
 			{Key: "email", Value: userdata.Email},
@@ -271,7 +245,6 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 	update := bson.M{
 		"$set": bson.M{
 			"password": userExists.Password,
-			// "confirmPassword": userExists.ConfirmPassword, // todo: remove this field from db
 		},
 	}
 
@@ -389,21 +362,6 @@ func GetAllUser(db *mongo.Database, col string) (userlist []model.User, err erro
 func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) (insertedID primitive.ObjectID, err error) {
 	objectId := primitive.NewObjectID()
 
-	// todo := bson.M{
-	// 	"_id":         objectId,
-	// 	"title":       todoDoc.Title,
-	// 	"description": todoDoc.Description,
-	// 	"deadline":    todoDoc.Deadline,
-	// 	"timestamp": bson.M{
-	// 		"createdat": time.Now(),
-	// 		"updatedat": time.Now(),
-	// 	},
-	// 	"isdone": todoDoc.IsDone,
-	// 	"user": model.User{
-	// 		Username: todoDoc.User.Username,
-	// 	},
-	// }
-
 	todo := bson.D{
 		{Key: "_id", Value: objectId},
 		{Key: "title", Value: todoDoc.Title},
@@ -500,18 +458,6 @@ func GetTodoList(db *mongo.Database, col string) (todo []model.Todo, err error) 
 func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (todos model.Todo, status bool, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"_id": todo.ID}
-	// update := bson.M{
-	// 	"$set": bson.M{
-	// 		"title":               todo.Title,
-	// 		"description":         todo.Description,
-	// 		"deadline":            todo.Deadline,
-	// 		"timestamp.updatedat": time.Now(),
-	// 	},
-	// 	"$setOnInsert": bson.M{
-	// 		"timestamp.createdat": todo.TimeStamp.CreatedAt,
-	// 	},
-	// }
-
 	update := bson.D{
 		{Key: "$set", Value: bson.D{
 			{Key: "title", Value: todo.Title},
