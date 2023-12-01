@@ -8,6 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"crypto/rand"
+	"encoding/hex"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,7 +18,6 @@ import (
 
 	"github.com/aiteung/atdb"
 	"github.com/badoux/checkmail"
-	"github.com/google/uuid"
 	model "github.com/mytodolist1/be_p3/model"
 )
 
@@ -45,11 +47,21 @@ func InsertOneDoc(db *mongo.Database, col string, docs interface{}) (insertedID 
 // }
 
 // user
-func GenerateUID(u *model.User) string {
-	uid := uuid.New()
-	u.UID = uid.String()
+// func GenerateUID(u *model.User) string {
+// 	uid := uuid.New()
+// 	u.UID = uid.String()
 
-	return u.UID
+// 	return u.UID
+// }
+
+func GenerateUID(len int) (string, error) {
+	bytes := make([]byte, len)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(bytes), nil
 }
 
 func Register(db *mongo.Database, col string, userdata model.User) error {
@@ -93,7 +105,12 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 		return fmt.Errorf("Password dan konfirmasi password tidak sama")
 	}
 
-	uid := GenerateUID(&userdata)
+	// uid := GenerateUID(&userdata)
+
+	uid, err := GenerateUID(10)
+	if err != nil {
+		return fmt.Errorf("GenerateUID: %v", err)
+	}
 
 	// Simpan pengguna ke basis data
 	hash, _ := HashPassword(userdata.Password)
