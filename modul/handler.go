@@ -363,31 +363,12 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	if datatodo.User.UID != userInfo.Id {
-		Response.Message = "Unauthorized access: User mismatch" + ", " + datatodo.User.UID + ", " + userInfo.Id
+	datatodo.User.UID = datauser.UID
+
+	if userInfo.Id != datauser.UID {
+		Response.Message = "Unauthorized access: User mismatch" + ", " + datauser.UID + ", " + userInfo.Id
 		return GCFReturnStruct(Response)
 	}
-
-	// todo1, err := GetTodoFromUsername(mconn, collectionname, datauser.Username)
-	// if err != nil {
-	// 	Response.Message = err.Error()
-	// 	return GCFReturnStruct(Response)
-	// }
-
-	// for _, t := range todo1 {
-	// 	if userInfo.Id != t.User.UID {
-	// 		Response.Message = "Unauthorized access: User mismatch" + ", " + t.User.UID + ", " + userInfo.Id
-	// 		return GCFReturnStruct(Response)
-	// 	}
-	// }
-
-	// username := r.URL.Query().Get("username")
-	// if username == "" {
-	// 	Response.Message = "Missing 'username' parameter in the URL"
-	// 	return GCFReturnStruct(Response)
-	// }
-
-	// datauser.Username = username
 
 	err = json.NewDecoder(r.Body).Decode(&datatodo)
 	if err != nil {
@@ -452,8 +433,10 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 		return GCFReturnStruct(Response)
 	}
 
-	if userInfo.Id != todo1.User.UID {
-		Response.Message = "Unauthorized access: User mismatch" + ", " + todo1.User.UID + ", " + userInfo.Id
+	todo1.User.UID = datauser.UID
+
+	if userInfo.Id != datauser.UID {
+		Response.Message = "Unauthorized access: User mismatch" + ", " + datauser.UID + ", " + userInfo.Id
 		return GCFReturnStruct(Response)
 	}
 
@@ -624,7 +607,7 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	datatodo.User.UID = userInfo.Id
+	// datatodo.User.UID = userInfo.Id
 
 	id := r.URL.Query().Get("_id")
 	if id == "" {
@@ -646,8 +629,10 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	if userInfo.Id != todo1.User.UID {
-		Response.Message = "Unauthorized access: User mismatch" + ", " + todo1.User.UID + ", " + userInfo.Id
+	todo1.User.UID = datauser.UID
+
+	if userInfo.Id != datauser.UID {
+		Response.Message = "Unauthorized access: User mismatch" + ", " + datauser.UID + ", " + userInfo.Id
 		return GCFReturnStruct(Response)
 	}
 
