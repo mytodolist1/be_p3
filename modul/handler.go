@@ -151,7 +151,7 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 
 	Responsed.Status = true
-	Responsed.Message = "Update success " + " " + user.Username
+	Responsed.Message = "Update success " + user.Username
 	Responsed.Data = []model.User{user}
 
 	return GCFReturnStruct(Responsed)
@@ -193,7 +193,7 @@ func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 	}
 
 	Responsed.Status = true
-	Responsed.Message = "Password change success for user" + " " + user.Username
+	Responsed.Message = "Password change success for user " + user.Username
 	Responsed.Data = []model.User{user}
 
 	return GCFReturnStruct(Responsed)
@@ -251,7 +251,7 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
@@ -263,7 +263,7 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	todo, err := GetTodoFromToken(mconn, collectionname, datauser.UID)
+	todo, err := GetTodoFromToken(mconn, collectionname, userInfo.Id)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
@@ -335,7 +335,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
@@ -347,7 +347,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	_, err = InsertTodo(mconn, collectionname, datatodo, datauser.UID)
+	_, err = InsertTodo(mconn, collectionname, datatodo, userInfo.Id)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
