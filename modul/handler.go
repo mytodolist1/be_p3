@@ -480,7 +480,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	datatodo.User.UID = userInfo.Id
+	// datauser.UID = userInfo.Id
 
 	// todo1, err := GetTodoFromUsername(mconn, collectionname, datauser.Username)
 	// if err != nil {
@@ -508,7 +508,8 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 
 	Response.Status = true
-	Response.Message = "Insert todo success" + ", " + datauser.Username
+	Response.Message = "Insert todo success for " + datauser.UID
+	Response.Data = []model.Todo{datatodo}
 
 	return GCFReturnStruct(Response)
 }
