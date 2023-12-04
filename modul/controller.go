@@ -339,6 +339,22 @@ func GetUserFromEmail(db *mongo.Database, col string, email string) (user model.
 	return user, nil
 }
 
+func GetUserFromToken(db *mongo.Database, col string, uid string) (user model.User, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{"uid": uid}
+
+	err = cols.FindOne(context.Background(), filter).Decode(&user)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			fmt.Println("no data found for ID", uid)
+		} else {
+			fmt.Println("error retrieving data for ID", uid, ":", err.Error())
+		}
+	}
+
+	return user, nil
+}
+
 func GetAllUser(db *mongo.Database, col string) (userlist []model.User, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{}
@@ -360,6 +376,11 @@ func GetAllUser(db *mongo.Database, col string) (userlist []model.User, err erro
 
 // todo
 func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) (insertedID primitive.ObjectID, err error) {
+	if todoDoc.Title == "" || todoDoc.Description == "" || todoDoc.Deadline == "" {
+		err = fmt.Errorf("Data tidak boleh kosong")
+		return insertedID, err
+	}
+
 	objectId := primitive.NewObjectID()
 
 	todo := bson.D{
@@ -401,23 +422,23 @@ func GetTodoFromID(db *mongo.Database, col string, _id primitive.ObjectID) (todo
 	return todo, nil
 }
 
-func GetTodoFromUsername(db *mongo.Database, col string, username string) (todo []model.Todo, err error) {
-	cols := db.Collection(col)
-	filter := bson.M{"user.username": username}
+// func GetTodoFromUsername(db *mongo.Database, col string, username string) (todo []model.Todo, err error) {
+// 	cols := db.Collection(col)
+// 	filter := bson.M{"user.username": username}
 
-	cursor, err := cols.Find(context.Background(), filter)
-	if err != nil {
-		fmt.Println("Error GetTodoFromUsername in colection", col, ":", err)
-		return nil, err
-	}
+// 	cursor, err := cols.Find(context.Background(), filter)
+// 	if err != nil {
+// 		fmt.Println("Error GetTodoFromUsername in colection", col, ":", err)
+// 		return nil, err
+// 	}
 
-	err = cursor.All(context.Background(), &todo)
-	if err != nil {
-		fmt.Println(err)
-	}
+// 	err = cursor.All(context.Background(), &todo)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
 
-	return todo, nil
-}
+// 	return todo, nil
+// }
 
 func GetTodoFromToken(db *mongo.Database, col string, uid string) (todo []model.Todo, err error) {
 	cols := db.Collection(col)
@@ -456,6 +477,11 @@ func GetTodoList(db *mongo.Database, col string) (todo []model.Todo, err error) 
 }
 
 func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (todos model.Todo, status bool, err error) {
+	if todo.Title == "" || todo.Description == "" || todo.Deadline == "" {
+		err = fmt.Errorf("Data tidak lengkap")
+		return todos, false, err
+	}
+
 	cols := db.Collection(col)
 	filter := bson.M{"_id": todo.ID}
 	update := bson.D{

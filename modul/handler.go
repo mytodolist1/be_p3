@@ -60,6 +60,65 @@ func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname stri
 	return GCFReturnStruct(Responsed)
 }
 
+func GCFHandlerGetUserByID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	Responsed.Status = false
+
+	id := r.URL.Query().Get("_id")
+	if id == "" {
+		Responsed.Message = "Missing '_id' parameter in the URL"
+		return GCFReturnStruct(Responsed)
+	}
+
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		Responsed.Message = "Invalid '_id' parameter in the URL"
+		return GCFReturnStruct(Responsed)
+	}
+
+	datauser.ID = ID
+
+	user, err := GetUserFromID(mconn, collectionname, ID)
+	if err != nil {
+		Responsed.Message = "Error retrieving user data: " + err.Error()
+		return GCFReturnStruct(Responsed)
+	}
+
+	Responsed.Status = true
+	Responsed.Message = "Hello user " + user.Username
+	Responsed.Data = []model.User{user}
+
+	return GCFReturnStruct(Responsed)
+}
+
+func GCFHandlerGetUserFromToken(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		Responsed.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Responsed)
+	}
+
+	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Responsed)
+	}
+
+	user, err := GetUserFromToken(mconn, collectionname, userInfo.Id)
+	if err != nil {
+		Responsed.Message = err.Error()
+		return GCFReturnStruct(Responsed)
+	}
+
+	Responsed.Status = true
+	Responsed.Message = "Hello user"
+	Responsed.Data = []model.User{user}
+
+	return GCFReturnStruct(Responsed)
+}
+
 func GCFHandlerRegister(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false

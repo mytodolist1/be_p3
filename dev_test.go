@@ -151,7 +151,7 @@ func TestInsertTodo(t *testing.T) {
 }
 
 func TestGetTodoFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("655c4408d06d3d2ddba5d1d7")
+	id, _ := primitive.ObjectIDFromHex("6569f834ba306f02fc237aac")
 	anu, err := modul.GetTodoFromID(mconn, "todo", id)
 	if err != nil {
 		t.Errorf("Error getting todo: %v", err)
@@ -160,14 +160,14 @@ func TestGetTodoFromID(t *testing.T) {
 	fmt.Println(anu)
 }
 
-func TestGetTodoFromUsername(t *testing.T) {
-	anu, err := modul.GetTodoFromUsername(mconn, "todo", "nopal")
-	if err != nil {
-		t.Errorf("Error getting todo: %v", err)
-		return
-	}
-	fmt.Println(anu)
-}
+// func TestGetTodoFromUsername(t *testing.T) {
+// 	anu, err := modul.GetTodoFromUsername(mconn, "todo", "nopal")
+// 	if err != nil {
+// 		t.Errorf("Error getting todo: %v", err)
+// 		return
+// 	}
+// 	fmt.Println(anu)
+// }
 
 func TestGetTodoList(t *testing.T) {
 	anu, err := modul.GetTodoList(mconn, "todo")
