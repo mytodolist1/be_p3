@@ -93,6 +93,7 @@ func GCFHandlerGetUserByID(MONGOCONNSTRINGENV, dbname, collectionname string, r 
 
 func GCFHandlerGetUserFromToken(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	Responsed.Status = false
 
 	token := r.Header.Get("Authorization")
 	if token == "" {
