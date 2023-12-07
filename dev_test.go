@@ -14,8 +14,8 @@ var mconn = modul.MongoConnect("MONGOSTRING", "mytodolist")
 // user
 func TestRegister(t *testing.T) {
 	var data model.User
-	data.Email = "susi@gmail.com"
-	data.Username = "susi"
+	data.Email = "nopal@gmail.com"
+	data.Username = "nopal"
 	// data.Role = "user"
 	data.Password = "secret"
 	data.ConfirmPassword = "secret"
@@ -138,10 +138,11 @@ func TestInsertTodo(t *testing.T) {
 	var data model.Todo
 	data.Title = "Pergi ke sana"
 	data.Description = "membeli itu ini"
-	data.Deadline = "02/02/2021"
+	data.Deadline = "12/07/2023"
+	data.Time = "14:35"
 	// data.IsDone = false
-	
-	uid := "0040f398-1200-4f36-8332-6752ab3e55c0"
+
+	uid := "20a71782a93539d1"
 
 	id, err := modul.InsertTodo(mconn, "todo", data, uid)
 	if err != nil {
@@ -221,3 +222,22 @@ func TestDeleteTodo(t *testing.T) {
 		}
 	}
 }
+
+// func TestScheduleReminder(t *testing.T) {
+// 	deadline := "12/07/2023"
+// 	time := "14:40"
+
+// 	todoID := "65717497a3c148bd458ead19"
+// 	ID, err := primitive.ObjectIDFromHex(todoID)
+// 	if err != nil {
+// 		t.Errorf("Error converting id to ObjectID: %v", err)
+// 		return
+// 	}
+
+// 	err = modul.ScheduleReminder(ID, deadline, time)
+// 	if err != nil {
+// 		t.Errorf("Error scheduling reminder: %v", err)
+// 		return
+// 	}
+// 	fmt.Println("Schedule reminder success")
+// }
