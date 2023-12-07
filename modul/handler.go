@@ -6,8 +6,10 @@ import (
 	"os"
 
 	model "github.com/mytodolist1/be_p3/model"
-	"github.com/whatsauth/watoken"
+	// watoken "github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	paseto "github.com/mytodolist1/be_p3/paseto"
 )
 
 var (
@@ -18,6 +20,7 @@ var (
 )
 
 // user
+//not used yet
 func GCFHandlerGetAllUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -59,6 +62,7 @@ func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname stri
 
 	return GCFReturnStruct(Responsed)
 }
+//not used yet
 
 func GCFHandlerGetUserByID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
@@ -101,7 +105,7 @@ func GCFHandlerGetUserFromToken(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, col
 		return GCFReturnStruct(Responsed)
 	}
 
-	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Responsed)
@@ -157,7 +161,7 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 	}
 
 	Responsed.Status = true
-	tokenstring, err := watoken.Encode(user.UID, os.Getenv(PASETOPRIVATEKEYENV))
+	tokenstring, err := paseto.Encode(user.UID, user.Role, os.Getenv(PASETOPRIVATEKEYENV))
 	if err != nil {
 		Responsed.Message = "Gagal Encode Token :" + err.Error()
 
@@ -179,7 +183,7 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Responsed)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	_, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Responsed)
@@ -217,6 +221,7 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	return GCFReturnStruct(Responsed)
 }
 
+//not used yet
 func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -227,7 +232,7 @@ func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 		return GCFReturnStruct(Responsed)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	_, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Responsed)
@@ -269,7 +274,7 @@ func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Responsed)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	_, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Responsed.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Responsed)
@@ -299,6 +304,7 @@ func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 	return GCFReturnStruct(Responsed)
 }
+//not used yet
 
 // todo
 func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
@@ -311,7 +317,7 @@ func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
@@ -346,7 +352,7 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 		return GCFReturnStruct(Response)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	_, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
@@ -393,7 +399,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	userInfo, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
@@ -428,7 +434,7 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	_, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
@@ -445,7 +451,6 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		Response.Message = "Invalid '_id' parameter in the URL"
 		return GCFReturnStruct(Response)
 	}
-
 	datatodo.ID = ID
 
 	err = json.NewDecoder(r.Body).Decode(&datatodo)
@@ -477,7 +482,7 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	_, err := watoken.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	_, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response)
