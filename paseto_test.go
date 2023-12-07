@@ -1,4 +1,4 @@
-package paseto
+package bep3
 
 import (
 	"fmt"
@@ -6,40 +6,41 @@ import (
 
 	"github.com/stretchr/testify/require"
 	// "github.com/whatsauth/watoken"
+	paseto "github.com/mytodolist1/be_p3/paseto"
 )
 
 // paseto
 func TestGeneratePrivateKeyPaseto(t *testing.T) {
-	privateKey, publicKey := GenerateKey()
+	privateKey, publicKey := paseto.GenerateKey()
 	fmt.Println("Private Key: ", privateKey)
 	fmt.Println("Public Key: ", publicKey)
 
 	uid := "20a71782a93539d1"
 	role := "user"
-	hasil, err := Encode(uid, role, privateKey)
+	hasil, err := paseto.Encode(uid, role, privateKey)
 	fmt.Println("hasil: ", hasil, err)
 }
 
 func TestGenerateTokenPaseto(t *testing.T) {
-	privateKey, publicKey := GenerateKey()
+	privateKey, publicKey := paseto.GenerateKey()
 	fmt.Println("privateKey : ", privateKey)
 	fmt.Println("publicKey : ", publicKey)
 	userid := "20a71782a93539d1"
 	role := "user"
 
-	tokenstring, err := Encode(userid, role, privateKey)
+	tokenstring, err := paseto.Encode(userid, role, privateKey)
 	require.NoError(t, err)
-	body, err := Decode(publicKey, tokenstring)
+	body, err := paseto.Decode(publicKey, tokenstring)
 	fmt.Println("signed : ", tokenstring)
 	fmt.Println("isi : ", body)
 	require.NoError(t, err)
 }
 
 func TestDecoedTokenPaseto(t *testing.T) {
-	publicKey := "3fca58bcee37564ae23005b9aefe51b93cda7327a0831f533cae57f26ae70398"
-	tokenstring := "v4.public.eyJleHAiOiIyMDIzLTEyLTAxVDA2OjMzOjMyWiIsImlhdCI6IjIwMjMtMTItMDFUMDQ6MzM6MzJaIiwiaWQiOiJxaXFpIiwibmJmIjoiMjAyMy0xMi0wMVQwNDozMzozMloifWNdG8-O7zBRsXlT78B8T5QEH-UlvYqUWBgSa22gAIs2noox_o5QZ-gj4if8gOYurkLa2oU7T7wHWBNwOxI0sAU"
+	publicKey := "89d8588fd5cfce87ee5442ee720e65588e992dbd431b976f44d0c6b80d864996"
+	tokenstring := "v4.public.eyJleHAiOiIyMDIzLTEyLTA4VDAwOjIxOjEyKzA3OjAwIiwiaWF0IjoiMjAyMy0xMi0wN1QyMjoyMToxMiswNzowMCIsImlkIjoiMjBhNzE3ODJhOTM1MzlkMSIsIm5iZiI6IjIwMjMtMTItMDdUMjI6MjE6MTIrMDc6MDAiLCJyb2xlIjoidXNlciJ9YxaT9HaoixwPjOjJDxOCqTrCXB3brJ4JgDOBP51Rn2HQM3Ww9Ltyx3WVoOMLPgIrEQvuiQzGZkfyUsSBIrJACg"
 
-	uid, err := Decode(publicKey, tokenstring)
+	uid, err := paseto.Decode(publicKey, tokenstring)
 	require.NoError(t, err)
 	fmt.Println("uid : ", uid)
 }
