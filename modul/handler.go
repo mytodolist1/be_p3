@@ -20,7 +20,7 @@ var (
 )
 
 // user
-//not used yet
+// not used yet
 func GCFHandlerGetAllUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -62,6 +62,7 @@ func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname stri
 
 	return GCFReturnStruct(Responsed)
 }
+
 //not used yet
 
 func GCFHandlerGetUserByID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
@@ -166,7 +167,7 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 		Responsed.Message = "Gagal Encode Token :" + err.Error()
 
 	} else {
-		Responsed.Message = "Selamat Datang " + user.Username
+		Responsed.Message = "Selamat Datang " + user.Role + user.Username
 		Responsed.Token = tokenstring
 	}
 
@@ -221,7 +222,7 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	return GCFReturnStruct(Responsed)
 }
 
-//not used yet
+// not used yet
 func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -304,6 +305,7 @@ func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 	return GCFReturnStruct(Responsed)
 }
+
 //not used yet
 
 // todo

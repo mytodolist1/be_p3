@@ -6,9 +6,15 @@ import (
 	"time"
 
 	"aidanwoods.dev/go-paseto"
-
-	model "github.com/mytodolist1/be_p3/model"
 )
+
+type Payload struct {
+	Id   string    `json:"id"`
+	Role string    `json:"role"`
+	Exp  time.Time `json:"exp"`
+	Iat  time.Time `json:"iat"`
+	Nbf  time.Time `json:"nbf"`
+}
 
 func GenerateKey() (privateKey, publicKey string) {
 	secretKey := paseto.NewV4AsymmetricSecretKey() // don't share this!!!
@@ -18,10 +24,6 @@ func GenerateKey() (privateKey, publicKey string) {
 }
 
 func Encode(id, role, privateKey string) (string, error) {
-	var payload model.Payload
-	payload.Id = id
-	payload.Role = role
-
 	token := paseto.NewToken()
 	token.SetIssuedAt(time.Now())
 	token.SetNotBefore(time.Now())
@@ -33,7 +35,7 @@ func Encode(id, role, privateKey string) (string, error) {
 
 }
 
-func Decode(publicKey string, tokenstring string) (payload model.Payload, err error) {
+func Decode(publicKey string, tokenstring string) (payload Payload, err error) {
 	var token *paseto.Token
 	var pubKey paseto.V4AsymmetricPublicKey
 	pubKey, err = paseto.NewV4AsymmetricPublicKeyFromHex(publicKey) // this wil fail if given key in an invalid format

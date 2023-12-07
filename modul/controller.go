@@ -124,7 +124,7 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 }
 
 func LogIn(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
-	if userdata.Username == "" || userdata.Password == "" || userdata.Role == "" {
+	if userdata.Username == "" || userdata.Password == "" {
 		err = fmt.Errorf("Data tidak lengkap")
 		return user, false, err
 	}
@@ -142,11 +142,11 @@ func LogIn(db *mongo.Database, col string, userdata model.User) (user model.User
 		return user, false, err
 	}
 
-	// Periksa apakah role benar
-	if userdata.Role != userExists.Role {
-		err = fmt.Errorf("Role tidak sesuai")
-		return user, false, err
-	}
+	// // Periksa apakah role benar
+	// if userdata.Role != userExists.Role {
+	// 	err = fmt.Errorf("Role tidak sesuai")
+	// 	return user, false, err
+	// }
 
 	return userExists, true, nil
 }
