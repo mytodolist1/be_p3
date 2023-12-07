@@ -18,6 +18,10 @@ func GenerateKey() (privateKey, publicKey string) {
 }
 
 func Encode(id, role, privateKey string) (string, error) {
+	var payload model.Payload
+	payload.Id = id
+	payload.Role = role
+
 	token := paseto.NewToken()
 	token.SetIssuedAt(time.Now())
 	token.SetNotBefore(time.Now())
