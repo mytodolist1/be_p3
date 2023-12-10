@@ -1,4 +1,4 @@
-package bep3
+package paseto_test
 
 import (
 	"fmt"
