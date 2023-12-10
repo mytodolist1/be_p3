@@ -404,11 +404,6 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 		fmt.Printf("InsertTodo: %v\n", err)
 	}
 
-	// err = ScheduleReminder(objectId, todoDoc.Deadline, todoDoc.Time)
-	// if err != nil {
-	// 	fmt.Printf("ScheduleReminder: %v\n", err)
-	// }
-
 	return insertedID, nil
 }
 
@@ -427,24 +422,6 @@ func GetTodoFromID(db *mongo.Database, col string, _id primitive.ObjectID) (todo
 
 	return todo, nil
 }
-
-// func GetTodoFromUsername(db *mongo.Database, col string, username string) (todo []model.Todo, err error) {
-// 	cols := db.Collection(col)
-// 	filter := bson.M{"user.username": username}
-
-// 	cursor, err := cols.Find(context.Background(), filter)
-// 	if err != nil {
-// 		fmt.Println("Error GetTodoFromUsername in colection", col, ":", err)
-// 		return nil, err
-// 	}
-
-// 	err = cursor.All(context.Background(), &todo)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-
-// 	return todo, nil
-// }
 
 func GetTodoFromToken(db *mongo.Database, col string, uid string) (todo []model.Todo, err error) {
 	cols := db.Collection(col)
@@ -538,38 +515,3 @@ func DeleteTodo(db *mongo.Database, col string, _id primitive.ObjectID) (status 
 
 	return true, nil
 }
-
-// func ScheduleReminder(todoID primitive.ObjectID, deadline, reminderTime string) error {
-// 	local, err := time.LoadLocation("Asia/Jakarta")
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	s := gocron.NewScheduler(local)
-
-// 	// Parse the deadline and reminderTime strings into time.Time objects
-// 	deadlineTime, err := time.Parse("01/02/2006 15:04", deadline+" "+reminderTime)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	reminderFunc := func() {
-// 		ReminderJob(todoID)
-// 	}
-
-// 	// Schedule the reminder using gocron
-// 	_, err = s.Every(1).Day().At(deadlineTime.Format("15:04")).Do(reminderFunc)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	s.StartAsync()
-
-// 	return nil
-// }
-
-// func ReminderJob(todoID primitive.ObjectID) {
-// 	// Retrieve the todo item from the database using todoID
-// 	// Send a reminder to the user or perform any other necessary action
-// 	fmt.Printf("Reminder for Todo ID %s!\n", todoID.Hex())
-// }
