@@ -200,31 +200,31 @@ Repositori ini adalah Backend dari aplikasi Mytodolist yang ditulis dengan bahas
             ```
 
 ### `dev_test.go`
-- 1. Import Standard Library
-     - `fmt` adalah package yang digunakan untuk mencetak teks.
-        Contoh penggunaannya:
-        ```go
-        fmt.Println("Status", status)
-        ```
-    - `testing` adalah package yang menyediakan alat dan infrastruktur untuk menulis dan menjalankan pengujian (testing).
-        Contoh penggunaannya:
-        ```go
-        func TestLogIn(t *testing.T) {}
-        ```
-    - `go.mongodb.org/mongo-driver/bson/primitive` adalah package yang menyediakan tipe data dasar dan fungsi konversi untuk mengoperasikan BSON.
-        Contoh penggunaannya:
-        ```go
-        ID, err := primitive.ObjectIDFromHex(id)
-        ```
+-   1. Import Standard Library
+        - `fmt` adalah package yang digunakan untuk mencetak teks.
+            Contoh penggunaannya:
+            ```go
+            fmt.Println("Status", status)
+            ```
+        - `testing` adalah package yang menyediakan alat dan infrastruktur untuk menulis dan menjalankan pengujian (testing).
+            Contoh penggunaannya:
+            ```go
+            func TestLogIn(t *testing.T) {}
+            ```
+        - `go.mongodb.org/mongo-driver/bson/primitive` adalah package yang menyediakan tipe data dasar dan fungsi konversi untuk mengoperasikan BSON.
+            Contoh penggunaannya:
+            ```go
+            ID, err := primitive.ObjectIDFromHex(id)
+            ```
 
-- 2. Import this Module Repository
-    - `github.com/mytodolist1/be_p3/model` adalah modul yang digunakan untuk mengambil structnya.
-        Contoh penggunaannya:
-        ```go
-        var data model.User
-        ```
-    - `github.com/mytodolist1/be_p3/modul` adalah modul yang digunakan untuk memanggil controller.
-        Contoh penggunaannya:
-        ```go
-        var mconn = modul.MongoConnect("MONGOSTRING", "mytodolist")
-        ```
+-   2. Import this Module Repository
+        - `github.com/mytodolist1/be_p3/model` adalah modul yang digunakan untuk mengambil structnya.
+            Contoh penggunaannya:
+            ```go
+            var data model.User
+            ```
+        - `github.com/mytodolist1/be_p3/modul` adalah modul yang digunakan untuk memanggil controller.
+            Contoh penggunaannya:
+            ```go
+            var mconn = modul.MongoConnect("MONGOSTRING", "mytodolist")
+            ```
