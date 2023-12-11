@@ -199,7 +199,7 @@ Repositori ini adalah Backend dari aplikasi Mytodolist yang ditulis dengan bahas
             privateKey, publicKey := paseto.GenerateKey()
             ```
 
-### `dev_test.go`
+#### `dev_test.go`
 -   1. Import Standard Library
         - `fmt` adalah package yang digunakan untuk mencetak teks.
             Contoh penggunaannya:
@@ -230,8 +230,7 @@ Repositori ini adalah Backend dari aplikasi Mytodolist yang ditulis dengan bahas
             ```
 
 ## tags
-- Release Version
-    Berikut adalah cara untuk release version:
+- Release Version Go
     ```bash
     git tag v0.0.1
     git push origin --tags
