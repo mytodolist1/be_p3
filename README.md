@@ -228,3 +228,12 @@ Repositori ini adalah Backend dari aplikasi Mytodolist yang ditulis dengan bahas
             ```go
             var mconn = modul.MongoConnect("MONGOSTRING", "mytodolist")
             ```
+
+## tags
+- Release Version
+    Berikut adalah cara untuk release version:
+    ```bash
+    git tag v0.0.1
+    git push origin --tags
+    go list -m github.com/mytodolist1/be_p3@v0.0.1
+    ```
