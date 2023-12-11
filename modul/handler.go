@@ -5,11 +5,10 @@ import (
 	"net/http"
 	"os"
 
-	model "github.com/mytodolist1/be_p3/model"
-	// watoken "github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	paseto "github.com/mytodolist1/be_p3/paseto"
+	"github.com/mytodolist1/be_p3/model"
+	"github.com/mytodolist1/be_p3/paseto"
 )
 
 var (

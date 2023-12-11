@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	model "github.com/mytodolist1/be_p3/model"
-	modul "github.com/mytodolist1/be_p3/modul"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/mytodolist1/be_p3/model"
+	"github.com/mytodolist1/be_p3/modul"
 )
 
 var mconn = modul.MongoConnect("MONGOSTRING", "mytodolist")
