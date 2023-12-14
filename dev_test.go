@@ -44,12 +44,13 @@ func TestLogIn(t *testing.T) {
 	}
 }
 
+// update with log
 func TestUpdateUser(t *testing.T) {
 	var data model.User
-	data.Email = "fulan12@gmail.com"
-	data.Username = "fulan12"
+	data.Email = "dimass@gmail.com"
+	data.Username = "dimass"
 
-	id := "6568592b8012346866b0ea1e"
+	id := "657437ffb905cf734635c9a8"
 	ID, err := primitive.ObjectIDFromHex(id)
 	data.ID = ID
 	if err != nil {
@@ -59,10 +60,12 @@ func TestUpdateUser(t *testing.T) {
 		_, status, err := modul.UpdateUser(mconn, "user", data)
 		fmt.Println("Status", status)
 		if err != nil {
-			t.Errorf("Error updateting document: %v", err)
+			t.Errorf("Error updating user with id: %v", err)
+			return
 		} else {
 			fmt.Printf("Data berhasil diubah untuk id: %s\n", id)
 		}
+		fmt.Println(data)
 	}
 }
 
@@ -125,8 +128,9 @@ func TestGetUserFromEmail(t *testing.T) {
 	fmt.Println(anu)
 }
 
-func TestGetAllUser(t *testing.T) {
-	anu, err := modul.GetAllUser(mconn, "user")
+// admin
+func TestGetUserFromRole(t *testing.T) {
+	anu, err := modul.GetUserFromRole(mconn, "user", "user")
 	if err != nil {
 		t.Errorf("Error getting user: %v", err)
 		return
@@ -137,23 +141,23 @@ func TestGetAllUser(t *testing.T) {
 // todo
 func TestInsertTodo(t *testing.T) {
 	var data model.Todo
-	data.Title = "Pergi ke sana"
-	data.Description = "membeli itu ini"
-	data.Deadline = "12/07/2023"
+	data.Title = "Pergi"
+	data.Description = "Pergi ke pasar"
+	data.Deadline = "2023-07-12"
 	data.Time = "14:35"
 	// data.IsDone = false
 
 	uid := "20a71782a93539d1"
 
-	id, err := modul.InsertTodo(mconn, "todo", data, uid)
+	_, err := modul.InsertTodo(mconn, "todo", data, uid)
 	if err != nil {
 		t.Errorf("Error inserting todo: %v", err)
 	}
-	fmt.Println(id)
+	fmt.Println(data)
 }
 
 func TestGetTodoFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("6569f834ba306f02fc237aac")
+	id, _ := primitive.ObjectIDFromHex("657ae34f6de0789b65476e8a")
 	anu, err := modul.GetTodoFromID(mconn, "todo", id)
 	if err != nil {
 		t.Errorf("Error getting todo: %v", err)
@@ -162,15 +166,6 @@ func TestGetTodoFromID(t *testing.T) {
 	fmt.Println(anu)
 }
 
-// func TestGetTodoFromUsername(t *testing.T) {
-// 	anu, err := modul.GetTodoFromUsername(mconn, "todo", "nopal")
-// 	if err != nil {
-// 		t.Errorf("Error getting todo: %v", err)
-// 		return
-// 	}
-// 	fmt.Println(anu)
-// }
-
 func TestGetTodoList(t *testing.T) {
 	anu, err := modul.GetTodoList(mconn, "todo")
 	if err != nil {
@@ -178,31 +173,6 @@ func TestGetTodoList(t *testing.T) {
 		return
 	}
 	fmt.Println(anu)
-}
-
-func TestUpdateTodo(t *testing.T) {
-	var data model.Todo
-	data.Title = "Belajar Golang"
-	data.Description = "Hari ini belajar golang"
-	data.Deadline = "02/02/2021"
-
-	id := "655c5047370b53741a9705d8"
-	ID, err := primitive.ObjectIDFromHex(id)
-	data.ID = ID
-	if err != nil {
-		fmt.Printf("Data tidak berhasil diubah")
-	} else {
-
-		_, status, err := modul.UpdateTodo(mconn, "todo", data)
-		fmt.Println("Status", status)
-		if err != nil {
-			t.Errorf("Error updating todo with id: %v", err)
-			return
-		} else {
-			fmt.Printf("Data berhasil diubah untuk id: %s\n", id)
-		}
-		fmt.Println(data)
-	}
 }
 
 func TestDeleteTodo(t *testing.T) {
@@ -224,21 +194,132 @@ func TestDeleteTodo(t *testing.T) {
 	}
 }
 
-// func TestScheduleReminder(t *testing.T) {
-// 	deadline := "12/07/2023"
-// 	time := "14:40"
+// isDone
+func TestTodoClear(t *testing.T) {
+	var data model.TodoClear
 
-// 	todoID := "65717497a3c148bd458ead19"
-// 	ID, err := primitive.ObjectIDFromHex(todoID)
+	id := "657b42a50a1bb2eead0ad70f"
+
+	ID, err := primitive.ObjectIDFromHex(id)
+	data.Todo.ID = ID
+	if err != nil {
+		fmt.Printf("Data tidak berhasil di selesaikan")
+	} else {
+
+		status, err := modul.TodoClear(mconn, "todoclear", ID, data)
+		fmt.Println("Status", status)
+		if err != nil {
+			t.Errorf("Error cleared todo with id: %v", err)
+			return
+		} else {
+			fmt.Printf("Data berhasil di selesaikan untuk: %s\n", ID)
+		}
+		fmt.Println(data)
+	}
+}
+
+// with log
+func TestUpdateTodo(t *testing.T) {
+	var data model.Todo
+	data.Title = "Belajar javascript"
+	data.Description = "Hari ini belajar javascript"
+	data.Deadline = "2023-12-30"
+	data.Time = "14:35"
+
+	id := "657b38db665d89f159fce0f2"
+	ID, err := primitive.ObjectIDFromHex(id)
+	data.ID = ID
+	if err != nil {
+		fmt.Printf("Data tidak berhasil diubah")
+	} else {
+
+		_, status, err := modul.UpdateTodo(mconn, "todo", data)
+		fmt.Println("Status", status)
+		if err != nil {
+			t.Errorf("Error updating todo with id: %v", err)
+			return
+		} else {
+			fmt.Printf("Data berhasil diubah untuk id: %s\n", id)
+		}
+		fmt.Println(data)
+	}
+}
+
+// log
+func TestGetLogTodoFromID(t *testing.T) {
+	uid := "657b38db665d89f159fce0f2"
+
+	anu, err := modul.GetLogTodoFromUID(mconn, "logtodo", uid)
+	if err != nil {
+		t.Errorf("Error getting log todo: %v", err)
+		return
+	}
+	fmt.Println(anu)
+}
+
+func TestGetLogUserFromID(t *testing.T) {
+	uid := "657437ffb905cf734635c9a8"
+
+	anu, err := modul.GetLogUserFromUID(mconn, "loguser", uid)
+	if err != nil {
+		t.Errorf("Error getting log user: %v", err)
+		return
+	}
+	fmt.Println(anu)
+}
+
+// func TestUpdateUser(t *testing.T) {
+// 	var data model.User
+// 	data.Email = "fulan12@gmail.com"
+// 	data.Username = "fulan12"
+
+// 	id := "6568592b8012346866b0ea1e"
+// 	ID, err := primitive.ObjectIDFromHex(id)
+// 	data.ID = ID
 // 	if err != nil {
-// 		t.Errorf("Error converting id to ObjectID: %v", err)
+// 		fmt.Printf("Data tidak berhasil diubah")
+// 	} else {
+
+// 		_, status, err := modul.UpdateUser(mconn, "user", data)
+// 		fmt.Println("Status", status)
+// 		if err != nil {
+// 			t.Errorf("Error updateting document: %v", err)
+// 		} else {
+// 			fmt.Printf("Data berhasil diubah untuk id: %s\n", id)
+// 		}
+// 	}
+// }
+
+// func TestGetAllUser(t *testing.T) {
+// 	anu, err := modul.GetAllUser(mconn, "user")
+// 	if err != nil {
+// 		t.Errorf("Error getting user: %v", err)
 // 		return
 // 	}
+// 	fmt.Println(anu)
+// }
 
-// 	err = modul.ScheduleReminder(ID, deadline, time)
+// func TestUpdateTodo(t *testing.T) {
+// 	var data model.Todo
+// 	data.Title = "Belajar Golang"
+// 	data.Description = "Hari ini belajar golang"
+// 	data.Deadline = "02/02/2021"
+
+// 	id := "655c5047370b53741a9705d8"
+// 	ID, err := primitive.ObjectIDFromHex(id)
+// 	data.ID = ID
 // 	if err != nil {
-// 		t.Errorf("Error scheduling reminder: %v", err)
-// 		return
+// 		fmt.Printf("Data tidak berhasil diubah")
+// 	} else {
+
+// 		_, status, err := modul.UpdateTodo(mconn, "todo", data)
+// 		fmt.Println("Status", status)
+// 		if err != nil {
+// 			t.Errorf("Error updating todo with id: %v", err)
+// 			return
+// 		} else {
+// 			fmt.Printf("Data berhasil diubah untuk id: %s\n", id)
+// 		}
+// 		fmt.Println(data)
 // 	}
-// 	fmt.Println("Schedule reminder success")
 // }
