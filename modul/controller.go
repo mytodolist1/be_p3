@@ -39,12 +39,6 @@ func InsertOneDoc(db *mongo.Database, col string, docs interface{}) (insertedID 
 	return insertedID, err
 }
 
-// func IsPasswordValid(mongoconn *mongo.Database, collection string, userdata model.User) bool {
-// 	filter := bson.M{"username": userdata.Username}
-// 	res := atdb.GetOneDoc[model.User](mongoconn, collection, filter)
-// 	return CheckPasswordHash(userdata.Password, res.Password)
-// }
-
 // user
 func GenerateUID(len int) (string, error) {
 	bytes := make([]byte, len)
@@ -151,37 +145,47 @@ func LogIn(db *mongo.Database, col string, userdata model.User) (user model.User
 	return userExists, true, nil
 }
 
-func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
+// update user with log
+func UpdateUser(db *mongo.Database, col string, userdata model.User) (model.User, bool, error) {
 	if userdata.Username == "" || userdata.Email == "" {
-		err = fmt.Errorf("Data tidak boleh kosong")
-		return user, false, err
+		err := fmt.Errorf("Data tidak boleh kosong")
+		return model.User{}, false, err
 	}
 
 	userExists, err := GetUserFromID(db, col, userdata.ID)
 	if err != nil {
-		return user, false, err
+		return model.User{}, false, err
 	}
 
 	// Periksa apakah data yang akan diupdate sama dengan data yang sudah ada
 	if userdata.Username == userExists.Username && userdata.Email == userExists.Email {
 		err = fmt.Errorf("Data yang ingin diupdate tidak boleh sama")
-		return user, false, err
+		return model.User{}, false, err
 	}
 
 	checkmail.ValidateFormat(userdata.Email)
 	if err != nil {
 		err = fmt.Errorf("Email tidak valid")
-		return user, false, err
+		return model.User{}, false, err
 	}
 
 	// Periksa apakah username memenuhi syarat
 	if strings.Contains(userdata.Username, " ") {
 		err = fmt.Errorf("Username tidak boleh mengandung spasi")
-		return user, false, err
+		return model.User{}, false, err
 	}
+
+	cols := db.Collection(col)
 
 	// Simpan pengguna ke basis data
 	filter := bson.M{"_id": userdata.ID}
+
+	var originalUser model.User
+	err = cols.FindOne(context.Background(), filter).Decode(&originalUser)
+	if err != nil {
+		return model.User{}, false, err
+	}
+
 	update := bson.D{
 		{Key: "$set", Value: bson.D{
 			{Key: "email", Value: userdata.Email},
@@ -189,18 +193,20 @@ func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model
 		}},
 	}
 
-	cols := db.Collection(col)
-	result, err := cols.UpdateOne(context.Background(), filter, update)
+	options := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
+
+	result := cols.FindOneAndUpdate(context.Background(), filter, update, options).Decode(&userdata)
+	if result != nil {
+		return model.User{}, false, err
+	}
+
+	err = LogUser(db, "loguser", userdata.ID, originalUser, userdata)
 	if err != nil {
-		return user, false, err
+		// Handle error logging
+		return model.User{}, false, err
 	}
 
-	if result.ModifiedCount == 0 {
-		err = fmt.Errorf("Data tidak berhasil diupdate")
-		return user, false, err
-	}
-
-	return user, true, nil
+	return userdata, true, nil
 }
 
 func ChangePassword(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
@@ -262,8 +268,8 @@ func ChangePassword(db *mongo.Database, col string, userdata model.User) (user m
 	return user, true, nil
 }
 
-func DeleteUser(db *mongo.Database, col string, userdata model.User) (status bool, err error) {
-	_, err = GetUserFromUsername(db, col, userdata.Username)
+func DeleteUser(db *mongo.Database, col string, userdata model.User) (bool, error) {
+	_, err := GetUserFromUsername(db, col, userdata.Username)
 	if err != nil {
 		err = fmt.Errorf("Username tidak ditemukan")
 		return false, err
@@ -355,13 +361,14 @@ func GetUserFromToken(db *mongo.Database, col string, uid string) (user model.Us
 	return user, nil
 }
 
-func GetAllUser(db *mongo.Database, col string) (userlist []model.User, err error) {
+// admin
+func GetUserFromRole(db *mongo.Database, col string, role string) (userlist []model.User, err error) {
 	cols := db.Collection(col)
-	filter := bson.M{}
+	filter := bson.M{"role": role}
 
 	cur, err := cols.Find(context.Background(), filter)
 	if err != nil {
-		fmt.Println("Error GetAllUser in colection", col, ":", err)
+		fmt.Println("Error GetUserFromRole in colection", col, ":", err)
 		return userlist, err
 	}
 
@@ -376,12 +383,15 @@ func GetAllUser(db *mongo.Database, col string) (userlist []model.User, err erro
 
 // todo
 func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) (insertedID primitive.ObjectID, err error) {
-	if todoDoc.Title == "" || todoDoc.Description == "" || todoDoc.Deadline == "" {
+	if todoDoc.Title == "" || todoDoc.Description == "" || todoDoc.Deadline == "" || todoDoc.Time == "" {
 		err = fmt.Errorf("Data tidak boleh kosong")
 		return insertedID, err
 	}
 
 	objectId := primitive.NewObjectID()
+
+	time := time.Now().UnixMilli()
+	fmt.Println(time)
 
 	todo := bson.D{
 		{Key: "_id", Value: objectId},
@@ -389,11 +399,10 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 		{Key: "description", Value: todoDoc.Description},
 		{Key: "deadline", Value: todoDoc.Deadline},
 		{Key: "time", Value: todoDoc.Time},
-		{Key: "timestamp", Value: bson.D{
-			{Key: "createdat", Value: time.Now()},
-			{Key: "updatedat", Value: time.Now()},
+		{Key: "timestamps", Value: bson.D{
+			{Key: "createdat", Value: time},
+			{Key: "updatedat", Value: time},
 		}},
-		{Key: "isdone", Value: todoDoc.IsDone},
 		{Key: "user", Value: bson.D{
 			{Key: "uid", Value: uid},
 		}},
@@ -405,6 +414,108 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 	}
 
 	return insertedID, nil
+}
+
+// update todo with log
+func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bool, error) {
+	if todo.Title == "" || todo.Description == "" || todo.Deadline == "" || todo.Time == "" {
+		err := fmt.Errorf("Data tidak lengkap")
+		return model.Todo{}, false, err
+	}
+
+	cols := db.Collection(col)
+	filter := bson.M{"_id": todo.ID}
+
+	var originalTodo model.Todo
+	err := cols.FindOne(context.Background(), filter).Decode(&originalTodo)
+	if err != nil {
+		return model.Todo{}, false, err
+	}
+
+	time := time.Now().UnixMilli()
+
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "title", Value: todo.Title},
+			{Key: "description", Value: todo.Description},
+			{Key: "deadline", Value: todo.Deadline},
+			{Key: "timestamps.updatedat", Value: time},
+		}},
+		{Key: "$setOnInsert", Value: bson.D{
+			{Key: "timestamps.createdat", Value: todo.TimeStamps.CreatedAt},
+		}},
+	}
+
+	options := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
+
+	result := cols.FindOneAndUpdate(context.Background(), filter, update, options).Decode(&todo)
+	if result != nil {
+		return model.Todo{}, false, err
+	}
+
+	err = LogTodo(db, "logtodo", todo.ID, originalTodo, todo)
+	if err != nil {
+		// Handle error logging
+		return model.Todo{}, false, err
+	}
+
+	return todo, true, nil
+}
+
+func DeleteTodo(db *mongo.Database, col string, _id primitive.ObjectID) (bool, error) {
+	cols := db.Collection(col)
+	filter := bson.M{"_id": _id}
+
+	result, err := cols.DeleteOne(context.Background(), filter)
+	if err != nil {
+		return false, err
+	}
+
+	if result.DeletedCount == 0 {
+		err = fmt.Errorf("Data tidak berhasil dihapus")
+		return false, err
+	}
+
+	return true, nil
+}
+
+// isDone
+func TodoClear(db *mongo.Database, col string, _id primitive.ObjectID, done model.TodoClear) (bool, error) {
+	cols := db.Collection(col)
+
+	todo, err := GetTodoFromID(db, "todo", _id)
+	if err != nil {
+		return false, err
+	}
+
+	time := time.Now().UnixMilli()
+
+	insert := bson.D{
+		{Key: "isdone", Value: true},
+		{Key: "timeclear", Value: time},
+		{Key: "todo", Value: bson.D{
+			{Key: "_id", Value: todo.ID},
+			{Key: "title", Value: todo.Title},
+			{Key: "description", Value: todo.Description},
+			{Key: "deadline", Value: todo.Deadline},
+			{Key: "time", Value: todo.Time},
+			{Key: "user", Value: bson.D{
+				{Key: "uid", Value: todo.User.UID},
+			}},
+		}},
+	}
+
+	_, err = cols.InsertOne(context.Background(), insert)
+	if err != nil {
+		return false, err
+	}
+
+	_, err = DeleteTodo(db, "todo", todo.ID)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func GetTodoFromID(db *mongo.Database, col string, _id primitive.ObjectID) (todo model.Todo, err error) {
@@ -459,59 +570,296 @@ func GetTodoList(db *mongo.Database, col string) (todo []model.Todo, err error) 
 	return todo, nil
 }
 
-func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (todos model.Todo, status bool, err error) {
-	if todo.Title == "" || todo.Description == "" || todo.Deadline == "" {
-		err = fmt.Errorf("Data tidak lengkap")
-		return todos, false, err
+// log
+func LogTodo(db *mongo.Database, col string, todoID primitive.ObjectID, originalTodo model.Todo, updatedTodo model.Todo) error {
+	cols := db.Collection(col)
+
+	// Filter untuk menemukan dokumen log dengan ID yang sesuai
+	filter := bson.M{"todoid": todoID.Hex()}
+
+	// Data baru yang akan ditambahkan ke dalam array Change
+	time := time.Now().UnixMilli()
+
+	newChangeEntry := bson.D{
+		{Key: "timestamp", Value: time},
+		{Key: "dataold", Value: originalTodo},
+		{Key: "datanew", Value: updatedTodo},
 	}
 
-	cols := db.Collection(col)
-	filter := bson.M{"_id": todo.ID}
+	// Setelah menemukan dokumen log, perbarui array Change dengan $addToSet
 	update := bson.D{
-		{Key: "$set", Value: bson.D{
-			{Key: "title", Value: todo.Title},
-			{Key: "description", Value: todo.Description},
-			{Key: "deadline", Value: todo.Deadline},
-			{Key: "timestamp.updatedat", Value: time.Now()},
-		}},
-		{Key: "$setOnInsert", Value: bson.D{
-			{Key: "timestamp.createdat", Value: todo.TimeStamp.CreatedAt},
+		{Key: "$push", Value: bson.D{
+			{Key: "change", Value: newChangeEntry},
 		}},
 	}
 
-	options := options.Update().SetUpsert(true)
-
-	result, err := cols.UpdateOne(context.Background(), filter, update, options)
+	// Jalankan operasi update
+	result, err := cols.UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		return todos, false, err
+		fmt.Printf("InsertOneDoc: %v\n", err)
+		return err
 	}
 
-	if result.ModifiedCount == 0 && result.UpsertedCount == 0 {
-		err = fmt.Errorf("Data tidak berhasil diupdate")
-		return todos, false, err
+	// Jika dokumen log belum ada, tambahkan dokumen baru
+	if result.MatchedCount == 0 {
+		logUpdate := bson.D{
+			{Key: "timestamp", Value: time},
+			{Key: "action", Value: "update"},
+			{Key: "todoid", Value: todoID.Hex()},
+			{Key: "change", Value: []map[string]interface{}{
+				{
+					"timestamp": time,
+					"dataold":   originalTodo,
+					"datanew":   updatedTodo,
+				},
+			}},
+		}
+
+		_, err := cols.InsertOne(context.Background(), logUpdate)
+		if err != nil {
+			fmt.Printf("InsertOneDoc: %v\n", err)
+			return err
+		}
+	} else {
+		// Jika dokumen log sudah ada, tampilkan dokumen log yang sudah diperbarui
+		err = cols.FindOne(context.Background(), filter).Decode(&originalTodo)
+		if err != nil {
+			fmt.Printf("FindOneDoc: %v\n", err)
+			return err
+		}
 	}
 
-	err = cols.FindOne(context.Background(), filter).Decode(&todos)
-	if err != nil {
-		return todos, false, err
-	}
+	fmt.Printf("Result (Before Update): %+v\n", originalTodo)
+	fmt.Printf("Result (After Update): %+v\n", updatedTodo)
 
-	return todos, true, nil
+	return nil
 }
 
-func DeleteTodo(db *mongo.Database, col string, _id primitive.ObjectID) (status bool, err error) {
+func LogUser(db *mongo.Database, col string, userID primitive.ObjectID, originalUser model.User, updatedUser model.User) error {
 	cols := db.Collection(col)
-	filter := bson.M{"_id": _id}
 
-	result, err := cols.DeleteOne(context.Background(), filter)
+	// Filter untuk menemukan dokumen log dengan ID yang sesuai
+	filter := bson.M{"userid": userID.Hex()}
+
+	// Data baru yang akan ditambahkan ke dalam array Change
+	time := time.Now().UnixMilli()
+
+	newChangeEntry := bson.D{
+		{Key: "timestamp", Value: time},
+		{Key: "dataold", Value: originalUser},
+		{Key: "datanew", Value: updatedUser},
+	}
+
+	// Setelah menemukan dokumen log, perbarui array Change dengan $addToSet
+	update := bson.D{
+		{Key: "$push", Value: bson.D{
+			{Key: "change", Value: newChangeEntry},
+		}},
+	}
+
+	// Jalankan operasi update
+	result, err := cols.UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		return false, err
+		fmt.Printf("InsertOneDoc: %v\n", err)
+		return err
 	}
 
-	if result.DeletedCount == 0 {
-		err = fmt.Errorf("Data tidak berhasil dihapus")
-		return false, err
+	// Jika dokumen log belum ada, tambahkan dokumen baru
+	if result.MatchedCount == 0 {
+		logUpdate := bson.D{
+			{Key: "timestamp", Value: time},
+			{Key: "action", Value: "update"},
+			{Key: "userid", Value: userID.Hex()},
+			{Key: "change", Value: []map[string]interface{}{
+				{
+					"timestamp": time,
+					"dataold":   originalUser,
+					"datanew":   updatedUser,
+				},
+			}},
+		}
+
+		_, err := cols.InsertOne(context.Background(), logUpdate)
+		if err != nil {
+			fmt.Printf("InsertOneDoc: %v\n", err)
+			return err
+		}
+	} else {
+		// Jika dokumen log sudah ada, tampilkan dokumen log yang sudah diperbarui
+		err = cols.FindOne(context.Background(), filter).Decode(&originalUser)
+		if err != nil {
+			fmt.Printf("FindOneDoc: %v\n", err)
+			return err
+		}
 	}
 
-	return true, nil
+	fmt.Printf("Result (Before Update): %+v\n", originalUser)
+	fmt.Printf("Result (After Update): %+v\n", updatedUser)
+
+	return nil
 }
+
+// get log
+func GetLogTodoList(db *mongo.Database, col string) (log []model.LogTodo, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{}
+
+	cur, err := cols.Find(context.Background(), filter)
+	if err != nil {
+		fmt.Println("Error GetLogTodoList in colection", col, ":", err)
+		return log, err
+	}
+
+	err = cur.All(context.Background(), &log)
+	if err != nil {
+		fmt.Println("Error reading documents:", err)
+		return log, err
+	}
+
+	return log, nil
+}
+
+func GetLogTodoFromUID(db *mongo.Database, col, userid string) (log model.LogTodo, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{"userid": userid}
+
+	err = cols.FindOne(context.Background(), filter).Decode(&log)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			fmt.Println("no data found for ID", userid)
+		} else {
+			fmt.Println("error retrieving data for ID", userid, ":", err.Error())
+		}
+	}
+
+	return log, nil
+}
+
+func GetLogUserFromUID(db *mongo.Database, col, userid string) (log model.LogUser, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{"userid": userid}
+
+	err = cols.FindOne(context.Background(), filter).Decode(&log)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			fmt.Println("no data found for ID", userid)
+		} else {
+			fmt.Println("error retrieving data for ID", userid, ":", err.Error())
+		}
+	}
+
+	return log, nil
+}
+
+// // update user
+// func UpdateUser(db *mongo.Database, col string, userdata model.User) (user model.User, status bool, err error) {
+// 	if userdata.Username == "" || userdata.Email == "" {
+// 		err = fmt.Errorf("Data tidak boleh kosong")
+// 		return user, false, err
+// 	}
+
+// 	userExists, err := GetUserFromID(db, col, userdata.ID)
+// 	if err != nil {
+// 		return user, false, err
+// 	}
+
+// 	// Periksa apakah data yang akan diupdate sama dengan data yang sudah ada
+// 	if userdata.Username == userExists.Username && userdata.Email == userExists.Email {
+// 		err = fmt.Errorf("Data yang ingin diupdate tidak boleh sama")
+// 		return user, false, err
+// 	}
+
+// 	checkmail.ValidateFormat(userdata.Email)
+// 	if err != nil {
+// 		err = fmt.Errorf("Email tidak valid")
+// 		return user, false, err
+// 	}
+
+// 	// Periksa apakah username memenuhi syarat
+// 	if strings.Contains(userdata.Username, " ") {
+// 		err = fmt.Errorf("Username tidak boleh mengandung spasi")
+// 		return user, false, err
+// 	}
+
+// 	// Simpan pengguna ke basis data
+// 	filter := bson.M{"_id": userdata.ID}
+// 	update := bson.D{
+// 		{Key: "$set", Value: bson.D{
+// 			{Key: "email", Value: userdata.Email},
+// 			{Key: "username", Value: userdata.Username},
+// 		}},
+// 	}
+
+// 	cols := db.Collection(col)
+// 	result, err := cols.UpdateOne(context.Background(), filter, update)
+// 	if err != nil {
+// 		return user, false, err
+// 	}
+
+// 	if result.ModifiedCount == 0 {
+// 		err = fmt.Errorf("Data tidak berhasil diupdate")
+// 		return user, false, err
+// 	}
+
+// 	return user, true, nil
+// }
+
+// func GetAllUser(db *mongo.Database, col string) (userlist []model.User, err error) {
+// 	cols := db.Collection(col)
+// 	filter := bson.M{}
+
+// 	cur, err := cols.Find(context.Background(), filter)
+// 	if err != nil {
+// 		fmt.Println("Error GetAllUser in colection", col, ":", err)
+// 		return userlist, err
+// 	}
+
+// 	err = cur.All(context.Background(), &userlist)
+// 	if err != nil {
+// 		fmt.Println("Error reading documents:", err)
+// 		return userlist, err
+// 	}
+
+// 	return userlist, nil
+// }
+
+// // update todo
+// func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (todos model.Todo, status bool, err error) {
+// 	if todo.Title == "" || todo.Description == "" || todo.Deadline == "" || todo.Time == "" {
+// 		err = fmt.Errorf("Data tidak lengkap")
+// 		return todos, false, err
+// 	}
+
+// 	cols := db.Collection(col)
+// 	filter := bson.M{"_id": todo.ID}
+// 	update := bson.D{
+// 		{Key: "$set", Value: bson.D{
+// 			{Key: "title", Value: todo.Title},
+// 			{Key: "description", Value: todo.Description},
+// 			{Key: "deadline", Value: todo.Deadline},
+// 			{Key: "timestamps.updatedat", Value: time.Now()},
+// 		}},
+// 		{Key: "$setOnInsert", Value: bson.D{
+// 			{Key: "timestamps.createdat", Value: todo.TimeStamps.CreatedAt},
+// 		}},
+// 	}
+
+// 	options := options.Update().SetUpsert(true)
+
+// 	result, err := cols.UpdateOne(context.Background(), filter, update, options)
+// 	if err != nil {
+// 		return todos, false, err
+// 	}
+
+// 	if result.ModifiedCount == 0 && result.UpsertedCount == 0 {
+// 		err = fmt.Errorf("Data tidak berhasil diupdate")
+// 		return todos, false, err
+// 	}
+
+// 	err = cols.FindOne(context.Background(), filter).Decode(&todos)
+// 	if err != nil {
+// 		return todos, false, err
+// 	}
+
+// 	return todos, true, nil
+// }
