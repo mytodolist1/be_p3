@@ -14,28 +14,15 @@ import (
 var (
 	Responsed model.Credential
 	Response  model.TodoResponse
+	resp      model.LogTodoResponse
 	datauser  model.User
 	datatodo  model.Todo
+	logtodo   model.LogTodo
+	isdone    model.TodoClear
 )
 
+// for user
 // user
-func GCFHandlerGetAllUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	Responsed.Status = false
-
-	userlist, err := GetAllUser(mconn, collectionname)
-	if err != nil {
-		Responsed.Message = err.Error()
-		return GCFReturnStruct(Responsed)
-	}
-
-	Responsed.Status = true
-	Responsed.Message = "Get User Success"
-	Responsed.Data = userlist
-
-	return GCFReturnStruct(Responsed)
-}
-
 func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -303,23 +290,6 @@ func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 }
 
 // todo
-func GCFHandlerGetAllTodoList(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
-	Response.Status = false
-
-	todolist, err := GetTodoList(mconn, collectionname)
-	if err != nil {
-		Response.Message = err.Error()
-		return GCFReturnStruct(Response)
-	}
-
-	Response.Status = true
-	Response.Message = "Get todo success"
-	Response.Data = todolist
-
-	return GCFReturnStruct(Response)
-}
-
 func GCFHandlerGetTodoListByUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Response.Status = false
@@ -531,7 +501,204 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	return GCFReturnStruct(Response)
 }
 
+// for admin
+// user
+func GCFHandlerGetAllUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	Responsed.Status = false
+
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		Response.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Response)
+	}
+
+	userInfo, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	if userInfo.Role != "admin" {
+		Responsed.Message = "You are not admin"
+		return GCFReturnStruct(Responsed)
+
+	} else {
+		userlist, err := GetUserFromRole(mconn, collectionname, "user")
+		if err != nil {
+			Responsed.Message = err.Error()
+			return GCFReturnStruct(Responsed)
+		}
+
+		Responsed.Status = true
+		Responsed.Message = "Get User Success"
+		Responsed.Data = userlist
+
+		return GCFReturnStruct(Responsed)
+	}
+}
+
+// todo
+func GCFHandlerGetAllTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	Response.Status = false
+
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		Response.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Response)
+	}
+
+	userInfo, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	if userInfo.Role != "admin" {
+		Responsed.Message = "You are not admin"
+		return GCFReturnStruct(Responsed)
+
+	} else {
+		todolist, err := GetTodoList(mconn, collectionname)
+		if err != nil {
+			Response.Message = err.Error()
+			return GCFReturnStruct(Response)
+		}
+
+		Response.Status = true
+		Response.Message = "Get todo success"
+		Response.Data = todolist
+
+		return GCFReturnStruct(Response)
+	}
+}
+
+// log todo
+func GCFHandlerGetLogTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		resp.Message = "error parsing application/json1:"
+		return GCFReturnStruct(resp)
+	}
+
+	userInfo, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		resp.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(resp)
+	}
+
+	if userInfo.Role != "admin" {
+		Responsed.Message = "You are not admin"
+		return GCFReturnStruct(Responsed)
+
+	} else {
+		loglist, err := GetLogTodoList(mconn, collectionname)
+		if err != nil {
+			resp.Message = err.Error()
+			return GCFReturnStruct(resp)
+		}
+
+		resp.Status = true
+		resp.Message = "Get log todo success"
+		resp.Data = loglist
+
+		return GCFReturnStruct(Response)
+	}
+}
+
+// log for user
+func GCFHandlerGetLogTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		resp.Message = "error parsing application/json1:"
+		return GCFReturnStruct(resp)
+	}
+
+	userInfo, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		resp.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(resp)
+	}
+
+	loglist, err := GetLogTodoFromUID(mconn, collectionname, userInfo.Id)
+	if err != nil {
+		resp.Message = err.Error()
+		return GCFReturnStruct(resp)
+	}
+
+	resp.Status = true
+	resp.Message = "Get log todo success"
+	resp.Data = []model.LogTodo{loglist}
+
+	return GCFReturnStruct(Response)
+}
+
+// isDone
+func GCFHandlerIsDone(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		Response.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Response)
+	}
+
+	_, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	id := r.URL.Query().Get("_id")
+	if id == "" {
+		Response.Message = "Missing '_id' parameter in the URL"
+		return GCFReturnStruct(Response)
+	}
+
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		Response.Message = "Invalid '_id' parameter in the URL"
+		return GCFReturnStruct(Response)
+	}
+
+	ID = datatodo.ID
+
+	_, err = TodoClear(mconn, collectionname, ID, isdone)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+
+	Response.Status = true
+	Response.Message = "IsDone success"
+
+	return GCFReturnStruct(Response)
+}
+
 func GCFReturnStruct(DataStuct any) string {
 	jsondata, _ := json.Marshal(DataStuct)
 	return string(jsondata)
 }
+
+// user
+// func GCFHandlerGetAllUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+// 	Responsed.Status = false
+
+// 	userlist, err := GetAllUser(mconn, collectionname)
+// 	if err != nil {
+// 		Responsed.Message = err.Error()
+// 		return GCFReturnStruct(Responsed)
+// 	}
+
+// 	Responsed.Status = true
+// 	Responsed.Message = "Get User Success"
+// 	Responsed.Data = userlist
+
+// 	return GCFReturnStruct(Responsed)
+// }
