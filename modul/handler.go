@@ -23,6 +23,7 @@ var (
 
 // for user
 // user
+// not used yet
 func GCFHandlerGetUserByUsername(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -158,6 +159,7 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 	return GCFReturnStruct(Responsed)
 }
 
+// not updated yet
 func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -206,6 +208,7 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	return GCFReturnStruct(Responsed)
 }
 
+// not updated yet
 func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -248,6 +251,7 @@ func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 	return GCFReturnStruct(Responsed)
 }
 
+// not updated yet
 func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -407,6 +411,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	return GCFReturnStruct(Response)
 }
 
+// not updated yet
 func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Response.Status = false
@@ -503,6 +508,7 @@ func GCFHandlerDeleteTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 // for admin
 // user
+// not used yet
 func GCFHandlerGetAllUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -539,6 +545,7 @@ func GCFHandlerGetAllUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 }
 
 // todo
+// not used yet
 func GCFHandlerGetAllTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Response.Status = false
@@ -575,6 +582,7 @@ func GCFHandlerGetAllTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 }
 
 // log todo
+// not used yet
 func GCFHandlerGetLogTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 
@@ -610,6 +618,7 @@ func GCFHandlerGetLogTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 }
 
 // log for user
+// not used yet
 func GCFHandlerGetLogTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 

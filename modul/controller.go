@@ -510,7 +510,7 @@ func TodoClear(db *mongo.Database, col string, _id primitive.ObjectID, done mode
 		return false, err
 	}
 
-	_, err = DeleteTodo(db, "todo", todo.ID)
+	_, err = DeleteTodo(db, "todo", _id)
 	if err != nil {
 		return false, err
 	}

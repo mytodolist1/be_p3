@@ -72,8 +72,9 @@ func TestUpdateUser(t *testing.T) {
 func TestChangePassword(t *testing.T) {
 	var data model.User
 	data.Password = "secret"
+	data.ConfirmPassword = "secret"
 
-	username := "tejoko"
+	username := "dimass"
 	data.Username = username
 
 	_, status, err := modul.ChangePassword(mconn, "user", data)
@@ -147,7 +148,7 @@ func TestInsertTodo(t *testing.T) {
 	data.Time = "14:35"
 	// data.IsDone = false
 
-	uid := "20a71782a93539d1"
+	uid := "c742a1aeebfa6cc8"
 
 	_, err := modul.InsertTodo(mconn, "todo", data, uid)
 	if err != nil {
