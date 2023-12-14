@@ -1,8 +1,6 @@
 package model
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -29,18 +27,44 @@ type Todo struct {
 	Description string             `bson:"description,omitempty" json:"description,omitempty"`
 	Deadline    string             `bson:"deadline,omitempty" json:"deadline,omitempty"`
 	Time        string             `bson:"time,omitempty" json:"time,omitempty"`
-	TimeStamp   TimeStamp          `bson:"timestamp,omitempty" json:"timestamp,omitempty"`
-	IsDone      bool               `bson:"isdone,omitempty" json:"isdone,omitempty"`
+	TimeStamps  TimeStamps         `bson:"timestamps,omitempty" json:"timestamps,omitempty"`
 	User        User               `bson:"user,omitempty" json:"user,omitempty"`
 }
 
-type TimeStamp struct {
-	CreatedAt time.Time `bson:"createdat,omitempty" json:"createdat,omitempty"`
-	UpdatedAt time.Time `bson:"updatedat,omitempty" json:"updatedat,omitempty"`
+type TimeStamps struct {
+	CreatedAt int64 `bson:"createdat,omitempty" json:"createdat,omitempty"`
+	UpdatedAt int64 `bson:"updatedat,omitempty" json:"updatedat,omitempty"`
+}
+
+type TodoClear struct {
+	IsDone    bool  `bson:"isdone,omitempty" json:"isdone,omitempty"`
+	TimeClear int64 `bson:"timeclear,omitempty" json:"timeclear,omitempty"`
+	Todo      Todo  `bson:"todo,omitempty" json:"todo,omitempty"`
 }
 
 type TodoResponse struct {
 	Status  bool   `bson:"status" json:"status"`
 	Message string `bson:"message,omitempty" json:"message,omitempty"`
 	Data    []Todo `bson:"data,omitempty" json:"data,omitempty"`
+}
+
+type LogTodo struct {
+	TimeStamp int64                    `bson:"timestamp,omitempty" json:"timestamp,omitempty"`
+	Action    string                   `bson:"action,omitempty" json:"action,omitempty"`
+	TodoID    string                   `bson:"todoid,omitempty" json:"todoid,omitempty"`
+	UserID    string                   `bson:"userid,omitempty" json:"userid,omitempty"`
+	Change    []map[string]interface{} `bson:"change,omitempty" json:"change,omitempty"`
+}
+
+type LogUser struct {
+	TimeStamp int64                    `bson:"timestamp,omitempty" json:"timestamp,omitempty"`
+	Action    string                   `bson:"action,omitempty" json:"action,omitempty"`
+	UserID    string                   `bson:"userid,omitempty" json:"userid,omitempty"`
+	Change    []map[string]interface{} `bson:"change,omitempty" json:"change,omitempty"`
+}
+
+type LogTodoResponse struct {
+	Status  bool      `bson:"status" json:"status"`
+	Message string    `bson:"message,omitempty" json:"message,omitempty"`
+	Data    []LogTodo `bson:"data,omitempty" json:"data,omitempty"`
 }
