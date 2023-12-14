@@ -510,7 +510,9 @@ func TodoClear(db *mongo.Database, col string, _id primitive.ObjectID, done mode
 		return false, err
 	}
 
-	_, err = DeleteTodo(db, "todo", _id)
+	filter := bson.M{"_id": todo.ID}
+
+	_, err = db.Collection("todo").DeleteOne(context.Background(), filter)
 	if err != nil {
 		return false, err
 	}
