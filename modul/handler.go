@@ -675,10 +675,15 @@ func GCFHandlerIsDone(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionnam
 		return GCFReturnStruct(Response)
 	}
 
-	ID = datatodo.ID
+	isdone.Todo.ID = ID
 
-	_, err = TodoClear(mconn, collectionname, ID, isdone)
+	status, err := TodoClear(mconn, collectionname, isdone)
 	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+
+	if status == false {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}

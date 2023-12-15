@@ -199,7 +199,7 @@ func TestDeleteTodo(t *testing.T) {
 func TestTodoClear(t *testing.T) {
 	var data model.TodoClear
 
-	id := "657bc9623f61f5ed655623ab"
+	id := "657bd0fccd023400d63b49c4"
 
 	ID, err := primitive.ObjectIDFromHex(id)
 	data.Todo.ID = ID
@@ -207,7 +207,7 @@ func TestTodoClear(t *testing.T) {
 		fmt.Printf("Data tidak berhasil di selesaikan")
 	} else {
 
-		status, err := modul.TodoClear(mconn, "todoclear", ID, data)
+		status, err := modul.TodoClear(mconn, "todoclear", data)
 		fmt.Println("Status", status)
 		if err != nil {
 			t.Errorf("Error cleared todo with id: %v", err)
