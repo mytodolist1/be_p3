@@ -439,6 +439,7 @@ func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bo
 			{Key: "title", Value: todo.Title},
 			{Key: "description", Value: todo.Description},
 			{Key: "deadline", Value: todo.Deadline},
+			{Key: "time", Value: todo.Time},
 			{Key: "timestamps.updatedat", Value: time},
 		}},
 		{Key: "$setOnInsert", Value: bson.D{
@@ -446,7 +447,7 @@ func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bo
 		}},
 	}
 
-	options := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.Before)
+	options := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
 	result := cols.FindOneAndUpdate(context.Background(), filter, update, options).Decode(&todo)
 	if result != nil {
