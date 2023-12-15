@@ -199,7 +199,7 @@ func TestDeleteTodo(t *testing.T) {
 func TestTodoClear(t *testing.T) {
 	var data model.TodoClear
 
-	id := "657b537be42e1998ea48629e"
+	id := "657bc9623f61f5ed655623ab"
 
 	ID, err := primitive.ObjectIDFromHex(id)
 	data.Todo.ID = ID
