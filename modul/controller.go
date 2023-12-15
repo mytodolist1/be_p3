@@ -485,6 +485,7 @@ func TodoClear(db *mongo.Database, col string, _id primitive.ObjectID, done mode
 
 	todo, err := GetTodoFromID(db, "todo", _id)
 	if err != nil {
+		fmt.Println("Error GetTodoFromID in colection", col, ":", err)
 		return false, err
 	}
 
@@ -510,10 +511,14 @@ func TodoClear(db *mongo.Database, col string, _id primitive.ObjectID, done mode
 		return false, err
 	}
 
-	filter := bson.M{"_id": todo.ID}
-
-	_, err = db.Collection("todo").DeleteOne(context.Background(), filter)
+	status, err := DeleteTodo(db, "todo", todo.ID)
 	if err != nil {
+		fmt.Println("Error DeleteTodo in colection", col, ":", err)
+		return false, err
+	}
+
+	if status == false {
+		fmt.Println("Data tidak berhasil dihapus")
 		return false, err
 	}
 

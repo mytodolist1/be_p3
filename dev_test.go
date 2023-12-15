@@ -158,7 +158,7 @@ func TestInsertTodo(t *testing.T) {
 }
 
 func TestGetTodoFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("657ae34f6de0789b65476e8a")
+	id, _ := primitive.ObjectIDFromHex("657b38db665d89f159fce0f2")
 	anu, err := modul.GetTodoFromID(mconn, "todo", id)
 	if err != nil {
 		t.Errorf("Error getting todo: %v", err)
@@ -199,7 +199,7 @@ func TestDeleteTodo(t *testing.T) {
 func TestTodoClear(t *testing.T) {
 	var data model.TodoClear
 
-	id := "657b42a50a1bb2eead0ad70f"
+	id := "657b537be42e1998ea48629e"
 
 	ID, err := primitive.ObjectIDFromHex(id)
 	data.Todo.ID = ID
