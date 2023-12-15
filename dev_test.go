@@ -47,8 +47,8 @@ func TestLogIn(t *testing.T) {
 // update with log
 func TestUpdateUser(t *testing.T) {
 	var data model.User
-	data.Email = "dimass@gmail.com"
-	data.Username = "dimass"
+	data.Email = "dimas@gmail.com"
+	data.Username = "dimas"
 
 	id := "657437ffb905cf734635c9a8"
 	ID, err := primitive.ObjectIDFromHex(id)

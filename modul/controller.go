@@ -423,11 +423,22 @@ func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bo
 		return model.Todo{}, false, err
 	}
 
+	todoExists, err := GetTodoFromID(db, col, todo.ID)
+	if err != nil {
+		return model.Todo{}, false, err
+	}
+
+	// Periksa apakah data yang akan diupdate sama dengan data yang sudah ada
+	if todo.Title == todoExists.Title && todo.Description == todoExists.Description && todo.Deadline == todoExists.Deadline && todo.Time == todoExists.Time {
+		err = fmt.Errorf("Silahkan update data anda")
+		return model.Todo{}, false, err
+	}
+
 	cols := db.Collection(col)
 	filter := bson.M{"_id": todo.ID}
 
 	var originalTodo model.Todo
-	err := cols.FindOne(context.Background(), filter).Decode(&originalTodo)
+	err = cols.FindOne(context.Background(), filter).Decode(&originalTodo)
 	if err != nil {
 		return model.Todo{}, false, err
 	}
@@ -618,6 +629,7 @@ func LogTodo(db *mongo.Database, col string, todoID primitive.ObjectID, original
 			{Key: "timestamp", Value: time},
 			{Key: "action", Value: "update"},
 			{Key: "todoid", Value: todoID.Hex()},
+			{Key: "userid", Value: updatedTodo.User.UID},
 			{Key: "change", Value: []map[string]interface{}{
 				{
 					"timestamp": time,
@@ -647,11 +659,11 @@ func LogTodo(db *mongo.Database, col string, todoID primitive.ObjectID, original
 	return nil
 }
 
-func LogUser(db *mongo.Database, col string, userID primitive.ObjectID, originalUser model.User, updatedUser model.User) error {
+func LogUser(db *mongo.Database, col string, id primitive.ObjectID, originalUser model.User, updatedUser model.User) error {
 	cols := db.Collection(col)
 
 	// Filter untuk menemukan dokumen log dengan ID yang sesuai
-	filter := bson.M{"userid": userID.Hex()}
+	filter := bson.M{"id": id.Hex()}
 
 	// Data baru yang akan ditambahkan ke dalam array Change
 	time := time.Now().UnixMilli()
@@ -681,7 +693,8 @@ func LogUser(db *mongo.Database, col string, userID primitive.ObjectID, original
 		logUpdate := bson.D{
 			{Key: "timestamp", Value: time},
 			{Key: "action", Value: "update"},
-			{Key: "userid", Value: userID.Hex()},
+			{Key: "id", Value: id.Hex()},
+			{Key: "userid", Value: updatedUser.UID},
 			{Key: "change", Value: []map[string]interface{}{
 				{
 					"timestamp": time,
@@ -731,7 +744,7 @@ func GetLogTodoList(db *mongo.Database, col string) (log []model.LogTodo, err er
 	return log, nil
 }
 
-func GetLogTodoFromUID(db *mongo.Database, col, userid string) (log model.LogTodo, err error) {
+func GetLogTodoFromUID(db *mongo.Database, col, userid string) (log []model.LogTodo, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"userid": userid}
 
@@ -768,7 +781,7 @@ func GetLogAllUser(db *mongo.Database, col string) (log []model.LogUser, err err
 }
 
 // not used yet
-func GetLogUserFromUID(db *mongo.Database, col, userid string) (log model.LogUser, err error) {
+func GetLogUserFromUID(db *mongo.Database, col, userid string) (log []model.LogUser, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"userid": userid}
 

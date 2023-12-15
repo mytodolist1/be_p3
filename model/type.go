@@ -59,6 +59,7 @@ type LogTodo struct {
 type LogUser struct {
 	TimeStamp int64                    `bson:"timestamp,omitempty" json:"timestamp,omitempty"`
 	Action    string                   `bson:"action,omitempty" json:"action,omitempty"`
+	ID        string                   `bson:"id,omitempty" json:"id,omitempty"`
 	UserID    string                   `bson:"userid,omitempty" json:"userid,omitempty"`
 	Change    []map[string]interface{} `bson:"change,omitempty" json:"change,omitempty"`
 }
