@@ -144,7 +144,7 @@ func TestInsertTodo(t *testing.T) {
 	var data model.Todo
 	data.Title = "Pergi"
 	data.Description = "Pergi ke pasar"
-	data.Deadline = "2023-07-12"
+	data.Deadline = "2023-12-30"
 	data.Time = "14:35"
 	// data.IsDone = false
 
@@ -227,7 +227,7 @@ func TestUpdateTodo(t *testing.T) {
 	data.Deadline = "2023-12-30"
 	data.Time = "14:35"
 
-	id := "657b38db665d89f159fce0f2"
+	id := "657c4f3d1370da3c7f5fdd87"
 	ID, err := primitive.ObjectIDFromHex(id)
 	data.ID = ID
 	if err != nil {

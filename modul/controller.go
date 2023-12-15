@@ -446,7 +446,7 @@ func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bo
 		}},
 	}
 
-	options := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
+	options := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.Before)
 
 	result := cols.FindOneAndUpdate(context.Background(), filter, update, options).Decode(&todo)
 	if result != nil {
@@ -746,6 +746,27 @@ func GetLogTodoFromUID(db *mongo.Database, col, userid string) (log model.LogTod
 	return log, nil
 }
 
+// not used yet
+func GetLogAllUser(db *mongo.Database, col string) (log []model.LogUser, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{}
+
+	cur, err := cols.Find(context.Background(), filter)
+	if err != nil {
+		fmt.Println("Error GetLogAllUser in colection", col, ":", err)
+		return log, err
+	}
+
+	err = cur.All(context.Background(), &log)
+	if err != nil {
+		fmt.Println("Error reading documents:", err)
+		return log, err
+	}
+
+	return log, nil
+}
+
+// not used yet
 func GetLogUserFromUID(db *mongo.Database, col, userid string) (log model.LogUser, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"userid": userid}
