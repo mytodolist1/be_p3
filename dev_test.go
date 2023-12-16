@@ -219,15 +219,24 @@ func TestTodoClear(t *testing.T) {
 	}
 }
 
+func TestGetTodoDone(t *testing.T) {
+	anu, err := modul.GetTodoDone(mconn, "todoclear")
+	if err != nil {
+		t.Errorf("Error getting todo: %v", err)
+		return
+	}
+	fmt.Println(anu)
+}
+
 // with log
 func TestUpdateTodo(t *testing.T) {
 	var data model.Todo
 	data.Title = "Belajar javascript"
 	data.Description = "Hari ini belajar javascript"
 	data.Deadline = "2023-11-30"
-	data.Time = "20:31"
+	data.Time = "20:51"
 
-	id := "657c4e33ef6d3f3908813719"
+	id := "657c4f3d1370da3c7f5fdd87"
 	ID, err := primitive.ObjectIDFromHex(id)
 	data.ID = ID
 	if err != nil {
@@ -247,8 +256,8 @@ func TestUpdateTodo(t *testing.T) {
 }
 
 // log
-func TestGetLogTodoFromID(t *testing.T) {
-	uid := "657b38db665d89f159fce0f2"
+func TestGetLogTodoFromUID(t *testing.T) {
+	uid := "c742a1aeebfa6cc8"
 
 	anu, err := modul.GetLogTodoFromUID(mconn, "logtodo", uid)
 	if err != nil {
@@ -258,7 +267,7 @@ func TestGetLogTodoFromID(t *testing.T) {
 	fmt.Println(anu)
 }
 
-func TestGetLogUserFromID(t *testing.T) {
+func TestGetLogUserFromUID(t *testing.T) {
 	uid := "657437ffb905cf734635c9a8"
 
 	anu, err := modul.GetLogUserFromUID(mconn, "loguser", uid)
