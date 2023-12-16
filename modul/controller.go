@@ -541,6 +541,25 @@ func TodoClear(db *mongo.Database, col string, done model.TodoClear) (bool, erro
 	return true, nil
 }
 
+func GetTodoDone(db *mongo.Database, col string) (todo []model.TodoClear, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{"isdone": true}
+
+	cur, err := cols.Find(context.Background(), filter)
+	if err != nil {
+		fmt.Println("Error GetTodoDone in colection", col, ":", err)
+		return todo, err
+	}
+
+	err = cur.All(context.Background(), &todo)
+	if err != nil {
+		fmt.Println("Error reading documents:", err)
+		return todo, err
+	}
+
+	return todo, nil
+}
+
 func GetTodoFromID(db *mongo.Database, col string, _id primitive.ObjectID) (todo model.Todo, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{"_id": _id}
@@ -748,13 +767,16 @@ func GetLogTodoFromUID(db *mongo.Database, col, userid string) (log []model.LogT
 	cols := db.Collection(col)
 	filter := bson.M{"userid": userid}
 
-	err = cols.FindOne(context.Background(), filter).Decode(&log)
+	cur, err := cols.Find(context.Background(), filter)
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			fmt.Println("no data found for ID", userid)
-		} else {
-			fmt.Println("error retrieving data for ID", userid, ":", err.Error())
-		}
+		fmt.Println("Error GetLogTodoList in colection", col, ":", err)
+		return log, err
+	}
+
+	err = cur.All(context.Background(), &log)
+	if err != nil {
+		fmt.Println("Error reading documents:", err)
+		return log, err
 	}
 
 	return log, nil
