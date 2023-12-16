@@ -36,16 +36,22 @@ type TimeStamps struct {
 	UpdatedAt int64 `bson:"updatedat,omitempty" json:"updatedat,omitempty"`
 }
 
+type TodoResponse struct {
+	Status  bool   `bson:"status" json:"status"`
+	Message string `bson:"message,omitempty" json:"message,omitempty"`
+	Data    []Todo `bson:"data,omitempty" json:"data,omitempty"`
+}
+
 type TodoClear struct {
 	IsDone    bool  `bson:"isdone,omitempty" json:"isdone,omitempty"`
 	TimeClear int64 `bson:"timeclear,omitempty" json:"timeclear,omitempty"`
 	Todo      Todo  `bson:"todo,omitempty" json:"todo,omitempty"`
 }
 
-type TodoResponse struct {
-	Status  bool   `bson:"status" json:"status"`
-	Message string `bson:"message,omitempty" json:"message,omitempty"`
-	Data    []Todo `bson:"data,omitempty" json:"data,omitempty"`
+type TodoClearResponse struct {
+	Status  bool        `bson:"status" json:"status"`
+	Message string      `bson:"message,omitempty" json:"message,omitempty"`
+	Data    []TodoClear `bson:"data,omitempty" json:"data,omitempty"`
 }
 
 type LogTodo struct {
@@ -56,16 +62,17 @@ type LogTodo struct {
 	Change    []map[string]interface{} `bson:"change,omitempty" json:"change,omitempty"`
 }
 
+type LogTodoResponse struct {
+	Status  bool      `bson:"status" json:"status"`
+	Message string    `bson:"message,omitempty" json:"message,omitempty"`
+	Data    []LogTodo `bson:"data,omitempty" json:"data,omitempty"`
+}
+
+
 type LogUser struct {
 	TimeStamp int64                    `bson:"timestamp,omitempty" json:"timestamp,omitempty"`
 	Action    string                   `bson:"action,omitempty" json:"action,omitempty"`
 	ID        string                   `bson:"id,omitempty" json:"id,omitempty"`
 	UserID    string                   `bson:"userid,omitempty" json:"userid,omitempty"`
 	Change    []map[string]interface{} `bson:"change,omitempty" json:"change,omitempty"`
-}
-
-type LogTodoResponse struct {
-	Status  bool      `bson:"status" json:"status"`
-	Message string    `bson:"message,omitempty" json:"message,omitempty"`
-	Data    []LogTodo `bson:"data,omitempty" json:"data,omitempty"`
 }
