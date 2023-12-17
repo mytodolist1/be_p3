@@ -146,7 +146,7 @@ func TestInsertTodo(t *testing.T) {
 	data.Description = "Pergi ke pasar"
 	data.Deadline = "12/18/2023"
 	data.Time = "12:30 PM"
-	data.Category.Category = "personal"
+	data.Tags.Category = "personal"
 	// data.IsDone = false
 
 	uid := "c742a1aeebfa6cc8"
@@ -245,7 +245,7 @@ func TestUpdateTodo(t *testing.T) {
 	data.Description = "Hari ini belajar javascript"
 	data.Deadline = "12/18/2023"
 	data.Time = "10:00 PM"
-	data.Category.Category = "Personal"
+	data.Tags.Category = "Personal"
 
 	id := "657e6db23e913ed6f8dc4909"
 	ID, err := primitive.ObjectIDFromHex(id)

@@ -402,7 +402,7 @@ func GCFHandlerGetCategory(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collecti
 
 	Response.Status = true
 	Response.Message = "Get category success"
-	Response.Category = category
+	Response.DataTags = category
 
 	return GCFReturnStruct(Response)
 }
@@ -429,7 +429,7 @@ func GCFHandlerGetTodoByCategory(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	datatodo.Category.Category = category
+	datatodo.Tags.Category = category
 
 	// err = json.NewDecoder(r.Body).Decode(&datatodo)
 	// if err != nil {

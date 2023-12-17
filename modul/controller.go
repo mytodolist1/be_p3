@@ -385,7 +385,7 @@ func GetUserFromRole(db *mongo.Database, col string, role string) (userlist []mo
 
 // todo
 func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) (insertedID primitive.ObjectID, err error) {
-	if todoDoc.Title == "" || todoDoc.Description == "" || todoDoc.Deadline == "" || todoDoc.Time == "" || todoDoc.Category.Category == "" {
+	if todoDoc.Title == "" || todoDoc.Description == "" || todoDoc.Deadline == "" || todoDoc.Time == "" || todoDoc.Tags.Category == "" {
 		err = fmt.Errorf("Data tidak boleh kosong")
 		return insertedID, err
 	}
@@ -398,7 +398,7 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 	// Konversi huruf pertama dari setiap kata menjadi huruf kapital
 	title := cases.Title(language.Indonesian).String(todoDoc.Title)
 	description := cases.Title(language.Indonesian).String(todoDoc.Description)
-	category := cases.Title(language.Indonesian).String(todoDoc.Category.Category)
+	category := cases.Title(language.Indonesian).String(todoDoc.Tags.Category)
 
 	todo := bson.D{
 		{Key: "_id", Value: objectID},
@@ -406,7 +406,7 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 		{Key: "description", Value: description},
 		{Key: "deadline", Value: todoDoc.Deadline},
 		{Key: "time", Value: todoDoc.Time},
-		{Key: "category", Value: bson.D{
+		{Key: "tags", Value: bson.D{
 			{Key: "category", Value: category},
 		}},
 		{Key: "timestamps", Value: bson.D{
@@ -431,7 +431,7 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 	}
 
 	if !categories {
-		_, err = InsertCategory(db, "category", todoDoc.Category)
+		_, err = InsertCategory(db, "category", todoDoc.Tags)
 		if err != nil {
 			fmt.Printf("InsertCategory: %v\n", err)
 			return insertedID, err
@@ -494,7 +494,7 @@ func GetCategory(db *mongo.Database, col string) (category []model.Categories, e
 
 // update todo with log
 func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bool, error) {
-	if todo.Title == "" || todo.Description == "" || todo.Deadline == "" || todo.Time == "" || todo.Category.Category == "" {
+	if todo.Title == "" || todo.Description == "" || todo.Deadline == "" || todo.Time == "" || todo.Tags.Category == "" {
 		err := fmt.Errorf("Data tidak lengkap")
 		return model.Todo{}, false, err
 	}
@@ -523,7 +523,7 @@ func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bo
 
 	title := cases.Title(language.Indonesian).String(todo.Title)
 	description := cases.Title(language.Indonesian).String(todo.Description)
-	category := cases.Title(language.Indonesian).String(todo.Category.Category)
+	category := cases.Title(language.Indonesian).String(todo.Tags.Category)
 
 	update := bson.D{
 		{Key: "$set", Value: bson.D{
@@ -531,7 +531,9 @@ func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bo
 			{Key: "description", Value: description},
 			{Key: "deadline", Value: todo.Deadline},
 			{Key: "time", Value: todo.Time},
-			{Key: "category", Value: category},
+			{Key: "tags", Value: bson.D{
+				{Key: "category", Value: category},
+			}},
 			{Key: "timestamps.updatedat", Value: time},
 		}},
 		{Key: "$setOnInsert", Value: bson.D{
@@ -595,8 +597,8 @@ func TodoClear(db *mongo.Database, col string, done model.TodoClear) (bool, erro
 			{Key: "description", Value: todo.Description},
 			{Key: "deadline", Value: todo.Deadline},
 			{Key: "time", Value: todo.Time},
-			{Key: "category", Value: bson.D{
-				{Key: "category", Value: todo.Category.Category},
+			{Key: "tags", Value: bson.D{
+				{Key: "category", Value: todo.Tags.Category},
 			}},
 			{Key: "user", Value: bson.D{
 				{Key: "uid", Value: todo.User.UID},
@@ -680,7 +682,7 @@ func GetTodoFromToken(db *mongo.Database, col string, uid string) (todo []model.
 
 func GetTodoFromCategory(db *mongo.Database, col string, category string) (todo []model.Todo, err error) {
 	cols := db.Collection(col)
-	filter := bson.M{"category.category": category}
+	filter := bson.M{"tags.category": category}
 
 	cursor, err := cols.Find(context.Background(), filter)
 	if err != nil {

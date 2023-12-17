@@ -27,7 +27,7 @@ type Todo struct {
 	Description string             `bson:"description,omitempty" json:"description,omitempty"`
 	Deadline    string             `bson:"deadline,omitempty" json:"deadline,omitempty"`
 	Time        string             `bson:"time,omitempty" json:"time,omitempty"`
-	Category    Categories         `bson:"category,omitempty" json:"category,omitempty"`
+	Tags        Categories         `bson:"tags,omitempty" json:"tags,omitempty"`
 	TimeStamps  TimeStamps         `bson:"timestamps,omitempty" json:"timestamps,omitempty"`
 	User        User               `bson:"user,omitempty" json:"user,omitempty"`
 }
@@ -45,7 +45,7 @@ type TodoResponse struct {
 	Status   bool         `bson:"status" json:"status"`
 	Message  string       `bson:"message,omitempty" json:"message,omitempty"`
 	Data     []Todo       `bson:"data,omitempty" json:"data,omitempty"`
-	Category []Categories `bson:"category,omitempty" json:"category,omitempty"`
+	DataTags []Categories `bson:"datatags,omitempty" json:"datatags,omitempty"`
 }
 
 type TodoClear struct {
