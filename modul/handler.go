@@ -407,15 +407,15 @@ func GCFHandlerGetTodoByCategory(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 	// 	return GCFReturnStruct(Response)
 	// }
 
-	todo, err := GetTodoFromCategory(mconn, collectionname, category)
+	todoCategory, err := GetTodoFromCategory(mconn, collectionname, category)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 
 	Response.Status = true
-	Response.Message = "Get todo success"
-	Response.Data = todo
+	Response.Message = "Get todo category success"
+	Response.Data = todoCategory
 
 	return GCFReturnStruct(Response)
 }

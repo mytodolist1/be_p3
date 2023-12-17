@@ -243,11 +243,11 @@ func TestUpdateTodo(t *testing.T) {
 	var data model.Todo
 	data.Title = "Belajar javascript"
 	data.Description = "Hari ini belajar javascript"
-	data.Deadline = "2023-11-30"
-	data.Time = "20:51"
+	data.Deadline = "12/18/2023"
+	data.Time = "10:00 PM"
 	data.Category = "Personal"
 
-	id := "657c4f3d1370da3c7f5fdd87"
+	id := "657e6db23e913ed6f8dc4909"
 	ID, err := primitive.ObjectIDFromHex(id)
 	data.ID = ID
 	if err != nil {
