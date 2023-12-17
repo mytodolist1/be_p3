@@ -377,6 +377,49 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 	return GCFReturnStruct(Response)
 }
 
+func GCFHandlerGetTodoByCategory(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname, category string, r *http.Request) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	Response.Status = false
+
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		Response.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Response)
+	}
+
+	_, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	category = r.URL.Query().Get("category")
+	if category == "" {
+		Response.Message = "Missing 'category' parameter in the URL"
+		return GCFReturnStruct(Response)
+	}
+
+	datatodo.Category = category
+
+	// err = json.NewDecoder(r.Body).Decode(&datatodo)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json3: " + err.Error()
+	// 	return GCFReturnStruct(Response)
+	// }
+
+	todo, err := GetTodoFromCategory(mconn, collectionname, category)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+
+	Response.Status = true
+	Response.Message = "Get todo success"
+	Response.Data = todo
+
+	return GCFReturnStruct(Response)
+}
+
 func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Response.Status = false
@@ -406,7 +449,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 
 	Response.Status = true
-	Response.Message = "Insert todo success for " + datatodo.Title
+	Response.Message = "Insert todo success for title" + datatodo.Title
 	Response.Data = []model.Todo{datatodo}
 
 	return GCFReturnStruct(Response)

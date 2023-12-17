@@ -27,6 +27,7 @@ type Todo struct {
 	Description string             `bson:"description,omitempty" json:"description,omitempty"`
 	Deadline    string             `bson:"deadline,omitempty" json:"deadline,omitempty"`
 	Time        string             `bson:"time,omitempty" json:"time,omitempty"`
+	Category    string             `bson:"category,omitempty" json:"category,omitempty"`
 	TimeStamps  TimeStamps         `bson:"timestamps,omitempty" json:"timestamps,omitempty"`
 	User        User               `bson:"user,omitempty" json:"user,omitempty"`
 }
@@ -67,7 +68,6 @@ type LogTodoResponse struct {
 	Message string    `bson:"message,omitempty" json:"message,omitempty"`
 	Data    []LogTodo `bson:"data,omitempty" json:"data,omitempty"`
 }
-
 
 type LogUser struct {
 	TimeStamp int64                    `bson:"timestamp,omitempty" json:"timestamp,omitempty"`

@@ -146,6 +146,7 @@ func TestInsertTodo(t *testing.T) {
 	data.Description = "Pergi ke pasar"
 	data.Deadline = "2023-12-30"
 	data.Time = "14:35"
+	data.Category = "Priority"
 	// data.IsDone = false
 
 	uid := "c742a1aeebfa6cc8"
@@ -155,6 +156,15 @@ func TestInsertTodo(t *testing.T) {
 		t.Errorf("Error inserting todo: %v", err)
 	}
 	fmt.Println(data)
+}
+
+func TestGetTodoFromCategory(t *testing.T) {
+	anu, err := modul.GetTodoFromCategory(mconn, "todo", "Personal")
+	if err != nil {
+		t.Errorf("Error getting todo: %v", err)
+		return
+	}
+	fmt.Println(anu)
 }
 
 func TestGetTodoFromID(t *testing.T) {
@@ -235,6 +245,7 @@ func TestUpdateTodo(t *testing.T) {
 	data.Description = "Hari ini belajar javascript"
 	data.Deadline = "2023-11-30"
 	data.Time = "20:51"
+	data.Category = "Personal"
 
 	id := "657c4f3d1370da3c7f5fdd87"
 	ID, err := primitive.ObjectIDFromHex(id)

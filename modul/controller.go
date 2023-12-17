@@ -399,6 +399,7 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 		{Key: "description", Value: todoDoc.Description},
 		{Key: "deadline", Value: todoDoc.Deadline},
 		{Key: "time", Value: todoDoc.Time},
+		{Key: "category", Value: todoDoc.Category},
 		{Key: "timestamps", Value: bson.D{
 			{Key: "createdat", Value: time},
 			{Key: "updatedat", Value: time},
@@ -418,7 +419,7 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 
 // update todo with log
 func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bool, error) {
-	if todo.Title == "" || todo.Description == "" || todo.Deadline == "" || todo.Time == "" {
+	if todo.Title == "" || todo.Description == "" || todo.Deadline == "" || todo.Time == "" || todo.Category == "" {
 		err := fmt.Errorf("Data tidak lengkap")
 		return model.Todo{}, false, err
 	}
@@ -451,6 +452,7 @@ func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bo
 			{Key: "description", Value: todo.Description},
 			{Key: "deadline", Value: todo.Deadline},
 			{Key: "time", Value: todo.Time},
+			{Key: "category", Value: todo.Category},
 			{Key: "timestamps.updatedat", Value: time},
 		}},
 		{Key: "$setOnInsert", Value: bson.D{
@@ -514,6 +516,7 @@ func TodoClear(db *mongo.Database, col string, done model.TodoClear) (bool, erro
 			{Key: "description", Value: todo.Description},
 			{Key: "deadline", Value: todo.Deadline},
 			{Key: "time", Value: todo.Time},
+			{Key: "category", Value: todo.Category},
 			{Key: "user", Value: bson.D{
 				{Key: "uid", Value: todo.User.UID},
 			}},
@@ -583,6 +586,24 @@ func GetTodoFromToken(db *mongo.Database, col string, uid string) (todo []model.
 	cursor, err := cols.Find(context.Background(), filter)
 	if err != nil {
 		fmt.Println("Error GetTodoFromToken in colection", col, ":", err)
+		return nil, err
+	}
+
+	err = cursor.All(context.Background(), &todo)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return todo, nil
+}
+
+func GetTodoFromCategory(db *mongo.Database, col string, category string) (todo []model.Todo, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{"category": category}
+
+	cursor, err := cols.Find(context.Background(), filter)
+	if err != nil {
+		fmt.Println("Error GetTodoList in colection", col, ":", err)
 		return nil, err
 	}
 
