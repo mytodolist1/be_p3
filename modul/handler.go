@@ -377,7 +377,7 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 	return GCFReturnStruct(Response)
 }
 
-func GCFHandlerGetTodoByCategory(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname, category string, r *http.Request) string {
+func GCFHandlerGetTodoByCategory(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Response.Status = false
 
@@ -393,7 +393,7 @@ func GCFHandlerGetTodoByCategory(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	category = r.URL.Query().Get("category")
+	category := r.URL.Query().Get("category")
 	if category == "" {
 		Response.Message = "Missing 'category' parameter in the URL"
 		return GCFReturnStruct(Response)
