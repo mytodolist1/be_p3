@@ -20,7 +20,7 @@ var (
 	datatodo  model.Todo
 	logtodo   model.LogTodo
 	isdone    model.TodoClear
-	category  model.Category
+	category  model.Categories
 )
 
 // for user

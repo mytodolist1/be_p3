@@ -406,7 +406,9 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 		{Key: "description", Value: description},
 		{Key: "deadline", Value: todoDoc.Deadline},
 		{Key: "time", Value: todoDoc.Time},
-		{Key: "category", Value: category},
+		{Key: "category", Value: bson.D{
+			{Key: "category", Value: category},
+		}},
 		{Key: "timestamps", Value: bson.D{
 			{Key: "createdat", Value: time},
 			{Key: "updatedat", Value: time},
@@ -440,7 +442,7 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 }
 
 // category
-func InsertCategory(db *mongo.Database, col string, categoryDoc model.Category) (insertedID primitive.ObjectID, err error) {
+func InsertCategory(db *mongo.Database, col string, categoryDoc model.Categories) (insertedID primitive.ObjectID, err error) {
 	if categoryDoc.Category == "" {
 		err = fmt.Errorf("Data tidak boleh kosong")
 		return insertedID, err
@@ -471,7 +473,7 @@ func CheckCategory(db *mongo.Database, col string, category string) (bool, error
 	return count > 0, nil
 }
 
-func GetCategory(db *mongo.Database, col string) (category []model.Category, err error) {
+func GetCategory(db *mongo.Database, col string) (category []model.Categories, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{}
 
@@ -519,13 +521,17 @@ func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bo
 
 	time := time.Now().UnixMilli()
 
+	title := cases.Title(language.Indonesian).String(todo.Title)
+	description := cases.Title(language.Indonesian).String(todo.Description)
+	category := cases.Title(language.Indonesian).String(todo.Category.Category)
+
 	update := bson.D{
 		{Key: "$set", Value: bson.D{
-			{Key: "title", Value: todo.Title},
-			{Key: "description", Value: todo.Description},
+			{Key: "title", Value: title},
+			{Key: "description", Value: description},
 			{Key: "deadline", Value: todo.Deadline},
 			{Key: "time", Value: todo.Time},
-			{Key: "category", Value: todo.Category.Category},
+			{Key: "category", Value: category},
 			{Key: "timestamps.updatedat", Value: time},
 		}},
 		{Key: "$setOnInsert", Value: bson.D{
@@ -589,7 +595,9 @@ func TodoClear(db *mongo.Database, col string, done model.TodoClear) (bool, erro
 			{Key: "description", Value: todo.Description},
 			{Key: "deadline", Value: todo.Deadline},
 			{Key: "time", Value: todo.Time},
-			{Key: "category", Value: todo.Category},
+			{Key: "category", Value: bson.D{
+				{Key: "category", Value: todo.Category.Category},
+			}},
 			{Key: "user", Value: bson.D{
 				{Key: "uid", Value: todo.User.UID},
 			}},
