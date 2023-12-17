@@ -146,7 +146,7 @@ func TestInsertTodo(t *testing.T) {
 	data.Description = "Pergi ke pasar"
 	data.Deadline = "12/18/2023"
 	data.Time = "12:30 PM"
-	data.Category.Category = "Personal"
+	data.Category.Category = "personal"
 	// data.IsDone = false
 
 	uid := "c742a1aeebfa6cc8"

@@ -15,6 +15,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/aiteung/atdb"
 	"github.com/badoux/checkmail"
@@ -388,18 +390,23 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 		return insertedID, err
 	}
 
-	objectId := primitive.NewObjectID()
+	objectID := primitive.NewObjectID()
 
 	time := time.Now().UnixMilli()
 	fmt.Println(time)
 
+	// Konversi huruf pertama dari setiap kata menjadi huruf kapital
+	title := cases.Title(language.Indonesian).String(todoDoc.Title)
+	description := cases.Title(language.Indonesian).String(todoDoc.Description)
+	category := cases.Title(language.Indonesian).String(todoDoc.Category.Category)
+
 	todo := bson.D{
-		{Key: "_id", Value: objectId},
-		{Key: "title", Value: todoDoc.Title},
-		{Key: "description", Value: todoDoc.Description},
+		{Key: "_id", Value: objectID},
+		{Key: "title", Value: title},
+		{Key: "description", Value: description},
 		{Key: "deadline", Value: todoDoc.Deadline},
 		{Key: "time", Value: todoDoc.Time},
-		{Key: "category", Value: todoDoc.Category.Category},
+		{Key: "category", Value: category},
 		{Key: "timestamps", Value: bson.D{
 			{Key: "createdat", Value: time},
 			{Key: "updatedat", Value: time},
@@ -415,13 +422,13 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 		return insertedID, err
 	}
 
-	category, err := CheckCategory(db, "category", todoDoc.Category.Category)
+	categories, err := CheckCategory(db, "category", category)
 	if err != nil {
 		fmt.Printf("CheckCategory: %v\n", err)
 		return insertedID, err
 	}
 
-	if !category {
+	if !categories {
 		_, err = InsertCategory(db, "category", todoDoc.Category)
 		if err != nil {
 			fmt.Printf("InsertCategory: %v\n", err)
@@ -665,7 +672,7 @@ func GetTodoFromToken(db *mongo.Database, col string, uid string) (todo []model.
 
 func GetTodoFromCategory(db *mongo.Database, col string, category string) (todo []model.Todo, err error) {
 	cols := db.Collection(col)
-	filter := bson.M{"category": category}
+	filter := bson.M{"category.category": category}
 
 	cursor, err := cols.Find(context.Background(), filter)
 	if err != nil {
