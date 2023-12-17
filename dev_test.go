@@ -159,7 +159,16 @@ func TestInsertTodo(t *testing.T) {
 }
 
 func TestGetTodoFromCategory(t *testing.T) {
-	anu, err := modul.GetTodoFromCategory(mconn, "todo", "Personal")
+	anu, err := modul.GetTodoFromCategory(mconn, "todo", "personal")
+	if err != nil {
+		t.Errorf("Error getting todo: %v", err)
+		return
+	}
+	fmt.Println(anu)
+}
+
+func TestCheckCategory(t *testing.T) {
+	anu, err := modul.CheckCategory(mconn, "category", "Personal")
 	if err != nil {
 		t.Errorf("Error getting todo: %v", err)
 		return
@@ -168,7 +177,7 @@ func TestGetTodoFromCategory(t *testing.T) {
 }
 
 func TestGetTodoFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("657b38db665d89f159fce0f2")
+	id, _ := primitive.ObjectIDFromHex("657eb9fb1e8a11c92dcf749f")
 	anu, err := modul.GetTodoFromID(mconn, "todo", id)
 	if err != nil {
 		t.Errorf("Error getting todo: %v", err)

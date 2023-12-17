@@ -5,11 +5,6 @@ Repositori ini adalah Backend dari aplikasi Mytodolist yang ditulis dengan bahas
 ## model
 - `type.go`
     1. Import Standard Library
-        - `time` adalah package dari Go yang digunakan untuk memanipulasi dan bekerja dengan waktu.
-            Contoh penggunaannya:
-            ```go
-            CreatedAt time.Time `bson:"createdat,omitempty" json:"createdat,omitempty"`
-            ```
         - `go.mongodb.org/mongo-driver/bson/primitive` adalah bagian dari MongoDB Go Driver yang menyediakan tipe data dasar dan fungsi konversi untuk mengoperasikan BSON (Binary JSON) dalam Go.
             Contoh penggunaannya:
             ```go

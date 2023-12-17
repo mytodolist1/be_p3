@@ -438,21 +438,26 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 		}
 	}
 
+	jsonData, err := bson.MarshalExtJSON(todo, false, false)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	fmt.Println(string(jsonData))
+
 	return insertedID, nil
 }
 
 // category
 func InsertCategory(db *mongo.Database, col string, categoryDoc model.Categories) (insertedID primitive.ObjectID, err error) {
-	if categoryDoc.Category == "" {
-		err = fmt.Errorf("Data tidak boleh kosong")
-		return insertedID, err
-	}
-
 	objectId := primitive.NewObjectID()
+
+	categories := cases.Title(language.Indonesian).String(categoryDoc.Category)
 
 	category := bson.D{
 		{Key: "_id", Value: objectId},
-		{Key: "category", Value: categoryDoc.Category},
+		{Key: "category", Value: categories},
 	}
 
 	insertedID, err = InsertOneDoc(db, col, category)
@@ -466,10 +471,17 @@ func InsertCategory(db *mongo.Database, col string, categoryDoc model.Categories
 
 func CheckCategory(db *mongo.Database, col string, category string) (bool, error) {
 	filter := bson.D{{Key: "category", Value: category}}
-	count, err := db.Collection(col).CountDocuments(context.TODO(), filter)
-	if err != nil {
-		return false, err
+
+	cols := db.Collection(col)
+	if cols == nil {
+		return false, errors.New("CheckCategory: failed to get collection")
 	}
+
+	count, err := cols.CountDocuments(context.Background(), filter)
+	if err != nil {
+		return false, fmt.Errorf("CheckCategory: error checking category: %v", err)
+	}
+
 	return count > 0, nil
 }
 
