@@ -438,13 +438,13 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 		}
 	}
 
-	jsonData, err := bson.MarshalExtJSON(todo, false, false)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
+	// jsonData, err := bson.MarshalExtJSON(todo, false, false)
+	// if err != nil {
+	// 	fmt.Println("Error:", err)
+	// 	return
+	// }
 
-	fmt.Println(string(jsonData))
+	// fmt.Println(string(jsonData))
 
 	return insertedID, nil
 }
