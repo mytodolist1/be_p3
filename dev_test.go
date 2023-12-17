@@ -142,11 +142,11 @@ func TestGetUserFromRole(t *testing.T) {
 // todo
 func TestInsertTodo(t *testing.T) {
 	var data model.Todo
-	data.Title = "Pergi"
+	data.Title = "Pergi aja"
 	data.Description = "Pergi ke pasar"
-	data.Deadline = "2023-12-30"
-	data.Time = "14:35"
-	data.Category = "Priority"
+	data.Deadline = "12/18/2023"
+	data.Time = "12:30 PM"
+	data.Category.Category = "Personal"
 	// data.IsDone = false
 
 	uid := "c742a1aeebfa6cc8"
@@ -245,7 +245,7 @@ func TestUpdateTodo(t *testing.T) {
 	data.Description = "Hari ini belajar javascript"
 	data.Deadline = "12/18/2023"
 	data.Time = "10:00 PM"
-	data.Category = "Personal"
+	data.Category.Category = "Personal"
 
 	id := "657e6db23e913ed6f8dc4909"
 	ID, err := primitive.ObjectIDFromHex(id)

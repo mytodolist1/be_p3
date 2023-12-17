@@ -383,7 +383,7 @@ func GetUserFromRole(db *mongo.Database, col string, role string) (userlist []mo
 
 // todo
 func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) (insertedID primitive.ObjectID, err error) {
-	if todoDoc.Title == "" || todoDoc.Description == "" || todoDoc.Deadline == "" || todoDoc.Time == "" {
+	if todoDoc.Title == "" || todoDoc.Description == "" || todoDoc.Deadline == "" || todoDoc.Time == "" || todoDoc.Category.Category == "" {
 		err = fmt.Errorf("Data tidak boleh kosong")
 		return insertedID, err
 	}
@@ -399,7 +399,7 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 		{Key: "description", Value: todoDoc.Description},
 		{Key: "deadline", Value: todoDoc.Deadline},
 		{Key: "time", Value: todoDoc.Time},
-		{Key: "category", Value: todoDoc.Category},
+		{Key: "category", Value: todoDoc.Category.Category},
 		{Key: "timestamps", Value: bson.D{
 			{Key: "createdat", Value: time},
 			{Key: "updatedat", Value: time},
@@ -412,14 +412,80 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 	insertedID, err = InsertOneDoc(db, col, todo)
 	if err != nil {
 		fmt.Printf("InsertTodo: %v\n", err)
+		return insertedID, err
+	}
+
+	category, err := CheckCategory(db, "category", todoDoc.Category.Category)
+	if err != nil {
+		fmt.Printf("CheckCategory: %v\n", err)
+		return insertedID, err
+	}
+
+	if !category {
+		_, err = InsertCategory(db, "category", todoDoc.Category)
+		if err != nil {
+			fmt.Printf("InsertCategory: %v\n", err)
+			return insertedID, err
+		}
 	}
 
 	return insertedID, nil
 }
 
+// category
+func InsertCategory(db *mongo.Database, col string, categoryDoc model.Category) (insertedID primitive.ObjectID, err error) {
+	if categoryDoc.Category == "" {
+		err = fmt.Errorf("Data tidak boleh kosong")
+		return insertedID, err
+	}
+
+	objectId := primitive.NewObjectID()
+
+	category := bson.D{
+		{Key: "_id", Value: objectId},
+		{Key: "category", Value: categoryDoc.Category},
+	}
+
+	insertedID, err = InsertOneDoc(db, col, category)
+	if err != nil {
+		fmt.Printf("InsertCategory: %v\n", err)
+		return insertedID, err
+	}
+
+	return insertedID, nil
+}
+
+func CheckCategory(db *mongo.Database, col string, category string) (bool, error) {
+	filter := bson.D{{Key: "category", Value: category}}
+	count, err := db.Collection(col).CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func GetCategory(db *mongo.Database, col string) (category []model.Category, err error) {
+	cols := db.Collection(col)
+	filter := bson.M{}
+
+	cur, err := cols.Find(context.Background(), filter)
+	if err != nil {
+		fmt.Println("Error GetCategory in colection", col, ":", err)
+		return category, err
+	}
+
+	err = cur.All(context.Background(), &category)
+	if err != nil {
+		fmt.Println("Error reading documents:", err)
+		return category, err
+	}
+
+	return category, nil
+}
+
 // update todo with log
 func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bool, error) {
-	if todo.Title == "" || todo.Description == "" || todo.Deadline == "" || todo.Time == "" || todo.Category == "" {
+	if todo.Title == "" || todo.Description == "" || todo.Deadline == "" || todo.Time == "" || todo.Category.Category == "" {
 		err := fmt.Errorf("Data tidak lengkap")
 		return model.Todo{}, false, err
 	}
@@ -452,7 +518,7 @@ func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bo
 			{Key: "description", Value: todo.Description},
 			{Key: "deadline", Value: todo.Deadline},
 			{Key: "time", Value: todo.Time},
-			{Key: "category", Value: todo.Category},
+			{Key: "category", Value: todo.Category.Category},
 			{Key: "timestamps.updatedat", Value: time},
 		}},
 		{Key: "$setOnInsert", Value: bson.D{

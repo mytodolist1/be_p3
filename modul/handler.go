@@ -20,6 +20,7 @@ var (
 	datatodo  model.Todo
 	logtodo   model.LogTodo
 	isdone    model.TodoClear
+	category  model.Category
 )
 
 // for user
@@ -377,6 +378,35 @@ func GCFHandlerGetTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionna
 	return GCFReturnStruct(Response)
 }
 
+func GCFHandlerGetCategory(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	Response.Status = false
+
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		Response.Message = "error parsing application/json1:"
+		return GCFReturnStruct(Response)
+	}
+
+	_, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	if err != nil {
+		Response.Message = "error parsing application/json2:" + err.Error() + ";" + token
+		return GCFReturnStruct(Response)
+	}
+
+	category, err := GetCategory(mconn, collectionname)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+
+	Response.Status = true
+	Response.Message = "Get category success"
+	Response.Category = category
+
+	return GCFReturnStruct(Response)
+}
+
 func GCFHandlerGetTodoByCategory(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Response.Status = false
@@ -399,7 +429,7 @@ func GCFHandlerGetTodoByCategory(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, co
 		return GCFReturnStruct(Response)
 	}
 
-	datatodo.Category = category
+	datatodo.Category.Category = category
 
 	// err = json.NewDecoder(r.Body).Decode(&datatodo)
 	// if err != nil {
