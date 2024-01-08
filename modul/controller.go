@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -52,8 +53,37 @@ func GenerateUID(len int) (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
+func ValidatePhoneNumber(phoneNumber string) (bool, error) {
+	// Define the regular expression pattern for numeric characters
+	numericPattern := `^[0-9]+$`
+
+	// Compile the numeric pattern
+	numericRegexp, err := regexp.Compile(numericPattern)
+	if err != nil {
+		return false, err
+	}
+	// Check if the phone number consists only of numeric characters
+	if !numericRegexp.MatchString(phoneNumber) {
+		return false, nil
+	}
+
+	// Define the regular expression pattern for "62" followed by 6 to 12 digits
+	pattern := `^62\d{6,13}$`
+
+	// Compile the regular expression
+	regexpPattern, err := regexp.Compile(pattern)
+	if err != nil {
+		return false, err
+	}
+
+	// Test if the phone number matches the pattern
+	isValid := regexpPattern.MatchString(phoneNumber)
+
+	return isValid, nil
+}
+
 func Register(db *mongo.Database, col string, userdata model.User) error {
-	if userdata.Email == "" || userdata.Username == "" || userdata.Password == "" || userdata.ConfirmPassword == "" {
+	if userdata.Email == "" || userdata.Phonenumber == "" || userdata.Username == "" || userdata.Password == "" || userdata.ConfirmPassword == "" {
 		return fmt.Errorf("Data tidak lengkap")
 	}
 
@@ -69,9 +99,14 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 		return fmt.Errorf("Email sudah terdaftar")
 	}
 
-	userExists, _ = GetUserFromUsername(db, col, userdata.Username)
 	if userExists.Username != "" {
 		return fmt.Errorf("Username sudah terdaftar")
+	}
+
+	// Periksa apakah nomor telepon valid
+	isValid, _ := ValidatePhoneNumber(userdata.Phonenumber)
+	if !isValid {
+		return fmt.Errorf("Nomor telepon tidak valid")
 	}
 
 	// Periksa apakah password memenuhi syarat
@@ -106,6 +141,7 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 		{Key: "_id", Value: primitive.NewObjectID()},
 		{Key: "uid", Value: uid},
 		{Key: "email", Value: userdata.Email},
+		{Key: "phonenumber", Value: userdata.Phonenumber},
 		{Key: "username", Value: userdata.Username},
 		{Key: "password", Value: hash},
 		{Key: "role", Value: "user"},

@@ -161,7 +161,6 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 	return GCFReturnStruct(Responsed)
 }
 
-// not updated yet
 func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -468,8 +467,8 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 
 	// err = json.NewDecoder(r.Body).Decode(&datatodo)
 	// if err != nil {
-	// 	Response.Message = "error parsing application/json3: " + err.Error()
-	// 	return GCFReturnStruct(Response)
+		// 	Response.Message = "error parsing application/json3: " + err.Error()
+		// 	return GCFReturnStruct(Response)
 	// }
 
 	_, err = InsertTodo(mconn, collectionname, datatodo, userInfo.Id)
@@ -690,7 +689,6 @@ func GCFHandlerGetLogTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 }
 
 // log for user
-// not used yet
 func GCFHandlerGetLogTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Response3.Status = false

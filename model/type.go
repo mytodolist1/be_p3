@@ -8,6 +8,7 @@ type User struct {
 	ID              primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	UID             string             `bson:"uid,omitempty" json:"uid,omitempty"`
 	Email           string             `bson:"email,omitempty" json:"email,omitempty"`
+	Phonenumber     string             `bson:"phonenumber,omitempty" json:"phonenumber,omitempty"`
 	Username        string             `bson:"username,omitempty" json:"username,omitempty"`
 	Password        string             `bson:"password,omitempty" json:"password,omitempty"`
 	ConfirmPassword string             `bson:"confirmpassword,omitempty" json:"confirmpassword,omitempty"`

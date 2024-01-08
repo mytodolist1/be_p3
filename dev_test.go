@@ -115,6 +115,17 @@ func TestGetUserFromID(t *testing.T) {
 	fmt.Println(anu)
 }
 
+func TestGetUserFromUID(t *testing.T) {
+	uid := "c742a1aeebfa6cc8"
+
+	anu, err := modul.GetUserFromToken(mconn, "user", uid)
+	if err != nil {
+		t.Errorf("Error getting user: %v", err)
+		return
+	}
+	fmt.Println(anu)
+}
+
 func TestGetUserFromUsername(t *testing.T) {
 	anu, err := modul.GetUserFromUsername(mconn, "user", "qiqi1")
 	if err != nil {
