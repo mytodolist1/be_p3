@@ -17,7 +17,7 @@ func TestRegister(t *testing.T) {
 	var data model.User
 	data.Email = "nopal@gmail.com"
 	data.Username = "nopal"
-	// data.Role = "user"
+	data.Phonenumber = "6282268895372"
 	data.Password = "secret"
 	data.ConfirmPassword = "secret"
 
@@ -29,9 +29,21 @@ func TestRegister(t *testing.T) {
 	}
 }
 
+func TestSendWhatsAppConfirmation(t *testing.T) {
+	username := "hehe"
+	phonenumber := "6282268895372"
+
+	err := modul.SendWhatsAppConfirmation(username, phonenumber)
+	if err != nil {
+		t.Errorf("Error sending whatsapp: %v", err)
+	} else {
+		fmt.Println("Send whatsapp success")
+	}
+}
+
 func TestLogIn(t *testing.T) {
 	var data model.User
-	data.Username = "fulan1"
+	data.Username = "dimas"
 	data.Password = "secret"
 	data.Role = "user"
 
@@ -74,7 +86,7 @@ func TestChangePassword(t *testing.T) {
 	data.Password = "secret"
 	data.ConfirmPassword = "secret"
 
-	username := "dimass"
+	username := "dimas"
 	data.Username = username
 
 	_, status, err := modul.ChangePassword(mconn, "user", data)

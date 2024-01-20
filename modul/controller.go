@@ -1,9 +1,11 @@
 package modul
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
@@ -150,6 +152,12 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 	_, err = InsertOneDoc(db, col, user)
 	if err != nil {
 		return fmt.Errorf("SignUp: %v", err)
+	}
+
+	// Send whatsapp confirmation
+	err = SendWhatsAppConfirmation(userdata.Username, userdata.Phonenumber)
+	if err != nil {
+		return fmt.Errorf("SendWhatsAppConfirmation: %v", err)
 	}
 
 	return nil
@@ -969,6 +977,42 @@ func GetLogUserFromUID(db *mongo.Database, col, userid string) (log []model.LogU
 	}
 
 	return log, nil
+}
+
+func SendWhatsAppConfirmation(username, phonenumber string) error {
+	url := "https://api.wa.my.id/api/send/message/text"
+
+	// Data yang akan dikirimkan dalam format JSON
+	jsonStr := []byte(`{
+        "to": "` + phonenumber + `",
+        "isgroup": false,
+        "messages": "Hello ` + username + `!!! 😮😮😮\nTerima kasih telah melakukan Registrasi akun di MyTodoList, silahkan login atau tekan link dibawah ini untuk melanjutkan.\n👇👇👇👇👇\nhttps://mytodolist.my.id/login.html"
+    }`)
+
+	// Membuat permintaan HTTP POST
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	if err != nil {
+		return err
+	}
+
+	// Menambahkan header ke permintaan
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Token", os.Getenv("TOKENWEBHOOK"))
+	// req.Header.Set("Token", "v4.public.eyJleHAiOiIyMDI0LTAyLTE5VDIxOjA3OjM2WiIsImlhdCI6IjIwMjQtMDEtMjBUMjE6MDc6MzZaIiwiaWQiOiI2MjgyMzE3MTUwNjgxIiwibmJmIjoiMjAyNC0wMS0yMFQyMTowNzozNloiff1YQuHHPwSzGpisAMb9rTLP58-jCqtByzePJACBLghprkq2HXtTSbVTShc49m3GIVkU42VSl8uSGme8c4vXnQc")
+	req.Header.Set("Content-Type", "application/json")
+
+	// Melakukan permintaan HTTP POST
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Menampilkan respons dari server
+	fmt.Println("Response Status:", resp.Status)
+
+	return nil
 }
 
 // // update user
