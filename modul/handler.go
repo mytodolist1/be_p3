@@ -127,7 +127,8 @@ func GCFHandlerRegister(MONGOCONNSTRINGENV, dbname, collectionname string, r *ht
 	}
 
 	Responsed.Status = true
-	Responsed.Message = "Register success"
+	// Responsed.Message = "Register success"
+	Responsed.Message = "Silahkan Cek Whatsapp Anda Untuk Verifikasi"
 
 	return GCFReturnStruct(Responsed)
 }
@@ -209,7 +210,6 @@ func GCFHandlerUpdateUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	return GCFReturnStruct(Responsed)
 }
 
-// not updated yet
 func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -252,7 +252,6 @@ func GCFHandlerChangePassword(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 	return GCFReturnStruct(Responsed)
 }
 
-// not updated yet
 func GCFHandlerDeleteUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
@@ -465,11 +464,11 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	// err = json.NewDecoder(r.Body).Decode(&datatodo)
-	// if err != nil {
-		// 	Response.Message = "error parsing application/json3: " + err.Error()
-		// 	return GCFReturnStruct(Response)
-	// }
+	err = json.NewDecoder(r.Body).Decode(&datatodo)
+	if err != nil {
+		Response.Message = "error parsing application/json3: " + err.Error()
+		return GCFReturnStruct(Response)
+	}
 
 	_, err = InsertTodo(mconn, collectionname, datatodo, userInfo.Id)
 	if err != nil {
