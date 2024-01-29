@@ -434,6 +434,12 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 		return insertedID, err
 	}
 
+	user, err := GetUserFromToken(db, "user", uid)
+	if err != nil {
+		fmt.Printf("GetUserFromToken: %v\n", err)
+		return insertedID, err
+	}
+
 	objectID := primitive.NewObjectID()
 
 	time := time.Now().UnixMilli()
@@ -458,7 +464,7 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 			{Key: "updatedat", Value: time},
 		}},
 		{Key: "user", Value: bson.D{
-			{Key: "uid", Value: uid},
+			{Key: "uid", Value: user.UID},
 		}},
 	}
 
@@ -757,16 +763,28 @@ func GetTodoFromCategory(db *mongo.Database, col string, category string) (todo 
 func GetTodoList(db *mongo.Database, col string) (todo []model.Todo, err error) {
 	cols := db.Collection(col)
 	filter := bson.M{}
-
 	cursor, err := cols.Find(context.Background(), filter)
 	if err != nil {
 		fmt.Println("Error GetTodoList in colection", col, ":", err)
 		return nil, err
 	}
-
 	err = cursor.All(context.Background(), &todo)
 	if err != nil {
 		fmt.Println(err)
+	}
+	for _, s := range todo {
+		user, err := GetUserFromToken(db, "user", s.User.UID)
+		if err != nil {
+			return todo, fmt.Errorf("user tidak ditemukan")
+		}
+		dataUser := model.User{
+			ID:       user.ID,
+			UID:      user.UID,
+			Username: user.Username,
+		}
+		s.User = dataUser
+		todo = append(todo, s)
+		todo = todo[1:]
 	}
 
 	return todo, nil
