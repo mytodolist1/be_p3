@@ -155,7 +155,9 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 	}
 
 	// Send whatsapp confirmation
-	err = SendWhatsAppConfirmation(userdata.Username, userdata.Phonenumber)
+	message := fmt.Sprintf("Halo %s, terima kasih telah mendaftar di MyTodoList. Silahkan login dengan username dan password yang sudah didaftarkan. \n\nUsername: %s \nPassword: %s", userdata.Username, userdata.Username, userdata.Password)
+
+	err = SendWhatsAppConfirmation(message, userdata.Phonenumber)
 	if err != nil {
 		return fmt.Errorf("SendWhatsAppConfirmation: %v", err)
 	}
@@ -739,6 +741,22 @@ func GetTodoFromToken(db *mongo.Database, col string, uid string) (todo []model.
 		fmt.Println(err)
 	}
 
+	for _, s := range todo {
+		user, err := GetUserFromToken(db, "user", s.User.UID)
+		if err != nil {
+			return todo, fmt.Errorf("user tidak ditemukan")
+		}
+		dataUser := model.User{
+			ID:       user.ID,
+			UID:      user.UID,
+			Username: user.Username,
+			Phonenumber: user.Phonenumber,
+		}
+		s.User = dataUser
+		todo = append(todo, s)
+		todo = todo[1:]
+	}
+
 	return todo, nil
 }
 
@@ -997,14 +1015,14 @@ func GetLogUserFromUID(db *mongo.Database, col, userid string) (log []model.LogU
 	return log, nil
 }
 
-func SendWhatsAppConfirmation(username, phonenumber string) error {
+func SendWhatsAppConfirmation(message, phonenumber string) error {
 	url := "https://api.wa.my.id/api/send/message/text"
 
 	// Data yang akan dikirimkan dalam format JSON
 	jsonStr := []byte(`{
         "to": "` + phonenumber + `",
         "isgroup": false,
-        "messages": "Hello ` + username + `!!! 😮😮😮\nTerima kasih telah melakukan Registrasi akun di MyTodoList, silahkan login atau tekan link dibawah ini untuk melanjutkan.\n👇👇👇👇👇\nhttps://mytodolist.my.id/login.html"
+        "messages": "` + message + `"
     }`)
 
 	// Membuat permintaan HTTP POST

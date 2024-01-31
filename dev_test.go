@@ -30,10 +30,10 @@ func TestRegister(t *testing.T) {
 }
 
 func TestSendWhatsAppConfirmation(t *testing.T) {
-	username := "hehe"
 	phonenumber := "6282268895372"
+	message := "Halo, ini adalah pesan konfirmasi dari MyTodoList. Kode konfirmasi anda adalah: 123456"
 
-	err := modul.SendWhatsAppConfirmation(username, phonenumber)
+	err := modul.SendWhatsAppConfirmation(message, phonenumber)
 	if err != nil {
 		t.Errorf("Error sending whatsapp: %v", err)
 	} else {
@@ -202,6 +202,16 @@ func TestCheckCategory(t *testing.T) {
 func TestGetTodoFromID(t *testing.T) {
 	id, _ := primitive.ObjectIDFromHex("657eb9fb1e8a11c92dcf749f")
 	anu, err := modul.GetTodoFromID(mconn, "todo", id)
+	if err != nil {
+		t.Errorf("Error getting todo: %v", err)
+		return
+	}
+	fmt.Println(anu)
+}
+
+func TestGetTodoFromUID (t *testing.T) {
+	uid := "c742a1aeebfa6cc8"
+	anu, err := modul.GetTodoFromToken(mconn, "todo", uid)
 	if err != nil {
 		t.Errorf("Error getting todo: %v", err)
 		return
