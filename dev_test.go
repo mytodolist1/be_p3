@@ -16,7 +16,7 @@ var mconn = modul.MongoConnect("MONGOSTRING", "mytodolist")
 func TestRegister(t *testing.T) {
 	var data model.User
 	data.Email = "nopal@gmail.com"
-	data.Username = "nopal"
+	data.Username = "nopal1"
 	data.Phonenumber = "6282268895372"
 	data.Password = "secret"
 	data.ConfirmPassword = "secret"
@@ -167,11 +167,12 @@ func TestInsertTodo(t *testing.T) {
 	var data model.Todo
 	data.Title = "Pergi aja"
 	data.Description = "Pergi ke pasar"
-	data.Deadline = "12/18/2023"
-	data.Time = "12:30 PM"
+	data.Deadline = "02/01/2024"
+	data.Time = "4:45 PM"
 	data.Tags.Category = "personal"
 	// data.IsDone = false
 
+	data.File.FileName = "file.txt"
 	uid := "c742a1aeebfa6cc8"
 
 	_, err := modul.InsertTodo(mconn, "todo", data, uid)
@@ -209,7 +210,7 @@ func TestGetTodoFromID(t *testing.T) {
 	fmt.Println(anu)
 }
 
-func TestGetTodoFromUID (t *testing.T) {
+func TestGetTodoFromUID(t *testing.T) {
 	uid := "c742a1aeebfa6cc8"
 	anu, err := modul.GetTodoFromToken(mconn, "todo", uid)
 	if err != nil {
@@ -330,6 +331,8 @@ func TestGetLogUserFromUID(t *testing.T) {
 	}
 	fmt.Println(anu)
 }
+
+
 
 // func TestUpdateUser(t *testing.T) {
 // 	var data model.User

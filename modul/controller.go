@@ -72,14 +72,14 @@ func ValidatePhoneNumber(phoneNumber string) (bool, error) {
 	// Define the regular expression pattern for "62" followed by 6 to 12 digits
 	pattern := `^62\d{6,13}$`
 
-	// Compile the regular expression
-	regexpPattern, err := regexp.Compile(pattern)
+	// Compile the pattern
+	regexp, err := regexp.Compile(pattern)
 	if err != nil {
 		return false, err
 	}
 
-	// Test if the phone number matches the pattern
-	isValid := regexpPattern.MatchString(phoneNumber)
+	// Check if the phone number is valid
+	isValid := regexp.MatchString(phoneNumber)
 
 	return isValid, nil
 }
@@ -155,7 +155,7 @@ func Register(db *mongo.Database, col string, userdata model.User) error {
 	}
 
 	// Send whatsapp confirmation
-	message := fmt.Sprintf("Halo %s, terima kasih telah mendaftar di MyTodoList. Silahkan login dengan username dan password yang sudah didaftarkan. \n\nUsername: %s \nPassword: %s", userdata.Username, userdata.Username, userdata.Password)
+	message := `Halo ` + userdata.Username + `\n\nIni adalah pesan konfirmasi dari MyTodoList. \nUsername: ` + userdata.Username + `\nPassword: ` + userdata.Password + `\nGunakan username dan password tersebut untuk login ke aplikasi MyTodoList. \n\nTerima kasih.`
 
 	err = SendWhatsAppConfirmation(message, userdata.Phonenumber)
 	if err != nil {
@@ -452,12 +452,22 @@ func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) 
 	description := cases.Title(language.Indonesian).String(todoDoc.Description)
 	category := cases.Title(language.Indonesian).String(todoDoc.Tags.Category)
 
+	fileGFS, err := SaveFileToGridFS(db, "gridfs", todoDoc.File.FileName)
+	if err != nil {
+		fmt.Printf("SaveFileToGridFS: %v\n", err)
+		return insertedID, err
+	}
+
 	todo := bson.D{
 		{Key: "_id", Value: objectID},
 		{Key: "title", Value: title},
 		{Key: "description", Value: description},
 		{Key: "deadline", Value: todoDoc.Deadline},
 		{Key: "time", Value: todoDoc.Time},
+		{Key: "file", Value: bson.D{
+			{Key: "_id", Value: fileGFS.ID},
+			{Key: "filename", Value: fileGFS.FileName},
+		}},
 		{Key: "tags", Value: bson.D{
 			{Key: "category", Value: category},
 		}},
@@ -747,12 +757,18 @@ func GetTodoFromToken(db *mongo.Database, col string, uid string) (todo []model.
 			return todo, fmt.Errorf("user tidak ditemukan")
 		}
 		dataUser := model.User{
-			ID:       user.ID,
-			UID:      user.UID,
-			Username: user.Username,
+			ID:          user.ID,
+			UID:         user.UID,
+			Username:    user.Username,
 			Phonenumber: user.Phonenumber,
 		}
 		s.User = dataUser
+
+		// err = Reminder(s.User.Username, s.User.Phonenumber, s.Title, s.Deadline, s.Time)
+		// if err != nil {
+		// 	return todo, fmt.Errorf("reminder tidak berhasil dikirim")
+		// }
+
 		todo = append(todo, s)
 		todo = todo[1:]
 	}
@@ -1033,8 +1049,8 @@ func SendWhatsAppConfirmation(message, phonenumber string) error {
 
 	// Menambahkan header ke permintaan
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Token", os.Getenv("TOKENWEBHOOK"))
-	// req.Header.Set("Token", "v4.public.eyJleHAiOiIyMDI0LTAyLTE5VDIxOjA3OjM2WiIsImlhdCI6IjIwMjQtMDEtMjBUMjE6MDc6MzZaIiwiaWQiOiI2MjgyMzE3MTUwNjgxIiwibmJmIjoiMjAyNC0wMS0yMFQyMTowNzozNloiff1YQuHHPwSzGpisAMb9rTLP58-jCqtByzePJACBLghprkq2HXtTSbVTShc49m3GIVkU42VSl8uSGme8c4vXnQc")
+	// req.Header.Set("Token", os.Getenv("TOKENWEBHOOK"))
+	req.Header.Set("Token", "v4.public.eyJleHAiOiIyMDI0LTAyLTE5VDIxOjA3OjM2WiIsImlhdCI6IjIwMjQtMDEtMjBUMjE6MDc6MzZaIiwiaWQiOiI2MjgyMzE3MTUwNjgxIiwibmJmIjoiMjAyNC0wMS0yMFQyMTowNzozNloiff1YQuHHPwSzGpisAMb9rTLP58-jCqtByzePJACBLghprkq2HXtTSbVTShc49m3GIVkU42VSl8uSGme8c4vXnQc")
 	req.Header.Set("Content-Type", "application/json")
 
 	// Melakukan permintaan HTTP POST
