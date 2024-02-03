@@ -26,6 +26,8 @@ import (
 	"github.com/mytodolist1/be_p3/model"
 )
 
+var files string
+
 func MongoConnect(MONGOCONNSTRINGENV, dbname string) *mongo.Database {
 	var DBmongoinfo = atdb.DBInfo{
 		DBString: os.Getenv(MONGOCONNSTRINGENV),
@@ -430,85 +432,80 @@ func GetUserFromRole(db *mongo.Database, col string, role string) (userlist []mo
 }
 
 // todo
-func InsertTodo(db *mongo.Database, col string, todoDoc model.Todo, uid string) (insertedID primitive.ObjectID, err error) {
-	if todoDoc.Title == "" || todoDoc.Description == "" || todoDoc.Deadline == "" || todoDoc.Time == "" || todoDoc.Tags.Category == "" {
+func InsertTodo(db *mongo.Database, col, uid string, r *http.Request) (todo model.Todo, err error) {
+	title := r.FormValue("title")
+	description := r.FormValue("description")
+	deadline := r.FormValue("deadline")
+	times := r.FormValue("time")
+	category := r.FormValue("category")
+
+	if title == "" || description == "" || deadline == "" || times == "" || category == "" {
 		err = fmt.Errorf("Data tidak boleh kosong")
-		return insertedID, err
+		return todo, err
 	}
 
 	user, err := GetUserFromToken(db, "user", uid)
 	if err != nil {
 		fmt.Printf("GetUserFromToken: %v\n", err)
-		return insertedID, err
+		return todo, err
 	}
 
 	objectID := primitive.NewObjectID()
 
-	time := time.Now().UnixMilli()
-	fmt.Println(time)
+	timestamp := time.Now().UnixMilli()
+	fmt.Println(times)
 
 	// Konversi huruf pertama dari setiap kata menjadi huruf kapital
-	title := cases.Title(language.Indonesian).String(todoDoc.Title)
-	description := cases.Title(language.Indonesian).String(todoDoc.Description)
-	category := cases.Title(language.Indonesian).String(todoDoc.Tags.Category)
+	title = cases.Title(language.Indonesian).String(title)
+	description = cases.Title(language.Indonesian).String(description)
+	category = cases.Title(language.Indonesian).String(category)
 
-	fileGFS, err := SaveFileToGridFS(db, "gridfs", todoDoc.File.FileName)
+	files, err := SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
 	if err != nil {
-		fmt.Printf("SaveFileToGridFS: %v\n", err)
-		return insertedID, err
+		fmt.Printf("SaveFileToGithub: %v\n", err)
+		return todo, err
 	}
 
-	todo := bson.D{
+	todoData := bson.D{
 		{Key: "_id", Value: objectID},
 		{Key: "title", Value: title},
 		{Key: "description", Value: description},
-		{Key: "deadline", Value: todoDoc.Deadline},
-		{Key: "time", Value: todoDoc.Time},
-		{Key: "file", Value: bson.D{
-			{Key: "_id", Value: fileGFS.ID},
-			{Key: "filename", Value: fileGFS.FileName},
-		}},
+		{Key: "deadline", Value: deadline},
+		{Key: "time", Value: times},
+		{Key: "file", Value: files},
 		{Key: "tags", Value: bson.D{
 			{Key: "category", Value: category},
 		}},
 		{Key: "timestamps", Value: bson.D{
-			{Key: "createdat", Value: time},
-			{Key: "updatedat", Value: time},
+			{Key: "createdat", Value: timestamp},
+			{Key: "updatedat", Value: timestamp},
 		}},
 		{Key: "user", Value: bson.D{
 			{Key: "uid", Value: user.UID},
 		}},
 	}
 
-	insertedID, err = InsertOneDoc(db, col, todo)
+	_, err = InsertOneDoc(db, col, todoData)
 	if err != nil {
 		fmt.Printf("InsertTodo: %v\n", err)
-		return insertedID, err
+		return todo, err
 	}
 
 	categories, err := CheckCategory(db, "category", category)
 	if err != nil {
 		fmt.Printf("CheckCategory: %v\n", err)
-		return insertedID, err
+		return todo, err
 	}
 
 	if !categories {
-		_, err = InsertCategory(db, "category", todoDoc.Tags)
+		_, err = InsertCategory(db, "category", model.Categories{Category: category})
 		if err != nil {
 			fmt.Printf("InsertCategory: %v\n", err)
-			return insertedID, err
+			return todo, err
 		}
 	}
 
-	// jsonData, err := bson.MarshalExtJSON(todo, false, false)
-	// if err != nil {
-	// 	fmt.Println("Error:", err)
-	// 	return
-	// }
-
-	// fmt.Println(string(jsonData))
-
-	return insertedID, nil
+	return todo, nil
 }
 
 // category
@@ -567,25 +564,44 @@ func GetCategory(db *mongo.Database, col string) (category []model.Categories, e
 }
 
 // update todo with log
-func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bool, error) {
-	if todo.Title == "" || todo.Description == "" || todo.Deadline == "" || todo.Time == "" || todo.Tags.Category == "" {
+func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.Request) (model.Todo, bool, error) {
+	cols := db.Collection(col)
+
+	title := r.FormValue("title")
+	description := r.FormValue("description")
+	deadline := r.FormValue("deadline")
+	times := r.FormValue("time")
+	category := r.FormValue("category")
+	file := r.FormValue("file")
+
+	if title == "" || description == "" || deadline == "" || times == "" || category == "" {
 		err := fmt.Errorf("Data tidak lengkap")
 		return model.Todo{}, false, err
 	}
 
-	todoExists, err := GetTodoFromID(db, col, todo.ID)
+	todoExists, err := GetTodoFromID(db, col, _id)
 	if err != nil {
 		return model.Todo{}, false, err
 	}
 
 	// Periksa apakah data yang akan diupdate sama dengan data yang sudah ada
-	if todo.Title == todoExists.Title && todo.Description == todoExists.Description && todo.Deadline == todoExists.Deadline && todo.Time == todoExists.Time {
+	if title == todoExists.Title && description == todoExists.Description && deadline == todoExists.Deadline && times == todoExists.Time {
 		err = fmt.Errorf("Silahkan update data anda")
 		return model.Todo{}, false, err
 	}
 
-	cols := db.Collection(col)
-	filter := bson.M{"_id": todo.ID}
+	if file != "" {
+		files = file
+	} else {
+		files, err := SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
+		if err != nil {
+			fmt.Printf("SaveFileToGithub: %v\n", err)
+			return model.Todo{}, false, err
+		}
+		file = files
+	}
+
+	filter := bson.M{"_id": _id}
 
 	var originalTodo model.Todo
 	err = cols.FindOne(context.Background(), filter).Decode(&originalTodo)
@@ -595,40 +611,41 @@ func UpdateTodo(db *mongo.Database, col string, todo model.Todo) (model.Todo, bo
 
 	time := time.Now().UnixMilli()
 
-	title := cases.Title(language.Indonesian).String(todo.Title)
-	description := cases.Title(language.Indonesian).String(todo.Description)
-	category := cases.Title(language.Indonesian).String(todo.Tags.Category)
+	title = cases.Title(language.Indonesian).String(title)
+	description = cases.Title(language.Indonesian).String(description)
+	category = cases.Title(language.Indonesian).String(category)
 
 	update := bson.D{
 		{Key: "$set", Value: bson.D{
 			{Key: "title", Value: title},
 			{Key: "description", Value: description},
-			{Key: "deadline", Value: todo.Deadline},
-			{Key: "time", Value: todo.Time},
+			{Key: "deadline", Value: deadline},
+			{Key: "time", Value: times},
+			{Key: "file", Value: file},
 			{Key: "tags", Value: bson.D{
 				{Key: "category", Value: category},
 			}},
 			{Key: "timestamps.updatedat", Value: time},
 		}},
 		{Key: "$setOnInsert", Value: bson.D{
-			{Key: "timestamps.createdat", Value: todo.TimeStamps.CreatedAt},
+			{Key: "timestamps.createdat", Value: todoExists.TimeStamps.CreatedAt},
 		}},
 	}
 
 	options := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
-	result := cols.FindOneAndUpdate(context.Background(), filter, update, options).Decode(&todo)
+	result := cols.FindOneAndUpdate(context.Background(), filter, update, options).Decode(&todoExists)
 	if result != nil {
 		return model.Todo{}, false, err
 	}
 
-	err = LogTodo(db, "logtodo", todo.ID, originalTodo, todo)
+	err = LogTodo(db, "logtodo", _id, originalTodo, todoExists)
 	if err != nil {
 		// Handle error logging
 		return model.Todo{}, false, err
 	}
 
-	return todo, true, nil
+	return todoExists, true, nil
 }
 
 func DeleteTodo(db *mongo.Database, col string, _id primitive.ObjectID) (bool, error) {

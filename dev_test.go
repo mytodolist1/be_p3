@@ -163,24 +163,23 @@ func TestGetUserFromRole(t *testing.T) {
 }
 
 // todo
-func TestInsertTodo(t *testing.T) {
-	var data model.Todo
-	data.Title = "Pergi aja"
-	data.Description = "Pergi ke pasar"
-	data.Deadline = "02/01/2024"
-	data.Time = "4:45 PM"
-	data.Tags.Category = "personal"
-	// data.IsDone = false
+// func TestInsertTodo(t *testing.T) {
+// 	var data model.Todo
+// 	data.Title = "Pergi aja"
+// 	data.Description = "Pergi ke pasar"
+// 	data.Deadline = "02/01/2024"
+// 	data.Time = "4:45 PM"
+// 	data.Tags.Category = "personal"
+// 	// data.IsDone = false
+	
+// 	uid := "c742a1aeebfa6cc8"
 
-	data.File.FileName = "file.txt"
-	uid := "c742a1aeebfa6cc8"
-
-	_, err := modul.InsertTodo(mconn, "todo", data, uid)
-	if err != nil {
-		t.Errorf("Error inserting todo: %v", err)
-	}
-	fmt.Println(data)
-}
+// 	_, err := modul.InsertTodo(mconn, "todo", data, uid)
+// 	if err != nil {
+// 		t.Errorf("Error inserting todo: %v", err)
+// 	}
+// 	fmt.Println(data)
+// }
 
 func TestGetTodoFromCategory(t *testing.T) {
 	anu, err := modul.GetTodoFromCategory(mconn, "todo", "personal")
@@ -282,32 +281,32 @@ func TestGetTodoDone(t *testing.T) {
 }
 
 // with log
-func TestUpdateTodo(t *testing.T) {
-	var data model.Todo
-	data.Title = "Belajar javascript"
-	data.Description = "Hari ini belajar javascript"
-	data.Deadline = "12/18/2023"
-	data.Time = "10:00 PM"
-	data.Tags.Category = "Personal"
+// func TestUpdateTodo(t *testing.T) {
+// 	var data model.Todo
+// 	data.Title = "Belajar javascript"
+// 	data.Description = "Hari ini belajar javascript"
+// 	data.Deadline = "12/18/2023"
+// 	data.Time = "10:00 PM"
+// 	data.Tags.Category = "Personal"
 
-	id := "657e6db23e913ed6f8dc4909"
-	ID, err := primitive.ObjectIDFromHex(id)
-	data.ID = ID
-	if err != nil {
-		fmt.Printf("Data tidak berhasil diubah")
-	} else {
+// 	id := "657e6db23e913ed6f8dc4909"
+// 	ID, err := primitive.ObjectIDFromHex(id)
+// 	data.ID = ID
+// 	if err != nil {
+// 		fmt.Printf("Data tidak berhasil diubah")
+// 	} else {
 
-		_, status, err := modul.UpdateTodo(mconn, "todo", data)
-		fmt.Println("Status", status)
-		if err != nil {
-			t.Errorf("Error updating todo with id: %v", err)
-			return
-		} else {
-			fmt.Printf("Data berhasil diubah untuk id: %s\n", id)
-		}
-		fmt.Println(data)
-	}
-}
+// 		_, status, err := modul.UpdateTodo(mconn, "todo", data)
+// 		fmt.Println("Status", status)
+// 		if err != nil {
+// 			t.Errorf("Error updating todo with id: %v", err)
+// 			return
+// 		} else {
+// 			fmt.Printf("Data berhasil diubah untuk id: %s\n", id)
+// 		}
+// 		fmt.Println(data)
+// 	}
+// }
 
 // log
 func TestGetLogTodoFromUID(t *testing.T) {

@@ -4,15 +4,59 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 
-	"github.com/mytodolist1/be_p3/model"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/gridfs"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/google/go-github/v56/github"
+	"golang.org/x/oauth2"
 )
+
+func SaveFileToGithub(usernameGhp, emailGhp, repoGhp, path string, r *http.Request) (string, error) {
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		return "", fmt.Errorf("error 1: %s", err)
+	}
+	defer file.Close()
+
+	// Generate a random filename
+	randomFileName, err := generateRandomFileName(handler.Filename)
+	if err != nil {
+		return "", fmt.Errorf("error 2: %s", err)
+	}
+
+	// Read the content of the file into a byte slice
+	fileContent, err := io.ReadAll(file)
+	if err != nil {
+		return "", fmt.Errorf("error 5: %s", err)
+	}
+
+	access_token := os.Getenv("GITHUB_ACCESS_TOKEN")
+	if access_token == "" {
+		return "", fmt.Errorf("error access token: %s", err)
+	}
+
+	// Initialize GitHub client
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: access_token},
+	)
+	tc := oauth2.NewClient(r.Context(), ts)
+	client := github.NewClient(tc)
+
+	// Create a new repository file
+	_, _, err = client.Repositories.CreateFile(r.Context(), usernameGhp, repoGhp, path+"/"+randomFileName, &github.RepositoryContentFileOptions{
+		Message:   github.String("Add new file"),
+		Content:   fileContent,
+		Committer: &github.CommitAuthor{Name: github.String(usernameGhp), Email: github.String(emailGhp)},
+	})
+	if err != nil {
+		return "", fmt.Errorf("error 6: %s", err)
+	}
+
+	imageUrl := "https://raw.githubusercontent.com/" + usernameGhp + "/" + repoGhp + "/main/" + path + "/" + randomFileName
+
+	return imageUrl, nil
+}
 
 func generateRandomFileName(originalFilename string) (string, error) {
 	randomBytes := make([]byte, 16)
@@ -23,59 +67,4 @@ func generateRandomFileName(originalFilename string) (string, error) {
 
 	randomFileName := fmt.Sprintf("%x%s", randomBytes, filepath.Ext(originalFilename))
 	return randomFileName, nil
-}
-
-func SaveFileToGridFS(db *mongo.Database, col, filePath string) (model.GridFSFile, error) {
-	// Open the local file
-	file, err := os.Open(filePath)
-	if err != nil {
-		return model.GridFSFile{}, err
-	}
-	defer file.Close()
-
-	// Generate a random filename
-	randomFileName, err := generateRandomFileName(file.Name())
-	if err != nil {
-		return model.GridFSFile{}, err
-	}
-
-	// Create a GridFS bucket
-	bucket, err := gridfs.NewBucket(
-		db, options.GridFSBucket().SetName("mytodolistFiles"),
-	)
-	if err != nil {
-		return model.GridFSFile{}, err
-	}
-
-	fileInfo, err := file.Stat()
-	if err != nil {
-		return model.GridFSFile{}, err
-	}
-
-	fileSize := fileInfo.Size()
-
-	// Upload the file to GridFS
-	uploadStream, err := bucket.OpenUploadStream(randomFileName)
-	if err != nil {
-		return model.GridFSFile{}, err
-	}
-	defer uploadStream.Close()
-
-	_, err = io.Copy(uploadStream, file)
-	if err != nil {
-		return model.GridFSFile{}, err
-	}
-
-	// Get the file's ID in GridFS
-	fileID := uploadStream.FileID.(primitive.ObjectID)
-
-	fmt.Printf("File %s uploaded successfully to GridFS with ID: %s\n", randomFileName, fileID.Hex())
-
-	// Return a model.GridFSFile struct with relevant information
-	return model.GridFSFile{
-		ID:          fileID,
-		FileName:    randomFileName,
-		FileSize:    fileSize,
-		ContentType: "application/octet-stream",
-	}, nil
 }

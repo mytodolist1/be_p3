@@ -470,7 +470,7 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	_, err = InsertTodo(mconn, collectionname, datatodo, userInfo.Id)
+	_, err = InsertTodo(mconn, collectionname, userInfo.Id, r)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
@@ -518,7 +518,7 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	todo, _, err := UpdateTodo(mconn, collectionname, datatodo)
+	todo, _, err := UpdateTodo(mconn, collectionname, datatodo.ID, r)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)

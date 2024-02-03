@@ -28,17 +28,10 @@ type Todo struct {
 	Description string             `bson:"description,omitempty" json:"description,omitempty"`
 	Deadline    string             `bson:"deadline,omitempty" json:"deadline,omitempty"`
 	Time        string             `bson:"time,omitempty" json:"time,omitempty"`
-	File        GridFSFile         `bson:"file,omitempty" json:"file,omitempty"`
+	File        string             `bson:"file,omitempty" json:"file,omitempty"`
 	Tags        Categories         `bson:"tags,omitempty" json:"tags,omitempty"`
 	TimeStamps  TimeStamps         `bson:"timestamps,omitempty" json:"timestamps,omitempty"`
 	User        User               `bson:"user,omitempty" json:"user,omitempty"`
-}
-
-type GridFSFile struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	FileName    string             `bson:"filename,omitempty" json:"filename,omitempty"`
-	FileSize    int64              `bson:"filesize,omitempty" json:"filesize,omitempty"`
-	ContentType string             `bson:"contenttype,omitempty" json:"contenttype,omitempty"`
 }
 
 type TimeStamps struct {
