@@ -464,11 +464,11 @@ func GCFHandlerInsertTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 		return GCFReturnStruct(Response)
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&datatodo)
-	if err != nil {
-		Response.Message = "error parsing application/json3: " + err.Error()
-		return GCFReturnStruct(Response)
-	}
+	// err = json.NewDecoder(r.Body).Decode(&datatodo)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json3: " + err.Error()
+	// 	return GCFReturnStruct(Response)
+	// }
 
 	_, err = InsertTodo(mconn, collectionname, userInfo.Id, r)
 	if err != nil {
@@ -512,11 +512,11 @@ func GCFHandlerUpdateTodo(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	}
 	datatodo.ID = ID
 
-	err = json.NewDecoder(r.Body).Decode(&datatodo)
-	if err != nil {
-		Response.Message = "error parsing application/json3: " + err.Error()
-		return GCFReturnStruct(Response)
-	}
+	// err = json.NewDecoder(r.Body).Decode(&datatodo)
+	// if err != nil {
+	// 	Response.Message = "error parsing application/json3: " + err.Error()
+	// 	return GCFReturnStruct(Response)
+	// }
 
 	todo, _, err := UpdateTodo(mconn, collectionname, datatodo.ID, r)
 	if err != nil {
