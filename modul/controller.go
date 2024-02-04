@@ -460,9 +460,9 @@ func InsertTodo(db *mongo.Database, col, uid string, r *http.Request) (todo mode
 	description = cases.Title(language.Indonesian).String(description)
 	category = cases.Title(language.Indonesian).String(category)
 
-	files, err := SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
+	files, err := SaveFileToGridFS(db, "filegridfs", r)
 	if err != nil {
-		fmt.Printf("SaveFileToGithub: %v\n", err)
+		fmt.Printf("SaveFileToGridFS: %v\n", err)
 		return todo, err
 	}
 
