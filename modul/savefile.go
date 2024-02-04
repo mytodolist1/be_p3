@@ -59,7 +59,7 @@ func SaveFileToGithub(usernameGhp, emailGhp, repoGhp, path string, r *http.Reque
 		return "", fmt.Errorf("error 6: %s", err)
 	}
 
-	imageUrl := "https://raw.githubusercontent.com/" + usernameGhp + "/" + repoGhp + "/main/" + path + "/" + randomFileName
+	imageUrl := "https://" + usernameGhp + ".github.io/" + repoGhp + path + "/" + randomFileName
 
 	return imageUrl, nil
 }
