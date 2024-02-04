@@ -4,17 +4,11 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
-	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
 
 	"github.com/google/go-github/v56/github"
-	"github.com/mytodolist1/be_p3/model"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/gridfs"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/oauth2"
 )
 
@@ -59,9 +53,9 @@ func SaveFileToGithub(usernameGhp, emailGhp, repoGhp, path string, r *http.Reque
 		return "", fmt.Errorf("error 6: %s", err)
 	}
 
-	imageUrl := "https://" + usernameGhp + ".github.io/" + repoGhp + path + "/" + randomFileName
+	fileUrl := "https://" + usernameGhp + ".github.io/" + repoGhp + "/" + path + "/" + randomFileName
 
-	return imageUrl, nil
+	return fileUrl, nil
 }
 
 func generateRandomFileName(originalFilename string) (string, error) {
@@ -75,57 +69,57 @@ func generateRandomFileName(originalFilename string) (string, error) {
 	return randomFileName, nil
 }
 
-func SaveFileToGridFS(db *mongo.Database, col string, r *http.Request) (model.GridFSFile, error) {
-	file, handler, err := r.FormFile("file")
-	if err != nil {
-		return model.GridFSFile{}, fmt.Errorf("error 1: %s", err)
-	}
-	defer file.Close()
+// func SaveFileToGridFS(db *mongo.Database, col string, r *http.Request) (model.GridFSFile, error) {
+// 	file, handler, err := r.FormFile("file")
+// 	if err != nil {
+// 		return model.GridFSFile{}, fmt.Errorf("error 1: %s", err)
+// 	}
+// 	defer file.Close()
 
-	data, err := io.ReadAll(file)
-	if err != nil {
-		return model.GridFSFile{}, fmt.Errorf("error 2: %s", err)
-	}
+// 	data, err := io.ReadAll(file)
+// 	if err != nil {
+// 		return model.GridFSFile{}, fmt.Errorf("error 2: %s", err)
+// 	}
 
-	fileSize := len(data)
+// 	fileSize := len(data)
 
-	// Generate a random filename
-	randomFileName, err := generateRandomFileName(handler.Filename)
-	if err != nil {
-		return model.GridFSFile{}, fmt.Errorf("error 3: %s", err)
-	}
+// 	// Generate a random filename
+// 	randomFileName, err := generateRandomFileName(handler.Filename)
+// 	if err != nil {
+// 		return model.GridFSFile{}, fmt.Errorf("error 3: %s", err)
+// 	}
 
-	// Create a new file in GridFS
-	bucket, err := gridfs.NewBucket(
-		db,
-		options.GridFSBucket().SetName(col),
-	)
-	if err != nil {
-		return model.GridFSFile{}, fmt.Errorf("error 4: %s", err)
-	}
+// 	// Create a new file in GridFS
+// 	bucket, err := gridfs.NewBucket(
+// 		db,
+// 		options.GridFSBucket().SetName(col),
+// 	)
+// 	if err != nil {
+// 		return model.GridFSFile{}, fmt.Errorf("error 4: %s", err)
+// 	}
 
-	uploadStream, err := bucket.OpenUploadStream(randomFileName)
-	if err != nil {
-		return model.GridFSFile{}, fmt.Errorf("error 5: %s", err)
-	}
+// 	uploadStream, err := bucket.OpenUploadStream(randomFileName)
+// 	if err != nil {
+// 		return model.GridFSFile{}, fmt.Errorf("error 5: %s", err)
+// 	}
 
-	defer uploadStream.Close()
+// 	defer uploadStream.Close()
 
-	_, err = uploadStream.Write(data)
-	if err != nil {
-		return model.GridFSFile{}, fmt.Errorf("error 6: %s", err)
-	}
+// 	_, err = uploadStream.Write(data)
+// 	if err != nil {
+// 		return model.GridFSFile{}, fmt.Errorf("error 6: %s", err)
+// 	}
 
-	// Content Type based on file extension (modify as needed)
-	contentType := mime.TypeByExtension(filepath.Ext(handler.Filename))
-	if contentType == "" {
-		contentType = "application/octet-stream"
-	}
+// 	// Content Type based on file extension (modify as needed)
+// 	contentType := mime.TypeByExtension(filepath.Ext(handler.Filename))
+// 	if contentType == "" {
+// 		contentType = "application/octet-stream"
+// 	}
 
-	return model.GridFSFile{
-		ID:          primitive.NewObjectID(),
-		FileName:    randomFileName,
-		FileSize:    int64(fileSize),
-		ContentType: contentType,
-	}, nil
-}
+// 	return model.GridFSFile{
+// 		ID:          primitive.NewObjectID(),
+// 		FileName:    randomFileName,
+// 		FileSize:    int64(fileSize),
+// 		ContentType: contentType,
+// 	}, nil
+// }
