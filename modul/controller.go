@@ -688,6 +688,7 @@ func TodoClear(db *mongo.Database, col string, done model.TodoClear) (bool, erro
 			{Key: "description", Value: todo.Description},
 			{Key: "deadline", Value: todo.Deadline},
 			{Key: "time", Value: todo.Time},
+			{Key: "file", Value: todo.File},
 			{Key: "tags", Value: bson.D{
 				{Key: "category", Value: todo.Tags.Category},
 			}},
