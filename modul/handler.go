@@ -775,13 +775,13 @@ func GCFHandlerGetIsDone(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collection
 		return GCFReturnStruct(Response2)
 	}
 
-	_, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
+	userInfo, err := paseto.Decode(os.Getenv(PASETOPUBLICKEY), token)
 	if err != nil {
 		Response2.Message = "error parsing application/json2:" + err.Error() + ";" + token
 		return GCFReturnStruct(Response2)
 	}
 
-	isdonelist, err := GetTodoDone(mconn, collectionname)
+	isdonelist, err := GetTodoDone(mconn, collectionname, userInfo.Id)
 	if err != nil {
 		Response2.Message = err.Error()
 		return GCFReturnStruct(Response2)

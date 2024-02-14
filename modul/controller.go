@@ -719,9 +719,9 @@ func TodoClear(db *mongo.Database, col string, done model.TodoClear) (bool, erro
 	return true, nil
 }
 
-func GetTodoDone(db *mongo.Database, col string) (todo []model.TodoClear, err error) {
+func GetTodoDone(db *mongo.Database, col, uid string) (todo []model.TodoClear, err error) {
 	cols := db.Collection(col)
-	filter := bson.M{"isdone": true}
+	filter := bson.M{"todo.user.uid": uid}
 
 	cur, err := cols.Find(context.Background(), filter)
 	if err != nil {
