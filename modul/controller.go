@@ -601,9 +601,7 @@ func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.
 
 	var files string
 
-	if file == "" {
-		files = ""
-	} else if file != "" {
+	if file != "" {
 		files = file
 	} else {
 		files, err = SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
