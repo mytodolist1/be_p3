@@ -460,10 +460,16 @@ func InsertTodo(db *mongo.Database, col, uid string, r *http.Request) (todo mode
 
 	var files string
 
-	files, err = SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
+	file, _, err := r.FormFile("file")
 	if err != nil {
-		fmt.Printf("SaveFileToGithub: %v\n", err)
-		return model.Todo{}, err
+		files = ""
+	} else {
+		files, err = SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
+		if err != nil {
+			fmt.Printf("SaveFileToGithub: %v\n", err)
+			return model.Todo{}, err
+		}
+		defer file.Close()
 	}
 
 	todoData := bson.D{
