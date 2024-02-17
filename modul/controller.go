@@ -26,8 +26,6 @@ import (
 	"github.com/mytodolist1/be_p3/model"
 )
 
-var files string
-
 func MongoConnect(MONGOCONNSTRINGENV, dbname string) *mongo.Database {
 	var DBmongoinfo = atdb.DBInfo{
 		DBString: os.Getenv(MONGOCONNSTRINGENV),
@@ -88,48 +86,48 @@ func ValidatePhoneNumber(phoneNumber string) (bool, error) {
 
 func Register(db *mongo.Database, col string, userdata model.User) error {
 	if userdata.Email == "" || userdata.Phonenumber == "" || userdata.Username == "" || userdata.Password == "" || userdata.ConfirmPassword == "" {
-		return fmt.Errorf("Data tidak lengkap")
+		return fmt.Errorf("data tidak lengkap")
 	}
 
 	// Periksa apakah email valid
 	err := checkmail.ValidateFormat(userdata.Email)
 	if err != nil {
-		return fmt.Errorf("Email tidak valid")
+		return fmt.Errorf("email tidak valid")
 	}
 
 	// Periksa apakah email dan username sudah terdaftar
 	userExists, _ := GetUserFromEmail(db, col, userdata.Email)
 	if userExists.Email != "" {
-		return fmt.Errorf("Email sudah terdaftar")
+		return fmt.Errorf("email sudah terdaftar")
 	}
 
 	if userExists.Username != "" {
-		return fmt.Errorf("Username sudah terdaftar")
+		return fmt.Errorf("username sudah terdaftar")
 	}
 
 	// Periksa apakah nomor telepon valid
 	isValid, _ := ValidatePhoneNumber(userdata.Phonenumber)
 	if !isValid {
-		return fmt.Errorf("Nomor telepon tidak valid")
+		return fmt.Errorf("nomor telepon tidak valid")
 	}
 
 	// Periksa apakah password memenuhi syarat
 	if len(userdata.Password) < 6 {
-		return fmt.Errorf("Password minimal 6 karakter")
+		return fmt.Errorf("password minimal 6 karakter")
 	}
 
 	if strings.Contains(userdata.Password, " ") {
-		return fmt.Errorf("Password tidak boleh mengandung spasi")
+		return fmt.Errorf("password tidak boleh mengandung spasi")
 	}
 
 	// Periksa apakah username memenuhi syarat
 	if strings.Contains(userdata.Username, " ") {
-		return fmt.Errorf("Username tidak boleh mengandung spasi")
+		return fmt.Errorf("username tidak boleh mengandung spasi")
 	}
 
 	// Periksa apakah password dan konfirmasi password sama
 	if userdata.Password != userdata.ConfirmPassword {
-		return fmt.Errorf("Password dan konfirmasi password tidak sama")
+		return fmt.Errorf("password dan konfirmasi password tidak sama")
 	}
 
 	// uid := GenerateUID(&userdata)
@@ -440,7 +438,7 @@ func InsertTodo(db *mongo.Database, col, uid string, r *http.Request) (todo mode
 	category := r.FormValue("category")
 
 	if title == "" || description == "" || deadline == "" || times == "" || category == "" {
-		err = fmt.Errorf("Data tidak boleh kosong")
+		err = fmt.Errorf("data tidak boleh kosong")
 		return todo, err
 	}
 
@@ -460,7 +458,9 @@ func InsertTodo(db *mongo.Database, col, uid string, r *http.Request) (todo mode
 	description = cases.Title(language.Indonesian).String(description)
 	category = cases.Title(language.Indonesian).String(category)
 
-	files, err := SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
+	var files string
+
+	files, err = SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
 	if err != nil {
 		fmt.Printf("SaveFileToGithub: %v\n", err)
 		return model.Todo{}, err
@@ -575,7 +575,7 @@ func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.
 	file := r.FormValue("file")
 
 	if title == "" || description == "" || deadline == "" || times == "" || category == "" {
-		err := fmt.Errorf("Data tidak lengkap")
+		err := fmt.Errorf("data tidak lengkap")
 		return model.Todo{}, false, err
 	}
 
@@ -586,14 +586,16 @@ func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.
 
 	// Periksa apakah data yang akan diupdate sama dengan data yang sudah ada
 	if title == todoExists.Title && description == todoExists.Description && deadline == todoExists.Deadline && times == todoExists.Time {
-		err = fmt.Errorf("Silahkan update data anda")
+		err = fmt.Errorf("silahkan update data anda")
 		return model.Todo{}, false, err
 	}
+
+	var files string
 
 	if file != "" {
 		files = file
 	} else {
-		files, err := SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
+		files, err = SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
 		if err != nil {
 			fmt.Printf("SaveFileToGithub: %v\n", err)
 			return model.Todo{}, false, err
@@ -658,7 +660,7 @@ func DeleteTodo(db *mongo.Database, col string, _id primitive.ObjectID) (bool, e
 	}
 
 	if result.DeletedCount == 0 {
-		err = fmt.Errorf("Data tidak berhasil dihapus")
+		err = fmt.Errorf("data tidak berhasil dihapus")
 		return false, err
 	}
 

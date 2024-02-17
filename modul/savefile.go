@@ -13,10 +13,10 @@ import (
 )
 
 func SaveFileToGithub(usernameGhp, emailGhp, repoGhp, path string, r *http.Request) (string, error) {
-	file, handler, err := r.FormFile("file")
-	if err != nil {
-		return "", fmt.Errorf("error 1: %s", err)
-	}
+	file, handler, _ := r.FormFile("file")
+	// if err != nil {
+	// 	return "", fmt.Errorf("error 1: %s", err)
+	// }
 	defer file.Close()
 
 	// Generate a random filename
