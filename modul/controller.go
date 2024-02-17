@@ -601,17 +601,12 @@ func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.
 
 	var files string
 
-	if file == "" {
-		files = ""
-	} else if file != "" {
-		files = file
-	} else {
+	if file != "" {
 		files, err = SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
 		if err != nil {
 			fmt.Printf("SaveFileToGithub: %v\n", err)
 			return model.Todo{}, false, err
 		}
-		file = files
 	}
 
 	filter := bson.M{"_id": _id}
@@ -644,8 +639,8 @@ func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.
 		}},
 	}
 
-	if file != "" {
-		update = append(update, bson.E{Key: "$set", Value: bson.D{{Key: "file", Value: file}}})
+	if files != "" {
+		update = append(update, bson.E{Key: "$set", Value: bson.D{{Key: "file", Value: files}}})
 	}
 
 	options := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
