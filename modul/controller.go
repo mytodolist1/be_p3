@@ -632,6 +632,7 @@ func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.
 			{Key: "description", Value: description},
 			{Key: "deadline", Value: deadline},
 			{Key: "time", Value: times},
+			{Key: "file", Value: file},
 			{Key: "tags", Value: bson.D{
 				{Key: "category", Value: category},
 			}},
@@ -642,9 +643,9 @@ func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.
 		}},
 	}
 
-	if file != "" {
-		update = append(update, bson.E{Key: "file", Value: file})
-	}
+	// if file != "" {
+	// 	update = append(update, bson.E{Key: "file", Value: file})
+	// }
 
 	options := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
