@@ -458,17 +458,19 @@ func InsertTodo(db *mongo.Database, col, uid string, r *http.Request) (todo mode
 	description = cases.Title(language.Indonesian).String(description)
 	category = cases.Title(language.Indonesian).String(category)
 
-	var files string
+	var files *string
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		files = ""
+		files = nil
 	} else {
-		files, err = SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
+		var fileURL string
+		fileURL, err = SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
 		if err != nil {
 			fmt.Printf("SaveFileToGithub: %v\n", err)
 			return model.Todo{}, err
 		}
+		files = &fileURL
 		defer file.Close()
 	}
 
