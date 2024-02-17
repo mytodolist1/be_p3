@@ -583,7 +583,7 @@ func GCFHandlerGetAllUser(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectio
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Responsed.Status = false
 
-	token := r.Header.Get("Authorization")
+	token := r.Header.Get("Authorizationadmin")
 	if token == "" {
 		Response.Message = "error parsing application/json1:"
 		return GCFReturnStruct(Response)
@@ -619,7 +619,7 @@ func GCFHandlerGetAllTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Response.Status = false
 
-	token := r.Header.Get("Authorization")
+	token := r.Header.Get("Authorizationadmin")
 	if token == "" {
 		Response.Message = "error parsing application/json1:"
 		return GCFReturnStruct(Response)
@@ -656,7 +656,7 @@ func GCFHandlerGetLogTodoList(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, colle
 	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
 	Response3.Status = false
 
-	token := r.Header.Get("Authorization")
+	token := r.Header.Get("Authorizationadmin")
 	if token == "" {
 		Response3.Message = "error parsing application/json1:"
 		return GCFReturnStruct(Response3)
@@ -754,7 +754,7 @@ func GCFHandlerIsDone(PASETOPUBLICKEY, MONGOCONNSTRINGENV, dbname, collectionnam
 		return GCFReturnStruct(Response2)
 	}
 
-	if status == false {
+	if !status {
 		Response2.Message = err.Error()
 		return GCFReturnStruct(Response2)
 	}
