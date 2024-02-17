@@ -34,13 +34,6 @@ type Todo struct {
 	User        User               `bson:"user,omitempty" json:"user,omitempty"`
 }
 
-// type GridFSFile struct {
-// 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-// 	FileName    string             `bson:"filename,omitempty" json:"filename,omitempty"`
-// 	FileSize    int64              `bson:"size,omitempty" json:"size,omitempty"`
-// 	ContentType string             `bson:"contentType,omitempty" json:"contentType,omitempty"`
-// }
-
 type TimeStamps struct {
 	CreatedAt int64 `bson:"createdat,omitempty" json:"createdat,omitempty"`
 	UpdatedAt int64 `bson:"updatedat,omitempty" json:"updatedat,omitempty"`

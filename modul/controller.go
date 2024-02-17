@@ -458,19 +458,17 @@ func InsertTodo(db *mongo.Database, col, uid string, r *http.Request) (todo mode
 	description = cases.Title(language.Indonesian).String(description)
 	category = cases.Title(language.Indonesian).String(category)
 
-	var files *string
+	var fileURL string
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		files = nil
+		fileURL = ""
 	} else {
-		var fileURL string
 		fileURL, err = SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
 		if err != nil {
 			fmt.Printf("SaveFileToGithub: %v\n", err)
 			return model.Todo{}, err
 		}
-		files = &fileURL
 		defer file.Close()
 	}
 
@@ -480,7 +478,6 @@ func InsertTodo(db *mongo.Database, col, uid string, r *http.Request) (todo mode
 		{Key: "description", Value: description},
 		{Key: "deadline", Value: deadline},
 		{Key: "time", Value: times},
-		{Key: "file", Value: files},
 		{Key: "tags", Value: bson.D{
 			{Key: "category", Value: category},
 		}},
@@ -491,6 +488,10 @@ func InsertTodo(db *mongo.Database, col, uid string, r *http.Request) (todo mode
 		{Key: "user", Value: bson.D{
 			{Key: "uid", Value: user.UID},
 		}},
+	}
+
+	if fileURL != "" {
+		todoData = append(todoData, bson.E{Key: "file", Value: fileURL})
 	}
 
 	_, err = InsertOneDoc(db, col, todoData)
@@ -600,7 +601,9 @@ func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.
 
 	var files string
 
-	if file != "" {
+	if file == "" {
+		files = ""
+	} else if file != "" {
 		files = file
 	} else {
 		files, err = SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
@@ -631,7 +634,6 @@ func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.
 			{Key: "description", Value: description},
 			{Key: "deadline", Value: deadline},
 			{Key: "time", Value: times},
-			{Key: "file", Value: file},
 			{Key: "tags", Value: bson.D{
 				{Key: "category", Value: category},
 			}},
@@ -640,6 +642,10 @@ func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.
 		{Key: "$setOnInsert", Value: bson.D{
 			{Key: "timestamps.createdat", Value: todoExists.TimeStamps.CreatedAt},
 		}},
+	}
+
+	if file != "" {
+		update = append(update, bson.E{Key: "file", Value: file})
 	}
 
 	options := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
