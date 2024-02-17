@@ -607,6 +607,8 @@ func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.
 			fmt.Printf("SaveFileToGithub: %v\n", err)
 			return model.Todo{}, false, err
 		}
+	} else {
+		files = todoExists.File
 	}
 
 	filter := bson.M{"_id": _id}
