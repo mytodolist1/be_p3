@@ -604,15 +604,17 @@ func UpdateTodo(db *mongo.Database, col string, _id primitive.ObjectID, r *http.
 	files, _, err := r.FormFile("file")
 	if err != nil {
 		fileURL = ""
-	} else if file == "" {
-		fileURL = file
 	} else {
-		fileURL, err = SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
-		if err != nil {
-			fmt.Printf("SaveFileToGithub: %v\n", err)
-			return model.Todo{}, false, err
+		if file != "" {
+			fileURL = file
+		} else {
+			fileURL, err = SaveFileToGithub("Febriand1", "fdirga63@gmail.com", "Image", "mytodolist", r)
+			if err != nil {
+				fmt.Printf("SaveFileToGithub: %v\n", err)
+				return model.Todo{}, false, err
+			}
+			defer files.Close()
 		}
-		defer files.Close()
 	}
 
 	filter := bson.M{"_id": _id}
